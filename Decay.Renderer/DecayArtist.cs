@@ -37,19 +37,29 @@ namespace Decay.Renderer
         /// glitch, then embed; any watermark must come after, and only on
         /// pixels at index >= PayloadPixelExtent.
         /// </summary>
+        /// <param name="intensity">
+        /// Decay intensity in percent, 1–255. 100 is the standard ramp; lower
+        /// leaves more of the carrier legible, higher approaches total
+        /// obliteration. Recorded in the container (authenticated), so the
+        /// receiver's un-rot replays it exactly.
+        /// </param>
         public static EncryptedArt Encrypt(
             string plainText,
             string passphrase,
             PixelBuffer carrier,
-            int iterations = DecayCipher.DefaultIterations
+            int iterations = DecayCipher.DefaultIterations,
+            int intensity = 100
         )
         {
             ArgumentNullException.ThrowIfNull(carrier);
+            ArgumentOutOfRangeException.ThrowIfLessThan(intensity, 1);
+            ArgumentOutOfRangeException.ThrowIfGreaterThan(intensity, 255);
 
             byte[] container = DecayCipher.SealContainer(
                 plainText,
                 passphrase,
                 DecaySequence.PipelineV1,
+                (byte)intensity,
                 iterations
             );
             DecaySequence sequence = DecaySequence.FromContainer(container)!;

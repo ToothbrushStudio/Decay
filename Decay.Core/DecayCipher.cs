@@ -28,13 +28,20 @@ namespace Decay.Core
             string plainText,
             string passphrase,
             byte pipelineId,
+            byte pipelineParameter = 0,
             int iterations = DefaultIterations
         )
         {
             ArgumentNullException.ThrowIfNull(plainText);
             ArgumentException.ThrowIfNullOrEmpty(passphrase);
 
-            return PayloadContainer.Seal(plainText, passphrase, pipelineId, iterations);
+            return PayloadContainer.Seal(
+                plainText,
+                passphrase,
+                pipelineId,
+                pipelineParameter,
+                iterations
+            );
         }
 
         /// <summary>
@@ -103,6 +110,17 @@ namespace Decay.Core
         }
 
         /// <summary>
+        /// The pipeline-defined parameter byte. For pipeline 1 this is the
+        /// decay intensity in percent (0 means the default, 100).
+        /// </summary>
+        public static byte GetPipelineParameter(byte[] container)
+        {
+            ArgumentNullException.ThrowIfNull(container);
+
+            return PayloadContainer.ReadHeader(container).PipelineParameter;
+        }
+
+        /// <summary>
         /// Simple path: encrypts the message and embeds it into the carrier's
         /// pixels in place, with no decay pipeline recorded.
         /// </summary>
@@ -119,7 +137,12 @@ namespace Decay.Core
         {
             ArgumentNullException.ThrowIfNull(carrier);
 
-            byte[] container = SealContainer(plainText, passphrase, PipelineNone, iterations);
+            byte[] container = SealContainer(
+                plainText,
+                passphrase,
+                PipelineNone,
+                iterations: iterations
+            );
 
             return EmbedContainer(container, carrier);
         }

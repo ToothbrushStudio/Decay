@@ -14,7 +14,7 @@ namespace Decay.Renderer.Tests
                 plainText,
                 Passphrase,
                 DecaySequence.PipelineV1,
-                TestIterations
+                iterations: TestIterations
             );
         }
 
@@ -31,7 +31,7 @@ namespace Decay.Renderer.Tests
                 "no art",
                 Passphrase,
                 DecayCipher.PipelineNone,
-                TestIterations
+                iterations: TestIterations
             );
 
             Assert.Null(DecaySequence.FromContainer(container));
@@ -44,7 +44,7 @@ namespace Decay.Renderer.Tests
                 "from the future",
                 Passphrase,
                 pipelineId: 0x63,
-                TestIterations
+                iterations: TestIterations
             );
 
             Assert.Null(DecaySequence.FromContainer(container));

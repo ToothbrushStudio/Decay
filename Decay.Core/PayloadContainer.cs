@@ -18,16 +18,17 @@ namespace Decay.Core
         internal const int TagSize = 16;
         internal const int KeySize = 32;
 
-        // magic + version + pipeline + salt + iterations + nonce + ctlen
-        internal const int HeaderSize = MagicSize + 1 + 1 + SaltSize + 4 + NonceSize + 4; // 42
-        internal const int MinContainerSize = HeaderSize + TagSize; // 58
+        // magic + version + pipeline + param + salt + iterations + nonce + ctlen
+        internal const int HeaderSize = MagicSize + 1 + 1 + 1 + SaltSize + 4 + NonceSize + 4; // 43
+        internal const int MinContainerSize = HeaderSize + TagSize; // 59
         internal const int MaxIterations = 10_000_000;
 
         private const int PipelineOffset = 5;
-        private const int SaltOffset = 6;
-        private const int IterationsOffset = 22;
-        private const int NonceOffset = 26;
-        private const int LengthOffset = 38;
+        private const int PipelineParamOffset = 6;
+        private const int SaltOffset = 7;
+        private const int IterationsOffset = 23;
+        private const int NonceOffset = 27;
+        private const int LengthOffset = 39;
 
         private static ReadOnlySpan<byte> Magic => "DCAY"u8;
 
@@ -35,13 +36,22 @@ namespace Decay.Core
             string plainText,
             string passphrase,
             byte pipelineId,
+            byte pipelineParameter,
             int iterations
         )
         {
             byte[] salt = RandomNumberGenerator.GetBytes(SaltSize);
             byte[] nonce = RandomNumberGenerator.GetBytes(NonceSize);
 
-            return Seal(plainText, passphrase, pipelineId, iterations, salt, nonce);
+            return Seal(
+                plainText,
+                passphrase,
+                pipelineId,
+                pipelineParameter,
+                iterations,
+                salt,
+                nonce
+            );
         }
 
         // Deterministic overload used by tests and format vectors.
@@ -49,6 +59,7 @@ namespace Decay.Core
             string plainText,
             string passphrase,
             byte pipelineId,
+            byte pipelineParameter,
             int iterations,
             byte[] salt,
             byte[] nonce
@@ -66,6 +77,7 @@ namespace Decay.Core
             Magic.CopyTo(header);
             header[MagicSize] = FormatVersion1;
             header[PipelineOffset] = pipelineId;
+            header[PipelineParamOffset] = pipelineParameter;
             salt.CopyTo(header.Slice(SaltOffset, SaltSize));
             BinaryPrimitives.WriteUInt32BigEndian(
                 header.Slice(IterationsOffset, 4),
@@ -190,6 +202,7 @@ namespace Decay.Core
 
             return new ContainerInfo(
                 headerBytes[PipelineOffset],
+                headerBytes[PipelineParamOffset],
                 (int)iterations,
                 (int)ciphertextLength,
                 headerBytes.Slice(NonceOffset, NonceSize).ToArray()
@@ -209,6 +222,7 @@ namespace Decay.Core
 
         internal readonly record struct ContainerInfo(
             byte PipelineId,
+            byte PipelineParameter,
             int Iterations,
             int CiphertextLength,
             byte[] Nonce

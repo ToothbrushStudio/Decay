@@ -37,6 +37,15 @@ constraint.
   reverse playback inverts ops 119→0 starting from the received image.
 - **Intensity ramp:** each op is scaled by `ramp = f + 1` out of 40, so the
   rot escalates — Erosion-mild at the start, Necrosis-violent at the end.
+- **User intensity:** the container's pipeline-parameter byte is the decay
+  intensity in percent, valid 1–255, with `0x00` reserved to mean the
+  default (100). It scales every op's magnitude uniformly:
+  `dx = fdx * dim * ramp * intensity / 40000000` for the shift ops,
+  BlockSwap's block dimensions by the same factor, and
+  `density = max(8, densityBase * ramp * intensity / 4000)` for NoiseXor.
+    Intensity changes magnitudes only — never the number, order, kind, or
+  draw sequence of ops — so invertibility and the frozen random stream are
+  untouched.
 
 ## Random stream
 
@@ -61,11 +70,11 @@ sizes clamped to a minimum of 1 and clipped to the image edge.
 
 | Kind | Name | Parameter draws (in order) | Apply | Invert |
 |---|---|---|---|---|
-| 0 | NoiseXor | `fx=Draw(10000)`, `fy=Draw(10000)`, `fw=1000+Draw(4000)`, `fh=1000+Draw(4000)`, `subSeed=Next()`, `densityBase=32+Draw(96)` | XOR a deterministic noise field over the rect (see below), density = `densityBase * ramp / 40`, min 8 | Same op (XOR is self-inverse) |
-| 1 | BandShift | `fy=Draw(10000)`, `fh=500+Draw(2000)`, `fdx=100+Draw(2400)` | Cyclic-shift each row of the horizontal band right by `dx = fdx * W * ramp / 400000` pixels (mod W; no-op if 0) | Shift left by `dx` |
-| 2 | ColumnShift | `fx=Draw(10000)`, `fw=500+Draw(2000)`, `fdy=100+Draw(2400)` | Cyclic-shift each column of the vertical band down by `dy = fdy * H * ramp / 400000` (mod H; no-op if 0) | Shift up by `dy` |
-| 3 | BlockSwap | `fx1=Draw(10000)`, `fy1=Draw(10000)`, `fx2=Draw(10000)`, `fy2=Draw(10000)`, `fw=500+Draw(1500)`, `fh=500+Draw(1500)` | Swap the pixel content of two equal-size rects, both clipped to the smaller of the two fits; **no-op if the rects intersect** | Same op (disjoint swap is an involution) |
-| 4 | ChannelShift | `fy=Draw(10000)`, `fh=500+Draw(2000)`, `channel=Draw(3)`, `fdx=100+Draw(2400)` | Within each row of the band, cyclic-shift only the given channel's values right by `dx = fdx * W * ramp / 400000` (mod W; no-op if 0) | Shift that channel left by `dx` |
+| 0 | NoiseXor | `fx=Draw(10000)`, `fy=Draw(10000)`, `fw=1000+Draw(4000)`, `fh=1000+Draw(4000)`, `subSeed=Next()`, `densityBase=32+Draw(96)` | XOR a deterministic noise field over the rect (see below), density = `densityBase * ramp * intensity / 4000`, min 8 | Same op (XOR is self-inverse) |
+| 1 | BandShift | `fy=Draw(10000)`, `fh=500+Draw(2000)`, `fdx=100+Draw(2400)` | Cyclic-shift each row of the horizontal band right by `dx = fdx * W * ramp * intensity / 40000000` pixels (mod W; no-op if 0) | Shift left by `dx` |
+| 2 | ColumnShift | `fx=Draw(10000)`, `fw=500+Draw(2000)`, `fdy=100+Draw(2400)` | Cyclic-shift each column of the vertical band down by `dy = fdy * H * ramp * intensity / 40000000` (mod H; no-op if 0) | Shift up by `dy` |
+| 3 | BlockSwap | `fx1=Draw(10000)`, `fy1=Draw(10000)`, `fx2=Draw(10000)`, `fy2=Draw(10000)`, `fw=500+Draw(1500)`, `fh=500+Draw(1500)` | Swap the pixel content of two equal-size rects with `w = max(1, fw * W * ramp * intensity / 40000000)` (and `h` likewise from `fh` and H), both clipped to the smaller of the two fits; **no-op if the rects intersect** | Same op (disjoint swap is an involution) |
+| 4 | ChannelShift | `fy=Draw(10000)`, `fh=500+Draw(2000)`, `channel=Draw(3)`, `fdx=100+Draw(2400)` | Within each row of the band, cyclic-shift only the given channel's values right by `dx = fdx * W * ramp * intensity / 40000000` (mod W; no-op if 0) | Shift that channel left by `dx` |
 
 All ops touch R, G, B (BandShift/ColumnShift/BlockSwap move whole RGBA
 pixels; alpha is uniformly 255 so this is moot). NoiseXor and ChannelShift

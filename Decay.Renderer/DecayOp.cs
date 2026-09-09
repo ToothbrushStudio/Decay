@@ -19,6 +19,7 @@ namespace Decay.Renderer
 
         internal int Kind { get; init; }
         internal int Ramp { get; init; } // frame + 1, in [1, 40]
+        internal int Intensity { get; init; } // percent, in [1, 255]; 100 = default
 
         // Raw draws; meaning depends on Kind.
         internal int A { get; init; }
@@ -71,9 +72,18 @@ namespace Decay.Renderer
             return Math.Max(1, Resolve(fraction, dimension));
         }
 
+        // Block dimensions scale with ramp and intensity so early frames
+        // swap slivers and only late, hot frames swap slabs.
+        private int ResolveScaledSize(int fraction, int dimension)
+        {
+            return Math.Max(1, (int)((long)fraction * dimension * Ramp * Intensity / 40_000_000));
+        }
+
         private int ResolveShift(int fdx, int dimension)
         {
-            return (int)((long)fdx * dimension * Ramp / 400000) % dimension;
+            // 40_000_000 = fraction base 10000 x max ramp 40 x intensity base 100,
+            // so intensity 100 reproduces the unscaled pipeline exactly.
+            return (int)((long)fdx * dimension * Ramp * Intensity / 40_000_000) % dimension;
         }
 
         private void NoiseXor(PixelBuffer image)
@@ -88,7 +98,7 @@ namespace Decay.Renderer
                 return;
             }
 
-            int density = Math.Max(8, E * Ramp / 40);
+            int density = Math.Max(8, E * Ramp * Intensity / 4000);
             Xoshiro256 noise = new Xoshiro256(SubSeed);
             byte[] pixels = image.Pixels;
 
@@ -190,8 +200,8 @@ namespace Decay.Renderer
 
         private void BlockSwap(PixelBuffer image)
         {
-            int w = ResolveSize(E, image.Width);
-            int h = ResolveSize(F, image.Height);
+            int w = ResolveScaledSize(E, image.Width);
+            int h = ResolveScaledSize(F, image.Height);
             int x1 = Resolve(A, image.Width);
             int y1 = Resolve(B, image.Height);
             int x2 = Resolve(C, image.Width);

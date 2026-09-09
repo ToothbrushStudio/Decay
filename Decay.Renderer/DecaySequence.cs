@@ -19,9 +19,13 @@ namespace Decay.Renderer
 
         private readonly DecayOp[] _ops;
 
-        private DecaySequence(DecayOp[] ops)
+        /// <summary>The decay intensity this sequence was built with (percent).</summary>
+        public int Intensity { get; }
+
+        private DecaySequence(DecayOp[] ops, int intensity)
         {
             _ops = ops;
+            Intensity = intensity;
         }
 
         /// <summary>
@@ -39,16 +43,21 @@ namespace Decay.Renderer
                 return null;
             }
 
+            // Pipeline v1's parameter byte is the intensity percent;
+            // 0 is reserved to mean the default, 100.
+            byte parameter = DecayCipher.GetPipelineParameter(container);
+            int intensity = parameter == 0 ? 100 : parameter;
+
             byte[] seed = SHA256.HashData(container);
             Xoshiro256 random = new Xoshiro256(seed);
             DecayOp[] ops = new DecayOp[TotalOps];
 
             for (int i = 0; i < TotalOps; i++)
             {
-                ops[i] = GenerateOp(random, ramp: i / OpsPerFrame + 1);
+                ops[i] = GenerateOp(random, ramp: i / OpsPerFrame + 1, intensity);
             }
 
-            return new DecaySequence(ops);
+            return new DecaySequence(ops, intensity);
         }
 
         /// <summary>Applies one frame's ops in place (forward playback).</summary>
@@ -110,7 +119,7 @@ namespace Decay.Renderer
             return image;
         }
 
-        private static DecayOp GenerateOp(Xoshiro256 random, int ramp)
+        private static DecayOp GenerateOp(Xoshiro256 random, int ramp, int intensity)
         {
             int kind = random.Draw(5);
 
@@ -120,6 +129,7 @@ namespace Decay.Renderer
                 {
                     Kind = kind,
                     Ramp = ramp,
+                    Intensity = intensity,
                     A = random.Draw(10000),
                     B = random.Draw(10000),
                     C = 1000 + random.Draw(4000),
@@ -131,6 +141,7 @@ namespace Decay.Renderer
                 {
                     Kind = kind,
                     Ramp = ramp,
+                    Intensity = intensity,
                     A = random.Draw(10000),
                     B = 500 + random.Draw(2000),
                     C = 100 + random.Draw(2400),
@@ -139,6 +150,7 @@ namespace Decay.Renderer
                 {
                     Kind = kind,
                     Ramp = ramp,
+                    Intensity = intensity,
                     A = random.Draw(10000),
                     B = 500 + random.Draw(2000),
                     C = 100 + random.Draw(2400),
@@ -147,6 +159,7 @@ namespace Decay.Renderer
                 {
                     Kind = kind,
                     Ramp = ramp,
+                    Intensity = intensity,
                     A = random.Draw(10000),
                     B = random.Draw(10000),
                     C = random.Draw(10000),
@@ -158,6 +171,7 @@ namespace Decay.Renderer
                 {
                     Kind = DecayOp.KindChannelShift,
                     Ramp = ramp,
+                    Intensity = intensity,
                     A = random.Draw(10000),
                     B = 500 + random.Draw(2000),
                     C = random.Draw(3),

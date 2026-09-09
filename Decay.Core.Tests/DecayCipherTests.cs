@@ -104,7 +104,7 @@ namespace Decay.Core.Tests
             DecayCipher.EncryptInto("tamper target", Passphrase, image, TestIterations);
 
             // Flip a payload-carrying LSB inside the ciphertext region
-            // (past the 42-byte header = past pixel 56).
+            // (past the 43-byte header = past pixel 58).
             image.Pixels[60 * PixelBuffer.BytesPerPixel] ^= 0b01;
 
             Assert.Throws<DecayAuthenticationException>(
@@ -136,6 +136,7 @@ namespace Decay.Core.Tests
                 "future format",
                 Passphrase,
                 DecayCipher.PipelineNone,
+                0,
                 TestIterations
             );
 
@@ -157,11 +158,12 @@ namespace Decay.Core.Tests
                 "dos attempt",
                 Passphrase,
                 DecayCipher.PipelineNone,
+                0,
                 TestIterations
             );
 
-            // Forge iterations = 0xFFFFFFFF (offset 22, big-endian).
-            container[22] = container[23] = container[24] = container[25] = 0xFF;
+            // Forge iterations = 0xFFFFFFFF (offset 23, big-endian).
+            container[23] = container[24] = container[25] = container[26] = 0xFF;
             PixelCodec.Embed(container, image);
 
             Assert.Throws<DecayFormatException>(
