@@ -23,6 +23,7 @@ namespace Decay.App.Pages
 
             PresetPicker.ItemsSource = CarrierPresets.All
                 .Select(p => p.FreeTier ? p.Name : $"{p.Name} (Pro)")
+                .Append("Custom Image (Pro)")
                 .ToList();
             PresetPicker.SelectedIndex = 0;
             SizePicker.ItemsSource = Sizes.Select(s => $"{s} × {s}").ToList();
@@ -46,8 +47,13 @@ namespace Decay.App.Pages
             UpdateTierUi();
         }
 
+        private bool IsCustomSelected =>
+            PresetPicker.SelectedIndex == CarrierPresets.All.Count;
+
         private CarrierPreset SelectedPreset =>
-            CarrierPresets.All[Math.Max(0, PresetPicker.SelectedIndex)];
+            CarrierPresets.All[
+                Math.Clamp(PresetPicker.SelectedIndex, 0, CarrierPresets.All.Count - 1)
+            ];
 
         private int SelectedSize => Sizes[Math.Max(0, SizePicker.SelectedIndex)];
 
@@ -64,15 +70,12 @@ namespace Decay.App.Pages
             if (AppState.Tier == DecayTier.Free)
             {
                 IntensitySlider.Value = TierPolicy.LockedIntensity;
+                _customCarrier = null;
 
-                if (_customCarrier is not null)
+                if (IsCustomSelected || !SelectedPreset.FreeTier)
                 {
-                    _customCarrier = null;
-                    RegenerateCarrier();
-                }
-
-                if (!SelectedPreset.FreeTier)
-                {
+                    // Triggers OnPresetChanged, which regenerates and hides
+                    // the choose-image button.
                     PresetPicker.SelectedIndex = CarrierPresets.All
                         .ToList()
                         .IndexOf(CarrierPresets.Default);
@@ -87,6 +90,39 @@ namespace Decay.App.Pages
 
         private async void OnPresetChanged(object? sender, EventArgs e)
         {
+            if (IsCustomSelected)
+            {
+                if (!TierPolicy.AllowsCustomCarrier(AppState.Tier))
+                {
+                    await DisplayAlertAsync(
+                        "Decay Pro",
+                        "Using your own image as the carrier requires Decay Pro.",
+                        "OK"
+                    );
+                    PresetPicker.SelectedIndex = CarrierPresets.All
+                        .ToList()
+                        .IndexOf(CarrierPresets.Default);
+
+                    return;
+                }
+
+                ChooseImageButton.IsVisible = true;
+                SizePicker.IsEnabled = false;
+
+                // First selection opens the dialog directly; the button
+                // stays as the retry/change-image affordance.
+                if (_customCarrier is null)
+                {
+                    await PickCustomCarrierAsync();
+                }
+
+                return;
+            }
+
+            ChooseImageButton.IsVisible = false;
+            SizePicker.IsEnabled = true;
+            _customCarrier = null;
+
             if (!TierPolicy.AllowsPreset(AppState.Tier, SelectedPreset))
             {
                 await DisplayAlertAsync(
@@ -110,8 +146,15 @@ namespace Decay.App.Pages
             UpdateCapacityLabel();
         }
 
-        private void OnNewCarrier(object? sender, EventArgs e)
+        private async void OnNewCarrier(object? sender, EventArgs e)
         {
+            if (IsCustomSelected)
+            {
+                await PickCustomCarrierAsync();
+
+                return;
+            }
+
             _carrierSeed = Random.Shared.Next();
             RegenerateCarrier();
         }
@@ -122,19 +165,13 @@ namespace Decay.App.Pages
             PassphraseToggle.Text = PassphraseEntry.IsPassword ? "Show" : "Hide";
         }
 
-        private async void OnCustomCarrier(object? sender, EventArgs e)
+        private async void OnChooseImage(object? sender, EventArgs e)
         {
-            if (!TierPolicy.AllowsCustomCarrier(AppState.Tier))
-            {
-                await DisplayAlertAsync(
-                    "Decay Pro",
-                    "Using your own image as the carrier requires Decay Pro.",
-                    "OK"
-                );
+            await PickCustomCarrierAsync();
+        }
 
-                return;
-            }
-
+        private async Task PickCustomCarrierAsync()
+        {
             FileResult? file = await FilePicker.Default.PickAsync(new PickOptions
             {
                 PickerTitle = "Choose a carrier image (PNG)",
@@ -143,6 +180,11 @@ namespace Decay.App.Pages
 
             if (file is null)
             {
+                if (_customCarrier is null)
+                {
+                    StatusLabel.Text = "Choose an image to use as the carrier.";
+                }
+
                 return;
             }
 
@@ -197,6 +239,11 @@ namespace Decay.App.Pages
 
         private async void RegenerateCarrier()
         {
+            if (IsCustomSelected)
+            {
+                return;
+            }
+
             CarrierPreset preset = SelectedPreset;
             int size = SelectedSize;
             int seed = _carrierSeed;
@@ -253,7 +300,18 @@ namespace Decay.App.Pages
 
             try
             {
-                PixelBuffer? customCarrier = _customCarrier;
+                if (IsCustomSelected && _customCarrier is null)
+                {
+                    await DisplayAlertAsync(
+                        "No carrier image",
+                        "Choose an image to use as the carrier first.",
+                        "OK"
+                    );
+
+                    return;
+                }
+
+                PixelBuffer? customCarrier = IsCustomSelected ? _customCarrier : null;
 
                 _art = customCarrier is not null
                     ? await Task.Run(() => DecayProduct.EncryptWithCustomCarrier(

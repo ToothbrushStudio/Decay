@@ -44,6 +44,11 @@
                         SelectedIndexChanged="OnSizeChanged" />
             </Grid>
 
+            <Button x:Name="ChooseImageButton"
+                    Text="Choose image… (PNG)"
+                    IsVisible="False"
+                    Clicked="OnChooseImage" />
+
             <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
                 <Label Grid.Column="0" Text="Intensity" VerticalOptions="Center" />
                 <Slider x:Name="IntensitySlider"
@@ -65,10 +70,9 @@
                        TextColor="{StaticResource InkDim}" />
             </HorizontalStackLayout>
 
-            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
                 <Button Grid.Column="0" Text="New carrier" Clicked="OnNewCarrier" />
-                <Button Grid.Column="1" Text="My image…" Clicked="OnCustomCarrier" />
-                <Button x:Name="EncryptButton" Grid.Column="2" Text="Encrypt" Clicked="OnEncrypt" />
+                <Button x:Name="EncryptButton" Grid.Column="1" Text="Encrypt" Clicked="OnEncrypt" />
             </Grid>
 
             <Border BackgroundColor="{StaticResource Panel}"
