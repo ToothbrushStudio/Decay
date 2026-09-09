@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage
+    x:Class="Decay.App.Pages.DecryptPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="Decrypt">
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="12">
+
+            <Label Text="RECEIVE THE ROT"
+                   TextColor="{StaticResource Accent}"
+                   FontAttributes="Bold" />
+
+            <Button Text="Open Decay image…" Clicked="OnOpenImage" />
+
+            <Border BackgroundColor="{StaticResource Panel}"
+                    StrokeThickness="1"
+                    Stroke="{StaticResource InkDim}">
+                <Image x:Name="Preview"
+                       Aspect="AspectFit"
+                       HeightRequest="320" />
+            </Border>
+
+            <Entry x:Name="PassphraseEntry"
+                   Placeholder="Passphrase"
+                   IsPassword="True" />
+
+            <Button x:Name="DecryptButton"
+                    Text="Decrypt"
+                    IsEnabled="False"
+                    Clicked="OnDecrypt" />
+
+            <Border BackgroundColor="{StaticResource Panel}"
+                    StrokeThickness="1"
+                    Stroke="{StaticResource InkDim}"
+                    Padding="12">
+                <Label x:Name="MessageLabel"
+                       FontFamily="Courier"
+                       Text="" />
+            </Border>
+
+            <Button x:Name="CopyButton"
+                    Text="Copy message"
+                    IsEnabled="False"
+                    Clicked="OnCopy" />
+
+            <Label x:Name="StatusLabel"
+                   FontSize="12"
+                   TextColor="{StaticResource InkDim}" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
