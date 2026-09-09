@@ -83,6 +83,13 @@ says so.
   (`-p:AndroidKeyStore=true` + signing properties).
 - **iOS / Mac Catalyst:** archive from a Mac with an Apple Developer
   identity (`-p:ArchiveOnBuild=true`).
+- **Code signing (Windows, required for launch):** unsigned builds are
+  blocked outright by Smart App Control on customers' machines (there is
+  no per-app exception) and flagged by SmartScreen. Sign the shipped exe
+  or MSIX with an Authenticode certificate — Azure Trusted Signing is the
+  cheap modern route — or distribute through the Microsoft Store, which
+  signs for you. Local dev builds are unsigned by nature; dev machines
+  run with Smart App Control off.
 - PNG is the only export format everywhere. That is a product decision
   (lossless is survival), not a technical limitation — see
   docs/payload-format-v1.md.
