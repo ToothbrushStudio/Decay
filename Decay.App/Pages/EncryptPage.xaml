@@ -7,7 +7,7 @@
     <ScrollView>
         <VerticalStackLayout Padding="16" Spacing="12">
 
-            <Label Text="ENCRYPT YOUR MESSAGE INTO THE ROT"
+            <Label Text="DECAY YOUR MESSAGE INTO THE ROT"
                    TextColor="{StaticResource Accent}"
                    FontAttributes="Bold" />
 

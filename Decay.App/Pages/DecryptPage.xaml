@@ -7,7 +7,7 @@
     <ScrollView>
         <VerticalStackLayout Padding="16" Spacing="12">
 
-            <Label Text="RECEIVE THE ROT"
+            <Label Text="RAISE THE MESSAGE FROM THE ROT"
                    TextColor="{StaticResource Accent}"
                    FontAttributes="Bold" />
 
