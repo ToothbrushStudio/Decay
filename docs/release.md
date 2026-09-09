@@ -41,9 +41,22 @@ dotnet build Decay.App -f net10.0-android
    never enter the repository or a build.** Losing it stops new key sales
    but never invalidates a sold key.
 2. Paste the printed public key into `Decay.App/PublisherKey.cs`.
-3. Per sale: `dotnet run sign decay-publisher-private.pem "Customer Name"`
-   → send the printed key to the customer. (Later: hook this into the
-   payment provider's webhook so delivery is automatic.)
+3. Fulfillment, pick one:
+   - **Serial pool (recommended, zero servers):**
+     `dotnet run batch decay-publisher-private.pem 500 > keys.txt` emits
+     500 anonymous keys ("Decay Pro #00001"…), one per line. Upload
+     keys.txt as the license-key/serial pool on the payment platform
+     (Gumroad, Lemon Squeezy, itch.io, Paddle all support this); each
+     sale is handed the next key automatically. Track the last batch's
+     end number and pass it as the start of the next
+     (`dotnet run batch <pem> 500 501`).
+   - **Manual, personalized:**
+     `dotnet run sign decay-publisher-private.pem "Customer Name"` per
+     sale — fine for low volume and gift keys.
+   - **Webhook auto-signing (later, only if personalization at scale
+     matters):** a small serverless function holding the private key
+     signs on each sale. Note this puts the key on a server — weigh
+     against the offline ethos.
 
 Until step 2 is done, builds are Free-only by design and the License page
 says so.
