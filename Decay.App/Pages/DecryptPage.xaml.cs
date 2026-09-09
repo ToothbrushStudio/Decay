@@ -44,7 +44,7 @@ namespace Decay.App.Pages
             }
             catch (InvalidDataException exception)
             {
-                await DisplayAlert("Can't read image", exception.Message, "OK");
+                await DisplayAlertAsync("Can't read image", exception.Message, "OK");
             }
         }
 
@@ -59,7 +59,7 @@ namespace Decay.App.Pages
 
             if (passphrase.Length == 0)
             {
-                await DisplayAlert("Passphrase", "A passphrase is required.", "OK");
+                await DisplayAlertAsync("Passphrase", "A passphrase is required.", "OK");
 
                 return;
             }
@@ -112,15 +112,15 @@ namespace Decay.App.Pages
             }
             catch (DecayAuthenticationException exception)
             {
-                await DisplayAlert("Locked", exception.Message, "OK");
+                await DisplayAlertAsync("Locked", exception.Message, "OK");
             }
             catch (DecayVersionException exception)
             {
-                await DisplayAlert("Update needed", exception.Message, "OK");
+                await DisplayAlertAsync("Update needed", exception.Message, "OK");
             }
             catch (DecayFormatException exception)
             {
-                await DisplayAlert("Not a Decay image", exception.Message, "OK");
+                await DisplayAlertAsync("Not a Decay image", exception.Message, "OK");
             }
             finally
             {

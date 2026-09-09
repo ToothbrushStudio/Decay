@@ -78,7 +78,7 @@ namespace Decay.App.Pages
         {
             if (!TierPolicy.AllowsPreset(AppState.Tier, SelectedPreset))
             {
-                await DisplayAlert(
+                await DisplayAlertAsync(
                     "Decay Pro",
                     $"The \"{SelectedPreset.Name}\" carrier requires Decay Pro.",
                     "OK"
@@ -157,7 +157,7 @@ namespace Decay.App.Pages
 
             if (passphrase.Length == 0)
             {
-                await DisplayAlert("Passphrase", "A passphrase is required.", "OK");
+                await DisplayAlertAsync("Passphrase", "A passphrase is required.", "OK");
 
                 return;
             }
@@ -192,15 +192,15 @@ namespace Decay.App.Pages
             }
             catch (DecayTierException exception)
             {
-                await DisplayAlert("Decay Pro", exception.Message, "OK");
+                await DisplayAlertAsync("Decay Pro", exception.Message, "OK");
             }
             catch (DecayCapacityException exception)
             {
-                await DisplayAlert("Too large", exception.Message, "OK");
+                await DisplayAlertAsync("Too large", exception.Message, "OK");
             }
             catch (ArgumentException exception)
             {
-                await DisplayAlert("Invalid input", exception.Message, "OK");
+                await DisplayAlertAsync("Invalid input", exception.Message, "OK");
             }
             finally
             {

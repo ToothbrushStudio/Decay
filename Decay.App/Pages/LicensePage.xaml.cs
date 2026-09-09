@@ -32,7 +32,7 @@ namespace Decay.App.Pages
             {
                 KeyEditor.Text = "";
                 RefreshStatus();
-                await DisplayAlert(
+                await DisplayAlertAsync(
                     "Activated",
                     $"Welcome to Decay Pro, {AppState.License!.Licensee}.",
                     "OK"
@@ -40,7 +40,7 @@ namespace Decay.App.Pages
             }
             else
             {
-                await DisplayAlert(
+                await DisplayAlertAsync(
                     "Invalid key",
                     "That key didn't validate. Check for missing characters — or that "
                         + "this is the right key for this app.",
