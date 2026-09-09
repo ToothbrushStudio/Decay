@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage
+    x:Class="Decay.App.Pages.LicensePage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="License">
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="12">
+
+            <Label Text="DECAY PRO"
+                   TextColor="{StaticResource Accent}"
+                   FontAttributes="Bold" />
+
+            <Label x:Name="StatusLabel" />
+
+            <Editor x:Name="KeyEditor"
+                    Placeholder="Paste your license key…"
+                    HeightRequest="120"
+                    FontFamily="Courier"
+                    FontSize="12" />
+
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                <Button Grid.Column="0" Text="Activate" Clicked="OnActivate" />
+                <Button x:Name="DeactivateButton"
+                        Grid.Column="1"
+                        Text="Deactivate"
+                        IsEnabled="False"
+                        Clicked="OnDeactivate" />
+            </Grid>
+
+            <Label Text="Pro unlocks every carrier preset, custom carrier images, the intensity dial, and watermark-free exports."
+                   FontSize="12"
+                   TextColor="{StaticResource InkDim}" />
+
+            <Label Text="Decryption never needs a license. Anyone can open a Decay image with the passphrase, free, forever — that promise is the product."
+                   FontSize="12"
+                   TextColor="{StaticResource InkDim}" />
+
+            <Label Text="Keys are verified on this device against the publisher's signature. No account, no server, no expiry."
+                   FontSize="12"
+                   TextColor="{StaticResource InkDim}" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

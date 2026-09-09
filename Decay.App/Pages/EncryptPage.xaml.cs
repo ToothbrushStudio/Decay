@@ -27,6 +27,20 @@ namespace Decay.App.Pages
             RegenerateCarrier();
         }
 
+        protected override void OnAppearing()
+        {
+            base.OnAppearing();
+
+            // A license may have been activated on the License tab.
+#if DEBUG
+            DevTierRow.IsVisible = AppState.License is null;
+#else
+            DevTierRow.IsVisible = false;
+#endif
+            EnforceTierSelections();
+            UpdateTierUi();
+        }
+
         private CarrierPreset SelectedPreset =>
             CarrierPresets.All[Math.Max(0, PresetPicker.SelectedIndex)];
 
@@ -34,8 +48,14 @@ namespace Decay.App.Pages
 
         private void OnProToggled(object? sender, ToggledEventArgs e)
         {
-            AppState.Tier = e.Value ? DecayTier.Pro : DecayTier.Free;
+            AppState.DevTier = e.Value ? DecayTier.Pro : DecayTier.Free;
 
+            EnforceTierSelections();
+            UpdateTierUi();
+        }
+
+        private void EnforceTierSelections()
+        {
             if (AppState.Tier == DecayTier.Free)
             {
                 IntensitySlider.Value = TierPolicy.LockedIntensity;
@@ -47,8 +67,6 @@ namespace Decay.App.Pages
                         .IndexOf(CarrierPresets.Default);
                 }
             }
-
-            UpdateTierUi();
         }
 
         private void UpdateTierUi()

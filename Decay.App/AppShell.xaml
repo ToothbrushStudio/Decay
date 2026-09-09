@@ -13,5 +13,6 @@
     <TabBar>
         <ShellContent Title="Encrypt" ContentTemplate="{DataTemplate pages:EncryptPage}" Route="encrypt" />
         <ShellContent Title="Decrypt" ContentTemplate="{DataTemplate pages:DecryptPage}" Route="decrypt" />
+        <ShellContent Title="License" ContentTemplate="{DataTemplate pages:LicensePage}" Route="license" />
     </TabBar>
 </Shell>

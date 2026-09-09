@@ -34,6 +34,7 @@
   <ItemGroup>
     <ProjectReference Include="..\Decay.Core\Decay.Core.csproj" />
     <ProjectReference Include="..\Decay.Renderer\Decay.Renderer.csproj" />
+    <ProjectReference Include="..\Decay.Licensing\Decay.Licensing.csproj" />
   </ItemGroup>
 
 </Project>

@@ -47,9 +47,9 @@
                        TextColor="{StaticResource Accent}" />
             </Grid>
 
-            <HorizontalStackLayout Spacing="8">
+            <HorizontalStackLayout x:Name="DevTierRow" Spacing="8">
                 <Switch x:Name="ProSwitch" Toggled="OnProToggled" />
-                <Label Text="Pro (dev preview — real licensing lands in Phase 5)"
+                <Label Text="Pro override (debug builds only)"
                        FontSize="12"
                        VerticalOptions="Center"
                        TextColor="{StaticResource InkDim}" />

@@ -4,6 +4,7 @@ namespace Decay.App
     {
         public App()
         {
+            AppState.Initialize();
             InitializeComponent();
         }
 
