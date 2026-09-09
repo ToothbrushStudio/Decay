@@ -21,9 +21,19 @@
                        HeightRequest="320" />
             </Border>
 
-            <Entry x:Name="PassphraseEntry"
-                   Placeholder="Passphrase"
-                   IsPassword="True" />
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                <Entry x:Name="PassphraseEntry"
+                       Grid.Column="0"
+                       Placeholder="Passphrase"
+                       IsPassword="True" />
+                <Button x:Name="PassphraseToggle"
+                        Grid.Column="1"
+                        Text="Show"
+                        FontSize="12"
+                        BackgroundColor="{StaticResource Panel}"
+                        TextColor="{StaticResource Accent}"
+                        Clicked="OnTogglePassphrase" />
+            </Grid>
 
             <Button x:Name="DecryptButton"
                     Text="Decrypt"

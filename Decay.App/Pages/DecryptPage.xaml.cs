@@ -48,6 +48,12 @@ namespace Decay.App.Pages
             }
         }
 
+        private void OnTogglePassphrase(object? sender, EventArgs e)
+        {
+            PassphraseEntry.IsPassword = !PassphraseEntry.IsPassword;
+            PassphraseToggle.Text = PassphraseEntry.IsPassword ? "Show" : "Hide";
+        }
+
         private async void OnDecrypt(object? sender, EventArgs e)
         {
             if (_received is null)

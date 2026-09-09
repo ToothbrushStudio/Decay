@@ -8,9 +8,14 @@ namespace Decay.App.Pages
     {
         private static readonly int[] Sizes = { 256, 384, 512, 768, 1024 };
 
+        private const int MaxCustomCarrierDimension = 2048;
+
         private int _carrierSeed = Random.Shared.Next();
         private PixelBuffer? _carrier;
+        private PixelBuffer? _customCarrier;
         private EncryptedArt? _art;
+
+        private PixelBuffer? ActiveCarrier => _customCarrier ?? _carrier;
 
         public EncryptPage()
         {
@@ -60,6 +65,12 @@ namespace Decay.App.Pages
             {
                 IntensitySlider.Value = TierPolicy.LockedIntensity;
 
+                if (_customCarrier is not null)
+                {
+                    _customCarrier = null;
+                    RegenerateCarrier();
+                }
+
                 if (!SelectedPreset.FreeTier)
                 {
                     PresetPicker.SelectedIndex = CarrierPresets.All
@@ -105,6 +116,75 @@ namespace Decay.App.Pages
             RegenerateCarrier();
         }
 
+        private void OnTogglePassphrase(object? sender, EventArgs e)
+        {
+            PassphraseEntry.IsPassword = !PassphraseEntry.IsPassword;
+            PassphraseToggle.Text = PassphraseEntry.IsPassword ? "Show" : "Hide";
+        }
+
+        private async void OnCustomCarrier(object? sender, EventArgs e)
+        {
+            if (!TierPolicy.AllowsCustomCarrier(AppState.Tier))
+            {
+                await DisplayAlertAsync(
+                    "Decay Pro",
+                    "Using your own image as the carrier requires Decay Pro.",
+                    "OK"
+                );
+
+                return;
+            }
+
+            FileResult? file = await FilePicker.Default.PickAsync(new PickOptions
+            {
+                PickerTitle = "Choose a carrier image (PNG)",
+                FileTypes = FilePickerFileType.Png,
+            });
+
+            if (file is null)
+            {
+                return;
+            }
+
+            try
+            {
+                await using Stream stream = await file.OpenReadAsync();
+
+                PixelBuffer carrier = await Task.Run(() => DecayPng.Decode(stream));
+
+                if (carrier.Width > MaxCustomCarrierDimension
+                    || carrier.Height > MaxCustomCarrierDimension)
+                {
+                    await DisplayAlertAsync(
+                        "Too large",
+                        $"Carriers are limited to {MaxCustomCarrierDimension}×"
+                            + $"{MaxCustomCarrierDimension} for now — this one is "
+                            + $"{carrier.Width}×{carrier.Height}. Resize it and re-save "
+                            + "as PNG.",
+                        "OK"
+                    );
+
+                    return;
+                }
+
+                _customCarrier = carrier;
+                _art = null;
+                PlayButton.IsEnabled = false;
+                ShareButton.IsEnabled = false;
+
+                byte[] png = await Task.Run(() => DecayPng.Encode(carrier));
+
+                Preview.Source = ImageSource.FromStream(() => new MemoryStream(png));
+                StatusLabel.Text = $"Custom carrier: {file.FileName}, "
+                    + $"{carrier.Width}×{carrier.Height}.";
+                UpdateCapacityLabel();
+            }
+            catch (InvalidDataException exception)
+            {
+                await DisplayAlertAsync("Can't read image", exception.Message, "OK");
+            }
+        }
+
         private void OnIntensityChanged(object? sender, ValueChangedEventArgs e)
         {
             IntensityValueLabel.Text = ((int)e.NewValue).ToString();
@@ -122,6 +202,7 @@ namespace Decay.App.Pages
             int seed = _carrierSeed;
 
             _art = null;
+            _customCarrier = null;
             PlayButton.IsEnabled = false;
             ShareButton.IsEnabled = false;
 
@@ -136,13 +217,13 @@ namespace Decay.App.Pages
 
         private void UpdateCapacityLabel()
         {
-            if (_carrier is null)
+            if (ActiveCarrier is null)
             {
                 return;
             }
 
             int used = Encoding.UTF8.GetByteCount(MessageEditor.Text ?? "");
-            int max = DecayCipher.MaxPlainTextBytes(_carrier);
+            int max = DecayCipher.MaxPlainTextBytes(ActiveCarrier);
 
             CapacityLabel.Text = $"{used:N0} / {max:N0} bytes";
             CapacityLabel.TextColor = used > max
@@ -172,16 +253,26 @@ namespace Decay.App.Pages
 
             try
             {
-                _art = await Task.Run(() => DecayProduct.EncryptWithPreset(
-                    message,
-                    passphrase,
-                    AppState.Tier,
-                    preset,
-                    size,
-                    size,
-                    seed,
-                    intensity
-                ));
+                PixelBuffer? customCarrier = _customCarrier;
+
+                _art = customCarrier is not null
+                    ? await Task.Run(() => DecayProduct.EncryptWithCustomCarrier(
+                        message,
+                        passphrase,
+                        AppState.Tier,
+                        customCarrier,
+                        intensity
+                    ))
+                    : await Task.Run(() => DecayProduct.EncryptWithPreset(
+                        message,
+                        passphrase,
+                        AppState.Tier,
+                        preset,
+                        size,
+                        size,
+                        seed,
+                        intensity
+                    ));
 
                 byte[] png = await Task.Run(() => DecayPng.Encode(_art.FinalImage));
 
