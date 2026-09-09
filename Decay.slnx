@@ -1,0 +1,17 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Folder Name="/tools/">
+    <Project Path="tools/Decay.KeyGen/Decay.KeyGen.csproj" />
+  </Folder>
+  <Project Path="Decay.App/Decay.App.csproj" />
+  <Project Path="Decay.Core.Tests/Decay.Core.Tests.csproj" />
+  <Project Path="Decay.Core/Decay.Core.csproj" />
+  <Project Path="Decay.Licensing.Tests/Decay.Licensing.Tests.csproj" />
+  <Project Path="Decay.Licensing/Decay.Licensing.csproj" />
+  <Project Path="Decay.Renderer.Tests/Decay.Renderer.Tests.csproj" />
+  <Project Path="Decay.Renderer/Decay.Renderer.csproj" />
+</Solution>
