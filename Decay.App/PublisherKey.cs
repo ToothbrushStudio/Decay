@@ -10,6 +10,6 @@ namespace Decay.App
     /// </summary>
     public static class PublisherKey
     {
-        public const string SubjectPublicKeyInfoBase64 = "";
+        public const string SubjectPublicKeyInfoBase64 = "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEsFkJXT82JRx57NoTFZdO2/Jzyk4LDso4bi7lkb65rQdjey5W5qD9xTw28a0eHY5nAqnhlRi7Fa8P93+wcDTQVw==";
     }
 }
