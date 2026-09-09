@@ -86,8 +86,40 @@ namespace Decay.Renderer
                 }
             }
 
-            int textX = plateX + padding;
-            int textY = plateY + padding;
+            DrawText(image, plateX + padding, plateY + padding, scale);
+        }
+
+        /// <summary>
+        /// Renders the DECAY mark standalone — same glyphs, same plate, no
+        /// host image. The app's title banner uses this so the title at the
+        /// top of the window and the watermark on Free exports are literally
+        /// the same pixels.
+        /// </summary>
+        public static PixelBuffer RenderBadge(int scale = 3)
+        {
+            ArgumentOutOfRangeException.ThrowIfLessThan(scale, 1);
+
+            int padding = scale;
+            int width = TextColumns * scale + 2 * padding;
+            int height = GlyphHeight * scale + 2 * padding;
+            PixelBuffer image = new PixelBuffer(width, height);
+
+            for (int i = 0; i < image.Pixels.Length; i += PixelBuffer.BytesPerPixel)
+            {
+                image.Pixels[i] = 10;
+                image.Pixels[i + 1] = 10;
+                image.Pixels[i + 2] = 10;
+                image.Pixels[i + 3] = 255;
+            }
+
+            DrawText(image, padding, padding, scale);
+
+            return image;
+        }
+
+        private static void DrawText(PixelBuffer image, int textX, int textY, int scale)
+        {
+            byte[] pixels = image.Pixels;
 
             for (int letter = 0; letter < Glyphs.Length; letter++)
             {

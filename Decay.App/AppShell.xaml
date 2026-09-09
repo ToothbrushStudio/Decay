@@ -10,6 +10,13 @@
     Shell.TabBarBackgroundColor="{StaticResource Panel}"
     Shell.TabBarTitleColor="{StaticResource Accent}"
     Shell.TabBarUnselectedColor="{StaticResource InkDim}">
+    <Shell.TitleView>
+        <Image x:Name="TitleBanner"
+               HeightRequest="27"
+               HorizontalOptions="Start"
+               VerticalOptions="Center"
+               Aspect="AspectFit" />
+    </Shell.TitleView>
     <TabBar>
         <ShellContent Title="Encrypt" ContentTemplate="{DataTemplate pages:EncryptPage}" Route="encrypt" />
         <ShellContent Title="Decrypt" ContentTemplate="{DataTemplate pages:DecryptPage}" Route="decrypt" />

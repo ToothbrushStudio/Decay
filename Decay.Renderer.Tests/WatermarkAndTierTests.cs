@@ -198,6 +198,21 @@ namespace Decay.Renderer.Tests
             );
         }
 
+        [Fact]
+        public void RenderBadge_DrawsTheMarkStandalone()
+        {
+            PixelBuffer badge = Watermark.RenderBadge(scale: 2);
+
+            // 29 text columns + padding on each side, at scale 2.
+            Assert.Equal((29 + 2) * 2, badge.Width);
+            Assert.Equal((7 + 2) * 2, badge.Height);
+
+            int markPixels = CountMarkPixels(badge);
+
+            // 77 glyph pixels at scale 2 = 308 exact-signature pixels.
+            Assert.Equal(308, markPixels);
+        }
+
         private static EncryptedArt EncryptFree(string plainText, int width, int height)
         {
             return DecayProduct.EncryptWithPreset(
