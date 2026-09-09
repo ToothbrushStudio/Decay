@@ -1,0 +1,79 @@
+using Decay.Core;
+
+namespace Decay.Renderer
+{
+    /// <summary>
+    /// The result of encrypting a message into art: the exported image, the
+    /// sequence that produced it (for the forward preview animation), and
+    /// the watermark-safe pixel boundary.
+    /// </summary>
+    public sealed record EncryptedArt(
+        PixelBuffer FinalImage,
+        DecaySequence Sequence,
+        int PayloadPixelExtent
+    );
+
+    /// <summary>
+    /// The result of decrypting a Decay image: the message, and — when the
+    /// image was made with a pipeline this build knows — the sequence to
+    /// play backwards as the reveal animation. A null Sequence is normal for
+    /// data-only images and images from newer pipelines.
+    /// </summary>
+    public sealed record DecryptedArt(
+        string PlainText,
+        DecaySequence? Sequence
+    );
+
+    /// <summary>
+    /// Orchestrates Decay.Core and the render pipeline into the two moves
+    /// the product actually makes: message → rotted image, and rotted image
+    /// + passphrase → message + reverse animation.
+    /// </summary>
+    public static class DecayArtist
+    {
+        /// <summary>
+        /// Encrypts the message and rots the carrier with the resulting
+        /// ciphertext-driven decay. Rendering order per the format spec:
+        /// glitch, then embed; any watermark must come after, and only on
+        /// pixels at index >= PayloadPixelExtent.
+        /// </summary>
+        public static EncryptedArt Encrypt(
+            string plainText,
+            string passphrase,
+            PixelBuffer carrier,
+            int iterations = DecayCipher.DefaultIterations
+        )
+        {
+            ArgumentNullException.ThrowIfNull(carrier);
+
+            byte[] container = DecayCipher.SealContainer(
+                plainText,
+                passphrase,
+                DecaySequence.PipelineV1,
+                iterations
+            );
+            DecaySequence sequence = DecaySequence.FromContainer(container)!;
+            PixelBuffer final = sequence.RenderFinal(carrier);
+            int extent = DecayCipher.EmbedContainer(container, final);
+
+            return new EncryptedArt(final, sequence, extent);
+        }
+
+        /// <summary>
+        /// Decrypts a Decay image and, when possible, rebuilds the decay
+        /// sequence so the UI can un-rot the image as the message reveals
+        /// (walk RevertFrame from frame 39 down to 0, or call Unrot for the
+        /// end state directly).
+        /// </summary>
+        /// <exception cref="DecayFormatException">Not a Decay image, or corrupted.</exception>
+        /// <exception cref="DecayVersionException">Written by a newer format version.</exception>
+        /// <exception cref="DecayAuthenticationException">Wrong passphrase or modified image.</exception>
+        public static DecryptedArt Decrypt(PixelBuffer image, string passphrase)
+        {
+            byte[] container = DecayCipher.ExtractContainer(image);
+            string plainText = DecayCipher.OpenContainer(container, passphrase);
+
+            return new DecryptedArt(plainText, DecaySequence.FromContainer(container));
+        }
+    }
+}

@@ -54,18 +54,20 @@ namespace Decay.Core.Tests
             byte[] container = PayloadContainer.Seal(
                 "vector",
                 "passphrase",
+                pipelineId: 0x01,
                 1_000,
                 salt,
                 nonce
             );
 
-            Assert.Equal(57 + 6, container.Length); // "vector" = 6 UTF-8 bytes
+            Assert.Equal(58 + 6, container.Length); // "vector" = 6 UTF-8 bytes
             Assert.Equal("DCAY"u8.ToArray(), container[..4]);
-            Assert.Equal(0x01, container[4]);
-            Assert.Equal(salt, container[5..21]);
-            Assert.Equal(new byte[] { 0x00, 0x00, 0x03, 0xE8 }, container[21..25]); // 1000 BE
-            Assert.Equal(nonce, container[25..37]);
-            Assert.Equal(new byte[] { 0x00, 0x00, 0x00, 0x06 }, container[37..41]); // len 6 BE
+            Assert.Equal(0x01, container[4]); // format version
+            Assert.Equal(0x01, container[5]); // pipeline id
+            Assert.Equal(salt, container[6..22]);
+            Assert.Equal(new byte[] { 0x00, 0x00, 0x03, 0xE8 }, container[22..26]); // 1000 BE
+            Assert.Equal(nonce, container[26..38]);
+            Assert.Equal(new byte[] { 0x00, 0x00, 0x00, 0x06 }, container[38..42]); // len 6 BE
         }
 
         [Fact]
@@ -74,18 +76,7 @@ namespace Decay.Core.Tests
             // Deterministic inputs → the container bytes must never change.
             // Expected hash generated at freeze time; a mismatch means the
             // KDF, cipher, AAD, or layout changed.
-            byte[] salt = Enumerable.Range(1, 16).Select(i => (byte)i).ToArray();
-            byte[] nonce = Enumerable.Range(101, 12).Select(i => (byte)i).ToArray();
-
-            byte[] container = PayloadContainer.Seal(
-                "Encrypt your message into the rot.",
-                "correct horse battery staple",
-                1_000,
-                salt,
-                nonce
-            );
-
-            string hash = Convert.ToHexString(SHA256.HashData(container));
+            string hash = Convert.ToHexString(SHA256.HashData(GoldenContainer()));
 
             Assert.Equal(GoldenContainerSha256, hash);
         }
@@ -93,39 +84,51 @@ namespace Decay.Core.Tests
         // Captured at freeze time. If this assertion ever fails, images
         // already in the wild have become unreadable — revert the change.
         private const string GoldenContainerSha256 =
-            "F0C4F1FB74D6E6498BC66433E9968B020FAFC767E4761A97315EB7AF04A8F304";
+            "D4BBE88D9FB7028B635C0031E3489D112C04D03251EFCF86C88586AF81FF01F3";
 
         [Fact]
         public void Container_GoldenVector_Decrypts()
         {
+            Assert.Equal(
+                "Encrypt your message into the rot.",
+                PayloadContainer.Open(GoldenContainer(), "correct horse battery staple")
+            );
+        }
+
+        private static byte[] GoldenContainer()
+        {
             byte[] salt = Enumerable.Range(1, 16).Select(i => (byte)i).ToArray();
             byte[] nonce = Enumerable.Range(101, 12).Select(i => (byte)i).ToArray();
 
-            byte[] container = PayloadContainer.Seal(
+            return PayloadContainer.Seal(
                 "Encrypt your message into the rot.",
                 "correct horse battery staple",
+                pipelineId: 0x01,
                 1_000,
                 salt,
                 nonce
-            );
-
-            Assert.Equal(
-                "Encrypt your message into the rot.",
-                PayloadContainer.Open(container, "correct horse battery staple")
             );
         }
 
         [Fact]
         public void HeaderTamper_AnyFixedHeaderByte_FailsAuthentication()
         {
-            // The full 41-byte fixed header is GCM associated data: flipping
-            // any bit of salt, iterations (within valid range), or nonce must
-            // fail authentication rather than yield garbage plaintext.
+            // The full 42-byte fixed header is GCM associated data: flipping
+            // any bit of pipeline id, salt, iterations (within valid range),
+            // or nonce must fail authentication rather than yield garbage
+            // plaintext or a silently different animation.
             byte[] salt = Enumerable.Range(1, 16).Select(i => (byte)i).ToArray();
             byte[] nonce = Enumerable.Range(101, 12).Select(i => (byte)i).ToArray();
-            byte[] container = PayloadContainer.Seal("aad", "pw", 1_000, salt, nonce);
+            byte[] container = PayloadContainer.Seal("aad", "pw", 0x01, 1_000, salt, nonce);
 
             byte[] tampered = (byte[])container.Clone();
+            tampered[5] ^= 0x01; // pipeline id
+
+            Assert.Throws<DecayAuthenticationException>(
+                () => PayloadContainer.Open(tampered, "pw")
+            );
+
+            tampered = (byte[])container.Clone();
             tampered[30] ^= 0x01; // inside the nonce
 
             Assert.Throws<DecayAuthenticationException>(

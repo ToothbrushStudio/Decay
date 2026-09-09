@@ -9,6 +9,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Decay.Core", "Decay.Core\De
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Decay.Core.Tests", "Decay.Core.Tests\Decay.Core.Tests.csproj", "{0AE567EC-17B3-421E-9F2C-FCF28C40321C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Decay.Renderer", "Decay.Renderer\Decay.Renderer.csproj", "{3FF74699-8CB9-4957-8942-5F82F54B16EF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Decay.Renderer.Tests", "Decay.Renderer.Tests\Decay.Renderer.Tests.csproj", "{264E72A8-89B6-4394-B77D-D59A0AB3BA73}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +31,14 @@ Global
 		{0AE567EC-17B3-421E-9F2C-FCF28C40321C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0AE567EC-17B3-421E-9F2C-FCF28C40321C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0AE567EC-17B3-421E-9F2C-FCF28C40321C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3FF74699-8CB9-4957-8942-5F82F54B16EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3FF74699-8CB9-4957-8942-5F82F54B16EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3FF74699-8CB9-4957-8942-5F82F54B16EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3FF74699-8CB9-4957-8942-5F82F54B16EF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{264E72A8-89B6-4394-B77D-D59A0AB3BA73}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{264E72A8-89B6-4394-B77D-D59A0AB3BA73}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{264E72A8-89B6-4394-B77D-D59A0AB3BA73}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{264E72A8-89B6-4394-B77D-D59A0AB3BA73}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

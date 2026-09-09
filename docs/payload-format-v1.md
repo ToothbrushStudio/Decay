@@ -42,14 +42,20 @@ All multi-byte integers are **big-endian, unsigned**.
 |---|---|---|---|
 | 0 | 4 | Magic | `0x44 0x43 0x41 0x59` (ASCII `DCAY`) |
 | 4 | 1 | Format version | `0x01` |
-| 5 | 16 | Salt | Random per message (PBKDF2 salt) |
-| 21 | 4 | Iterations | PBKDF2 iteration count; valid range 1 – 10,000,000 |
-| 25 | 12 | Nonce | Random per message (AES-GCM nonce) |
-| 37 | 4 | Ciphertext length `N` | Byte length of the ciphertext |
-| 41 | `N` | Ciphertext | AES-256-GCM ciphertext of the UTF-8 plaintext |
-| 41+`N` | 16 | Auth tag | AES-GCM authentication tag |
+| 5 | 1 | Pipeline id | Decay render pipeline that produced the art; `0x00` = none, `0x01` = pipeline v1 (docs/render-pipeline-v1.md) |
+| 6 | 16 | Salt | Random per message (PBKDF2 salt) |
+| 22 | 4 | Iterations | PBKDF2 iteration count; valid range 1 – 10,000,000 |
+| 26 | 12 | Nonce | Random per message (AES-GCM nonce) |
+| 38 | 4 | Ciphertext length `N` | Byte length of the ciphertext |
+| 42 | `N` | Ciphertext | AES-256-GCM ciphertext of the UTF-8 plaintext |
+| 42+`N` | 16 | Auth tag | AES-GCM authentication tag |
 
-Total container size: `57 + N` bytes.
+Total container size: `58 + N` bytes.
+
+The pipeline id lets the decoder regenerate the exact decay-op sequence for
+the reverse ("un-rot") animation. It is authenticated like the rest of the
+header but never gates decryption: an unknown pipeline id means "no
+animation available", never a decode failure.
 
 ### Cryptography
 
@@ -58,9 +64,9 @@ Total container size: `57 + N` bytes.
   Encoder default: 600,000 iterations (stored in the header, so future
   defaults can change without breaking decode).
 - **Encryption:** AES-256-GCM. 12-byte nonce, 16-byte tag.
-- **Associated data (AAD):** container bytes `[0, 41)` — the full fixed
-  header. Any tampering with magic, version, salt, iterations, nonce, or the
-  declared length invalidates the tag.
+- **Associated data (AAD):** container bytes `[0, 42)` — the full fixed
+  header. Any tampering with magic, version, pipeline id, salt, iterations, nonce, or
+  the declared length invalidates the tag.
 - **Plaintext:** the message as UTF-8 bytes. GCM is unpadded, so
   `N` = UTF-8 byte length of the message. Zero-length messages are valid.
 
@@ -72,7 +78,7 @@ Total container size: `57 + N` bytes.
 3. Iterations must be in `[1, 10,000,000]`, else: corrupt/hostile image
    (prevents a forged header from stalling the decoder with a
    multi-billion-iteration KDF).
-4. `57 + N` must fit within the image's pixel capacity, else: corrupt image.
+4. `58 + N` must fit within the image's pixel capacity, else: corrupt image.
 5. GCM tag verification failure means *wrong passphrase or modified image* —
    the two are cryptographically indistinguishable and must be reported as
    one condition. Never emit garbage plaintext.
@@ -89,7 +95,7 @@ Total container size: `57 + N` bytes.
   2-bit group, the earlier stream bit occupies the higher bit
   (bit 1), the later stream bit the lower (bit 0).
 - The container occupies as many pixels as needed from the start of the
-  sequence: `ceil((57 + N) * 8 / 6)` pixels. Trailing bits in the final
+  sequence: `ceil((58 + N) * 8 / 6)` pixels. Trailing bits in the final
   pixel's last partially-used channel are zero; all later pixels are
   untouched by this layer.
 - **Capacity:** `floor(W × H × 6 / 8)` bytes. Encoders must refuse messages
@@ -98,7 +104,7 @@ Total container size: `57 + N` bytes.
 ### Watermark rule (encoder-side; not part of decoding)
 
 The Free-tier watermark must only alter pixels **beyond the container's pixel
-extent** (index ≥ `ceil((57 + N) * 8 / 6)`). The decoder never needs to know
+extent** (index ≥ `ceil((58 + N) * 8 / 6)`). The decoder never needs to know
 whether or where a watermark exists. Encoders must verify non-overlap at
 export time — a watermark that corrupts payloads is a launch-blocking bug.
 

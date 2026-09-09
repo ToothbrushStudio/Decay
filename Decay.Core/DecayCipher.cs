@@ -4,16 +4,107 @@ namespace Decay.Core
     /// The public face of Decay's encryption core, honoring the decode
     /// contract: image + passphrase is everything. No accounts, no server,
     /// no original carrier file, no version handshake.
+    ///
+    /// Two levels of API:
+    /// - EncryptInto / Decrypt: the simple path, no renderer involved.
+    /// - SealContainer / EmbedContainer / ExtractContainer / OpenContainer:
+    ///   the container-level path used by Decay.Renderer, which needs the
+    ///   container bytes to drive the decay art before embedding and to
+    ///   rebuild the un-rot sequence after extraction.
     /// </summary>
     public static class DecayCipher
     {
         public const int DefaultIterations = 600_000;
 
+        /// <summary>No decay pipeline: the image carries data but no replayable art.</summary>
+        public const byte PipelineNone = 0;
+
         /// <summary>
-        /// Encrypts the message and embeds it into the carrier's pixels in
-        /// place. The carrier should already be fully rendered (glitch
-        /// applied); the watermark, if any, must be applied afterwards and
-        /// only to pixels at index >= the returned pixel extent.
+        /// Encrypts the message into a sealed container. The container is
+        /// public data (its ciphertext is opaque without the passphrase) and
+        /// is what drives the deterministic decay art.
+        /// </summary>
+        public static byte[] SealContainer(
+            string plainText,
+            string passphrase,
+            byte pipelineId,
+            int iterations = DefaultIterations
+        )
+        {
+            ArgumentNullException.ThrowIfNull(plainText);
+            ArgumentException.ThrowIfNullOrEmpty(passphrase);
+
+            return PayloadContainer.Seal(plainText, passphrase, pipelineId, iterations);
+        }
+
+        /// <summary>
+        /// Embeds a sealed container into the image's pixels in place. Call
+        /// after all visual rendering; only the watermark may follow, and
+        /// only on pixels at index >= the returned pixel extent.
+        /// </summary>
+        /// <returns>
+        /// The number of pixels occupied by the payload — the watermark-safe
+        /// boundary.
+        /// </returns>
+        public static int EmbedContainer(byte[] container, PixelBuffer image)
+        {
+            ArgumentNullException.ThrowIfNull(container);
+            ArgumentNullException.ThrowIfNull(image);
+
+            PixelCodec.Embed(container, image);
+
+            return PixelCodec.PixelExtent(container.Length);
+        }
+
+        /// <summary>
+        /// Reads the sealed container back out of a Decay image. Requires no
+        /// passphrase — the container is public data.
+        /// </summary>
+        /// <exception cref="DecayFormatException">Not a Decay image, or corrupted.</exception>
+        /// <exception cref="DecayVersionException">Written by a newer format version.</exception>
+        public static byte[] ExtractContainer(PixelBuffer image)
+        {
+            ArgumentNullException.ThrowIfNull(image);
+
+            if (PixelCodec.Capacity(image) < PayloadContainer.MinContainerSize)
+            {
+                throw new DecayFormatException(
+                    "The image is too small to be a Decay image."
+                );
+            }
+
+            byte[] header = PixelCodec.Extract(image, PayloadContainer.HeaderSize);
+            PayloadContainer.ContainerInfo info = PayloadContainer.ReadHeader(header);
+
+            return PixelCodec.Extract(image, info.TotalSize);
+        }
+
+        /// <summary>
+        /// Decrypts a sealed container extracted from an image.
+        /// </summary>
+        /// <exception cref="DecayAuthenticationException">Wrong passphrase or modified image.</exception>
+        public static string OpenContainer(byte[] container, string passphrase)
+        {
+            ArgumentNullException.ThrowIfNull(container);
+            ArgumentException.ThrowIfNullOrEmpty(passphrase);
+
+            return PayloadContainer.Open(container, passphrase);
+        }
+
+        /// <summary>
+        /// The decay pipeline id a container declares. Unknown ids must be
+        /// treated as "no animation available", never as a decrypt failure.
+        /// </summary>
+        public static byte GetPipelineId(byte[] container)
+        {
+            ArgumentNullException.ThrowIfNull(container);
+
+            return PayloadContainer.ReadHeader(container).PipelineId;
+        }
+
+        /// <summary>
+        /// Simple path: encrypts the message and embeds it into the carrier's
+        /// pixels in place, with no decay pipeline recorded.
         /// </summary>
         /// <returns>
         /// The number of pixels occupied by the payload — the watermark-safe
@@ -26,40 +117,24 @@ namespace Decay.Core
             int iterations = DefaultIterations
         )
         {
-            ArgumentNullException.ThrowIfNull(plainText);
-            ArgumentException.ThrowIfNullOrEmpty(passphrase);
             ArgumentNullException.ThrowIfNull(carrier);
 
-            byte[] container = PayloadContainer.Seal(plainText, passphrase, iterations);
+            byte[] container = SealContainer(plainText, passphrase, PipelineNone, iterations);
 
-            PixelCodec.Embed(container, carrier);
-
-            return PixelCodec.PixelExtent(container.Length);
+            return EmbedContainer(container, carrier);
         }
 
         /// <summary>
-        /// Extracts and decrypts the message from a Decay image.
+        /// Simple path: extracts and decrypts the message from a Decay image.
         /// </summary>
         /// <exception cref="DecayFormatException">Not a Decay image, or corrupted.</exception>
         /// <exception cref="DecayVersionException">Written by a newer format version.</exception>
         /// <exception cref="DecayAuthenticationException">Wrong passphrase or modified image.</exception>
         public static string Decrypt(PixelBuffer image, string passphrase)
         {
-            ArgumentNullException.ThrowIfNull(image);
             ArgumentException.ThrowIfNullOrEmpty(passphrase);
 
-            if (PixelCodec.Capacity(image) < PayloadContainer.MinContainerSize)
-            {
-                throw new DecayFormatException(
-                    "The image is too small to be a Decay image."
-                );
-            }
-
-            byte[] header = PixelCodec.Extract(image, PayloadContainer.HeaderSize);
-            PayloadContainer.ContainerInfo info = PayloadContainer.ReadHeader(header);
-            byte[] container = PixelCodec.Extract(image, info.TotalSize);
-
-            return PayloadContainer.Open(container, passphrase);
+            return OpenContainer(ExtractContainer(image), passphrase);
         }
 
         /// <summary>

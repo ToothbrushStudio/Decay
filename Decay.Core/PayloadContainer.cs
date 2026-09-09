@@ -17,24 +17,38 @@ namespace Decay.Core
         internal const int NonceSize = 12;
         internal const int TagSize = 16;
         internal const int KeySize = 32;
-        internal const int HeaderSize = MagicSize + 1 + SaltSize + 4 + NonceSize + 4; // 41
-        internal const int MinContainerSize = HeaderSize + TagSize; // 57
+
+        // magic + version + pipeline + salt + iterations + nonce + ctlen
+        internal const int HeaderSize = MagicSize + 1 + 1 + SaltSize + 4 + NonceSize + 4; // 42
+        internal const int MinContainerSize = HeaderSize + TagSize; // 58
         internal const int MaxIterations = 10_000_000;
+
+        private const int PipelineOffset = 5;
+        private const int SaltOffset = 6;
+        private const int IterationsOffset = 22;
+        private const int NonceOffset = 26;
+        private const int LengthOffset = 38;
 
         private static ReadOnlySpan<byte> Magic => "DCAY"u8;
 
-        internal static byte[] Seal(string plainText, string passphrase, int iterations)
+        internal static byte[] Seal(
+            string plainText,
+            string passphrase,
+            byte pipelineId,
+            int iterations
+        )
         {
             byte[] salt = RandomNumberGenerator.GetBytes(SaltSize);
             byte[] nonce = RandomNumberGenerator.GetBytes(NonceSize);
 
-            return Seal(plainText, passphrase, iterations, salt, nonce);
+            return Seal(plainText, passphrase, pipelineId, iterations, salt, nonce);
         }
 
         // Deterministic overload used by tests and format vectors.
         internal static byte[] Seal(
             string plainText,
             string passphrase,
+            byte pipelineId,
             int iterations,
             byte[] salt,
             byte[] nonce
@@ -51,10 +65,17 @@ namespace Decay.Core
 
             Magic.CopyTo(header);
             header[MagicSize] = FormatVersion1;
-            salt.CopyTo(header.Slice(5, SaltSize));
-            BinaryPrimitives.WriteUInt32BigEndian(header.Slice(21, 4), (uint)iterations);
-            nonce.CopyTo(header.Slice(25, NonceSize));
-            BinaryPrimitives.WriteUInt32BigEndian(header.Slice(37, 4), (uint)plainBytes.Length);
+            header[PipelineOffset] = pipelineId;
+            salt.CopyTo(header.Slice(SaltOffset, SaltSize));
+            BinaryPrimitives.WriteUInt32BigEndian(
+                header.Slice(IterationsOffset, 4),
+                (uint)iterations
+            );
+            nonce.CopyTo(header.Slice(NonceOffset, NonceSize));
+            BinaryPrimitives.WriteUInt32BigEndian(
+                header.Slice(LengthOffset, 4),
+                (uint)plainBytes.Length
+            );
 
             byte[] key = DeriveKey(passphrase, salt, iterations);
 
@@ -93,7 +114,11 @@ namespace Decay.Core
             ReadOnlySpan<byte> ciphertext = container.Slice(HeaderSize, info.CiphertextLength);
             ReadOnlySpan<byte> tag = container.Slice(HeaderSize + info.CiphertextLength, TagSize);
 
-            byte[] key = DeriveKey(passphrase, header.Slice(5, SaltSize), info.Iterations);
+            byte[] key = DeriveKey(
+                passphrase,
+                header.Slice(SaltOffset, SaltSize),
+                info.Iterations
+            );
             byte[] plainBytes = new byte[info.CiphertextLength];
 
             try
@@ -117,6 +142,8 @@ namespace Decay.Core
         /// <summary>
         /// Validates the fixed header and returns its fields. Used both by
         /// Open and by the pixel layer to learn how many bytes to extract.
+        /// The pipeline id is deliberately NOT validated: unknown pipelines
+        /// must still decrypt — only the un-rot animation is skipped.
         /// </summary>
         internal static ContainerInfo ReadHeader(ReadOnlySpan<byte> headerBytes)
         {
@@ -139,7 +166,9 @@ namespace Decay.Core
                 throw new DecayVersionException(version);
             }
 
-            uint iterations = BinaryPrimitives.ReadUInt32BigEndian(headerBytes.Slice(21, 4));
+            uint iterations = BinaryPrimitives.ReadUInt32BigEndian(
+                headerBytes.Slice(IterationsOffset, 4)
+            );
 
             if (iterations < 1 || iterations > MaxIterations)
             {
@@ -148,7 +177,9 @@ namespace Decay.Core
                 );
             }
 
-            uint ciphertextLength = BinaryPrimitives.ReadUInt32BigEndian(headerBytes.Slice(37, 4));
+            uint ciphertextLength = BinaryPrimitives.ReadUInt32BigEndian(
+                headerBytes.Slice(LengthOffset, 4)
+            );
 
             if (ciphertextLength > int.MaxValue - MinContainerSize)
             {
@@ -158,9 +189,10 @@ namespace Decay.Core
             }
 
             return new ContainerInfo(
+                headerBytes[PipelineOffset],
                 (int)iterations,
                 (int)ciphertextLength,
-                headerBytes.Slice(25, NonceSize).ToArray()
+                headerBytes.Slice(NonceOffset, NonceSize).ToArray()
             );
         }
 
@@ -176,6 +208,7 @@ namespace Decay.Core
         }
 
         internal readonly record struct ContainerInfo(
+            byte PipelineId,
             int Iterations,
             int CiphertextLength,
             byte[] Nonce
