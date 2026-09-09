@@ -111,8 +111,7 @@ namespace Decay.App.Pages
                     onDone: () =>
                     {
                         MessageLabel.Text = _message;
-                        StatusLabel.Text = "The image un-rotted to its origin. "
-                            + "The message was the rot itself.";
+                        StatusLabel.Text = "The image un-rotted to its origin.";
                     }
                 );
             }
