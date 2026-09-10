@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage
+    x:Class="Decay.App.Pages.EncryptPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="Encrypt">
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="12">
+
+            <Label Text="DECAY YOUR MESSAGE INTO THE ROT"
+                   TextColor="{StaticResource Accent}"
+                   FontAttributes="Bold" />
+
+            <Editor x:Name="MessageEditor"
+                    Placeholder="The message…"
+                    HeightRequest="110"
+                    TextChanged="OnMessageChanged" />
+            <Label x:Name="CapacityLabel"
+                   FontSize="12"
+                   TextColor="{StaticResource InkDim}" />
+
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                <Entry x:Name="PassphraseEntry"
+                       Grid.Column="0"
+                       Placeholder="Passphrase"
+                       IsPassword="True" />
+                <Button x:Name="PassphraseToggle"
+                        Grid.Column="1"
+                        Text="Show"
+                        FontSize="12"
+                        BackgroundColor="{StaticResource Panel}"
+                        TextColor="{StaticResource Accent}"
+                        Clicked="OnTogglePassphrase" />
+            </Grid>
+
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                <Picker x:Name="PresetPicker"
+                        Grid.Column="0"
+                        Title="Carrier"
+                        SelectedIndexChanged="OnPresetChanged" />
+                <Picker x:Name="SizePicker"
+                        Grid.Column="1"
+                        Title="Size"
+                        SelectedIndexChanged="OnSizeChanged" />
+            </Grid>
+
+            <Button x:Name="ChooseImageButton"
+                    Text="Choose image… (PNG)"
+                    IsVisible="False"
+                    Clicked="OnChooseImage" />
+
+            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                <Label Grid.Column="0" Text="Intensity" VerticalOptions="Center" />
+                <Slider x:Name="IntensitySlider"
+                        Grid.Column="1"
+                        Minimum="1" Maximum="255" Value="100"
+                        ValueChanged="OnIntensityChanged" />
+                <Label x:Name="IntensityValueLabel"
+                       Grid.Column="2"
+                       Text="100"
+                       VerticalOptions="Center"
+                       TextColor="{StaticResource Accent}" />
+            </Grid>
+
+            <HorizontalStackLayout x:Name="DevTierRow" Spacing="8">
+                <Switch x:Name="ProSwitch" Toggled="OnProToggled" />
+                <Label Text="Pro override (debug builds only)"
+                       FontSize="12"
+                       VerticalOptions="Center"
+                       TextColor="{StaticResource InkDim}" />
+            </HorizontalStackLayout>
+
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                <Button Grid.Column="0" Text="New carrier" Clicked="OnNewCarrier" />
+                <Button x:Name="EncryptButton" Grid.Column="1" Text="Encrypt" Clicked="OnEncrypt" />
+            </Grid>
+
+            <Border BackgroundColor="{StaticResource Panel}"
+                    StrokeThickness="1"
+                    Stroke="{StaticResource InkDim}">
+                <Image x:Name="Preview"
+                       Aspect="AspectFit"
+                       HeightRequest="320" />
+            </Border>
+
+            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+                <Button x:Name="PlayButton" Grid.Column="0" Text="Play decay"
+                        IsEnabled="False" Clicked="OnPlayDecay" />
+                <Button x:Name="SaveImageButton" Grid.Column="1" Text="Save image…"
+                        IsEnabled="False" Clicked="OnSaveImage" />
+                <Button x:Name="ShareButton" Grid.Column="2" Text="Share PNG"
+                        IsEnabled="False" Clicked="OnShare" />
+            </Grid>
+
+            <Label x:Name="StatusLabel"
+                   FontSize="12"
+                   TextColor="{StaticResource InkDim}" />
+
+            <Label Text="⚠ A Decay image survives only as the original file. Send the PNG itself — a screenshot, repost, or platform re-compression destroys the message forever."
+                   FontSize="12"
+                   TextColor="{StaticResource Warn}" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

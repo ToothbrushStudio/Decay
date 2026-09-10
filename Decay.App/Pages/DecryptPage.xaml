@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage
+    x:Class="Decay.App.Pages.DecryptPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="Decrypt">
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="12">
+
+            <Label Text="RAISE THE MESSAGE FROM THE ROT"
+                   TextColor="{StaticResource Accent}"
+                   FontAttributes="Bold" />
+
+            <Button Text="Open Decay image…" Clicked="OnOpenImage" />
+
+            <Border BackgroundColor="{StaticResource Panel}"
+                    StrokeThickness="1"
+                    Stroke="{StaticResource InkDim}">
+                <Image x:Name="Preview"
+                       Aspect="AspectFit"
+                       HeightRequest="320" />
+            </Border>
+
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                <Entry x:Name="PassphraseEntry"
+                       Grid.Column="0"
+                       Placeholder="Passphrase"
+                       IsPassword="True" />
+                <Button x:Name="PassphraseToggle"
+                        Grid.Column="1"
+                        Text="Show"
+                        FontSize="12"
+                        BackgroundColor="{StaticResource Panel}"
+                        TextColor="{StaticResource Accent}"
+                        Clicked="OnTogglePassphrase" />
+            </Grid>
+
+            <Button x:Name="DecryptButton"
+                    Text="Decrypt"
+                    IsEnabled="False"
+                    Clicked="OnDecrypt" />
+
+            <Border BackgroundColor="{StaticResource Panel}"
+                    StrokeThickness="1"
+                    Stroke="{StaticResource InkDim}"
+                    Padding="12">
+                <Label x:Name="MessageLabel"
+                       FontFamily="Courier"
+                       Text="" />
+            </Border>
+
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                <Button x:Name="CopyButton"
+                        Grid.Column="0"
+                        Text="Copy message"
+                        IsEnabled="False"
+                        Clicked="OnCopy" />
+                <Button x:Name="SaveImageButton"
+                        Grid.Column="1"
+                        Text="Save image…"
+                        IsEnabled="False"
+                        Clicked="OnSaveImage" />
+            </Grid>
+
+            <Label x:Name="StatusLabel"
+                   FontSize="12"
+                   TextColor="{StaticResource InkDim}" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

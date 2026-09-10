@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Application
+    x:Class="Decay.App.App"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+    <Application.Resources>
+        <ResourceDictionary>
+            <!-- The rot palette: near-black ground, phosphor green accents. -->
+            <Color x:Key="Ground">#0A0A0A</Color>
+            <Color x:Key="Panel">#161616</Color>
+            <Color x:Key="Ink">#E8E8E8</Color>
+            <Color x:Key="InkDim">#8A8A8A</Color>
+            <Color x:Key="Accent">#6CFF5C</Color>
+            <Color x:Key="Warn">#FF3D6E</Color>
+
+            <Style TargetType="ContentPage" ApplyToDerivedTypes="True">
+                <Setter Property="BackgroundColor" Value="{StaticResource Ground}" />
+            </Style>
+            <Style TargetType="Label">
+                <Setter Property="TextColor" Value="{StaticResource Ink}" />
+            </Style>
+            <Style TargetType="Editor">
+                <Setter Property="TextColor" Value="{StaticResource Ink}" />
+                <Setter Property="PlaceholderColor" Value="{StaticResource InkDim}" />
+                <Setter Property="BackgroundColor" Value="{StaticResource Panel}" />
+            </Style>
+            <Style TargetType="Entry">
+                <Setter Property="TextColor" Value="{StaticResource Ink}" />
+                <Setter Property="PlaceholderColor" Value="{StaticResource InkDim}" />
+                <Setter Property="BackgroundColor" Value="{StaticResource Panel}" />
+            </Style>
+            <Style TargetType="Picker">
+                <Setter Property="TextColor" Value="{StaticResource Ink}" />
+                <Setter Property="BackgroundColor" Value="{StaticResource Panel}" />
+            </Style>
+            <Style TargetType="Button">
+                <Setter Property="TextColor" Value="{StaticResource Ground}" />
+                <Setter Property="BackgroundColor" Value="{StaticResource Accent}" />
+                <Setter Property="FontAttributes" Value="Bold" />
+                <Setter Property="CornerRadius" Value="4" />
+            </Style>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>
