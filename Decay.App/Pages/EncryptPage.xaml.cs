@@ -9,6 +9,7 @@ namespace Decay.App.Pages
         private static readonly int[] Sizes = { 256, 384, 512, 768, 1024 };
 
         private const int MaxCustomCarrierDimension = 2048;
+        private const int CustomCarrierDefaultIntensity = 50;
 
         private int _carrierSeed = Random.Shared.Next();
         private PixelBuffer? _carrier;
@@ -113,6 +114,11 @@ namespace Decay.App.Pages
                 // stays as the retry/change-image affordance.
                 if (_customCarrier is null)
                 {
+                    // A personal photo should still look like itself. Gentler
+                    // than the preset default (100), which is fine for
+                    // procedural noise but drowns a recognizable image.
+                    IntensitySlider.Value = CustomCarrierDefaultIntensity;
+
                     await PickCustomCarrierAsync();
                 }
 
