@@ -49,10 +49,18 @@
                        Text="" />
             </Border>
 
-            <Button x:Name="CopyButton"
-                    Text="Copy message"
-                    IsEnabled="False"
-                    Clicked="OnCopy" />
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                <Button x:Name="CopyButton"
+                        Grid.Column="0"
+                        Text="Copy message"
+                        IsEnabled="False"
+                        Clicked="OnCopy" />
+                <Button x:Name="SaveImageButton"
+                        Grid.Column="1"
+                        Text="Save image…"
+                        IsEnabled="False"
+                        Clicked="OnSaveImage" />
+            </Grid>
 
             <Label x:Name="StatusLabel"
                    FontSize="12"

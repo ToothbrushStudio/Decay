@@ -16,6 +16,13 @@ namespace Decay.App
 
         public int FrameCount => _framePngs.Count;
 
+        /// <summary>
+        /// The last rendered frame's PNG bytes — for reverse playback, this
+        /// is the fully un-rotted (recovered) image. Available immediately;
+        /// frames are all rendered up front, before Play starts.
+        /// </summary>
+        public byte[] LastFramePng => _framePngs[^1];
+
         private FramePlayer(List<byte[]> framePngs)
         {
             _framePngs = framePngs;

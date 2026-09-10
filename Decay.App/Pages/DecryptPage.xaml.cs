@@ -1,5 +1,8 @@
+using CommunityToolkit.Maui.Storage;
 using Decay.Core;
 using Decay.Renderer;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui;
 
 namespace Decay.App.Pages
 {
@@ -7,6 +10,7 @@ namespace Decay.App.Pages
     {
         private PixelBuffer? _received;
         private string _message = "";
+        private byte[]? _recoveredImagePng;
 
         public DecryptPage()
         {
@@ -37,6 +41,8 @@ namespace Decay.App.Pages
                 Preview.Source = ImageSource.FromStream(() => new MemoryStream(png));
                 DecryptButton.IsEnabled = true;
                 CopyButton.IsEnabled = false;
+                SaveImageButton.IsEnabled = false;
+                _recoveredImagePng = null;
                 MessageLabel.Text = "";
                 StatusLabel.Text = $"Loaded {_received.Width}×{_received.Height}. "
                     + "If this file was screenshotted or re-compressed along the way, "
@@ -86,10 +92,13 @@ namespace Decay.App.Pages
 
                 if (result.Sequence is null)
                 {
-                    // Data-only image, or a newer pipeline: no animation,
-                    // just the message.
+                    // Data-only image, or a newer pipeline: no animation, and
+                    // no separate "recovered" image beneath the rot — the
+                    // received file is all there is.
                     MessageLabel.Text = _message;
                     StatusLabel.Text = "Decrypted.";
+                    _recoveredImagePng = await Task.Run(() => DecayPng.Encode(received));
+                    SaveImageButton.IsEnabled = true;
 
                     return;
                 }
@@ -100,6 +109,11 @@ namespace Decay.App.Pages
                     result.Sequence,
                     received
                 );
+
+                // The recovered image is fully rendered as soon as the
+                // sequence is built — saving needn't wait for playback.
+                _recoveredImagePng = player.LastFramePng;
+                SaveImageButton.IsEnabled = true;
 
                 StatusLabel.Text = "Un-rotting…";
                 player.Play(
@@ -156,6 +170,37 @@ namespace Decay.App.Pages
             await Clipboard.Default.SetTextAsync(_message);
 
             StatusLabel.Text = "Copied.";
+        }
+
+        private async void OnSaveImage(object? sender, EventArgs e)
+        {
+            if (_recoveredImagePng is null)
+            {
+                return;
+            }
+
+            IFileSaver fileSaver = IPlatformApplication.Current!
+                .Services
+                .GetRequiredService<IFileSaver>();
+
+            using MemoryStream stream = new MemoryStream(_recoveredImagePng);
+            FileSaverResult result = await fileSaver.SaveAsync(
+                $"decay-recovered-{DateTime.Now:yyyyMMdd-HHmmss}.png",
+                stream
+            );
+
+            if (result.IsSuccessful)
+            {
+                StatusLabel.Text = $"Saved to {result.FilePath}.";
+            }
+            else if (result.Exception is not OperationCanceledException)
+            {
+                await DisplayAlertAsync(
+                    "Couldn't save",
+                    result.Exception?.Message ?? "Unknown error.",
+                    "OK"
+                );
+            }
         }
     }
 }

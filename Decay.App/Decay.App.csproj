@@ -37,6 +37,10 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
+    <!-- MAUI itself ships no "Save As" dialog; the .NET Foundation's
+         community toolkit is the standard cross-platform answer (IFileSaver),
+         used only here in the app shell, never in the engine. -->
+    <PackageReference Include="CommunityToolkit.Maui" Version="15.0.1" />
   </ItemGroup>
 
   <ItemGroup>
