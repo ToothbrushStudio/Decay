@@ -1,4 +1,3 @@
-using CommunityToolkit.Maui;
 using Microsoft.Maui.Hosting;
 
 namespace Decay.App
@@ -9,9 +8,7 @@ namespace Decay.App
         {
             MauiAppBuilder builder = MauiApp.CreateBuilder();
 
-            builder
-                .UseMauiApp<App>()
-                .UseMauiCommunityToolkit(); // registers IFileSaver, used on the Decrypt page.
+            builder.UseMauiApp<App>();
 
             return builder.Build();
         }

@@ -1,9 +1,6 @@
 using System.Text;
-using CommunityToolkit.Maui.Storage;
 using Decay.Core;
 using Decay.Renderer;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Maui;
 
 namespace Decay.App.Pages
 {
@@ -418,28 +415,22 @@ namespace Decay.App.Pages
 
             byte[] png = await Task.Run(() => DecayPng.Encode(_art.FinalImage));
 
-            IFileSaver fileSaver = IPlatformApplication.Current!
-                .Services
-                .GetRequiredService<IFileSaver>();
-
-            using MemoryStream stream = new MemoryStream(png);
-            FileSaverResult result = await fileSaver.SaveAsync(
-                $"decay-{DateTime.Now:yyyyMMdd-HHmmss}.png",
-                stream
-            );
-
-            if (result.IsSuccessful)
+            try
             {
-                StatusLabel.Text = $"Saved to {result.FilePath}. "
-                    + "Send that file itself — never a screenshot.";
-            }
-            else if (result.Exception is not OperationCanceledException)
-            {
-                await DisplayAlertAsync(
-                    "Couldn't save",
-                    result.Exception?.Message ?? "Unknown error.",
-                    "OK"
+                string? path = await PlatformFileSaver.SaveAsync(
+                    $"decay-{DateTime.Now:yyyyMMdd-HHmmss}.png",
+                    png
                 );
+
+                if (path is not null)
+                {
+                    StatusLabel.Text = $"Saved to {path}. "
+                        + "Send that file itself — never a screenshot.";
+                }
+            }
+            catch (PlatformNotSupportedException exception)
+            {
+                await DisplayAlertAsync("Not available here", exception.Message, "OK");
             }
         }
 

@@ -1,8 +1,5 @@
-using CommunityToolkit.Maui.Storage;
 using Decay.Core;
 using Decay.Renderer;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Maui;
 
 namespace Decay.App.Pages
 {
@@ -179,27 +176,21 @@ namespace Decay.App.Pages
                 return;
             }
 
-            IFileSaver fileSaver = IPlatformApplication.Current!
-                .Services
-                .GetRequiredService<IFileSaver>();
-
-            using MemoryStream stream = new MemoryStream(_recoveredImagePng);
-            FileSaverResult result = await fileSaver.SaveAsync(
-                $"decay-recovered-{DateTime.Now:yyyyMMdd-HHmmss}.png",
-                stream
-            );
-
-            if (result.IsSuccessful)
+            try
             {
-                StatusLabel.Text = $"Saved to {result.FilePath}.";
-            }
-            else if (result.Exception is not OperationCanceledException)
-            {
-                await DisplayAlertAsync(
-                    "Couldn't save",
-                    result.Exception?.Message ?? "Unknown error.",
-                    "OK"
+                string? path = await PlatformFileSaver.SaveAsync(
+                    $"decay-recovered-{DateTime.Now:yyyyMMdd-HHmmss}.png",
+                    _recoveredImagePng
                 );
+
+                if (path is not null)
+                {
+                    StatusLabel.Text = $"Saved to {path}.";
+                }
+            }
+            catch (PlatformNotSupportedException exception)
+            {
+                await DisplayAlertAsync("Not available here", exception.Message, "OK");
             }
         }
     }
