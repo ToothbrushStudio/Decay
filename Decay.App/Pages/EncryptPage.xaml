@@ -83,10 +83,12 @@
                        HeightRequest="320" />
             </Border>
 
-            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
                 <Button x:Name="PlayButton" Grid.Column="0" Text="Play decay"
                         IsEnabled="False" Clicked="OnPlayDecay" />
-                <Button x:Name="ShareButton" Grid.Column="1" Text="Share PNG"
+                <Button x:Name="SaveImageButton" Grid.Column="1" Text="Save image…"
+                        IsEnabled="False" Clicked="OnSaveImage" />
+                <Button x:Name="ShareButton" Grid.Column="2" Text="Share PNG"
                         IsEnabled="False" Clicked="OnShare" />
             </Grid>
 

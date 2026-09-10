@@ -1,6 +1,9 @@
 using System.Text;
+using CommunityToolkit.Maui.Storage;
 using Decay.Core;
 using Decay.Renderer;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui;
 
 namespace Decay.App.Pages
 {
@@ -223,6 +226,7 @@ namespace Decay.App.Pages
                 _customCarrier = carrier;
                 _art = null;
                 PlayButton.IsEnabled = false;
+                SaveImageButton.IsEnabled = false;
                 ShareButton.IsEnabled = false;
 
                 byte[] png = await Task.Run(() => DecayPng.Encode(carrier));
@@ -262,6 +266,7 @@ namespace Decay.App.Pages
             _art = null;
             _customCarrier = null;
             PlayButton.IsEnabled = false;
+            SaveImageButton.IsEnabled = false;
             ShareButton.IsEnabled = false;
 
             _carrier = await Task.Run(() => preset.Generate(size, size, seed));
@@ -347,8 +352,9 @@ namespace Decay.App.Pages
 
                 Preview.Source = ImageSource.FromStream(() => new MemoryStream(png));
                 PlayButton.IsEnabled = true;
+                SaveImageButton.IsEnabled = true;
                 ShareButton.IsEnabled = true;
-                StatusLabel.Text = "Encrypted. The image now IS the message — share the file itself.";
+                StatusLabel.Text = "Encrypted. The image now IS the message — save or share the file itself.";
             }
             catch (DecayTierException exception)
             {
@@ -401,6 +407,40 @@ namespace Decay.App.Pages
                     StatusLabel.Text = "Final frame — this is the exported image.";
                 }
             );
+        }
+
+        private async void OnSaveImage(object? sender, EventArgs e)
+        {
+            if (_art is null)
+            {
+                return;
+            }
+
+            byte[] png = await Task.Run(() => DecayPng.Encode(_art.FinalImage));
+
+            IFileSaver fileSaver = IPlatformApplication.Current!
+                .Services
+                .GetRequiredService<IFileSaver>();
+
+            using MemoryStream stream = new MemoryStream(png);
+            FileSaverResult result = await fileSaver.SaveAsync(
+                $"decay-{DateTime.Now:yyyyMMdd-HHmmss}.png",
+                stream
+            );
+
+            if (result.IsSuccessful)
+            {
+                StatusLabel.Text = $"Saved to {result.FilePath}. "
+                    + "Send that file itself — never a screenshot.";
+            }
+            else if (result.Exception is not OperationCanceledException)
+            {
+                await DisplayAlertAsync(
+                    "Couldn't save",
+                    result.Exception?.Message ?? "Unknown error.",
+                    "OK"
+                );
+            }
         }
 
         private async void OnShare(object? sender, EventArgs e)
