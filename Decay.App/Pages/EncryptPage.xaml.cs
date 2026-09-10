@@ -129,6 +129,11 @@ namespace Decay.App.Pages
             SizePicker.IsEnabled = true;
             _customCarrier = null;
 
+            // Presets are procedural noise, not a personal image — full
+            // intensity is the better look there, so leaving custom mode
+            // undoes its gentler default.
+            IntensitySlider.Value = TierPolicy.LockedIntensity;
+
             if (!TierPolicy.AllowsPreset(AppState.Tier, SelectedPreset))
             {
                 await DisplayAlertAsync(
