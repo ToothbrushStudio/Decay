@@ -32,11 +32,11 @@
                    FontSize="12"
                    TextColor="{StaticResource InkDim}" />
 
-            <Label Text="Decryption never needs a license. Anyone can open a Decay image with the passphrase, free, forever — that promise is the product."
+            <Label Text="Decryption never needs a license. Anyone can open a Decay image with the passphrase, free, forever."
                    FontSize="12"
                    TextColor="{StaticResource InkDim}" />
 
-            <Label Text="Keys are verified on this device against the publisher's signature. No account, no server, no expiry."
+            <Label Text="Keys are verified on this device against the publisher's signature."
                    FontSize="12"
                    TextColor="{StaticResource InkDim}" />
 
