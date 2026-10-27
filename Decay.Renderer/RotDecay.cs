@@ -304,7 +304,7 @@ namespace Decay.Renderer
                         if (sporeAlpha > washAlpha)
                         {
                             a = sporeAlpha;
-                            target = Stain(_spores[owner[bi]].Index);
+                            target = Stain(StainPosition(_spores[owner[bi]].Index, bx, by, cell));
                         }
                     }
 
@@ -330,11 +330,24 @@ namespace Decay.Renderer
             return (int)r;
         }
 
-        /// <summary>Character value → position on the green–brown–purple ramp.</summary>
-        private static (int R, int G, int B) Stain(int index)
+        /// <summary>
+        /// Where a block sits on the 0–510 green–brown–purple ramp: the
+        /// character's value sets the starting point, then smooth noise and
+        /// per-block jitter carry neighboring blocks across the ramp (wrapping
+        /// at the ends), so every stain mixes all the rot colors.
+        /// </summary>
+        private int StainPosition(int index, int bx, int by, int cell)
         {
-            int s = index * 510 / (RotAlphabet.Size - 1); // 0..510
+            int start = index * 510 / (RotAlphabet.Size - 1);
+            int drift = (ValueNoise(bx, by, Math.Max(2, cell * 3 / 4), 5) - 128) * 3;
+            int jitter = ((int)(Hash(bx, by, 6) & 0xFF) - 128) / 4;
 
+            return ((start + drift + jitter) % 511 + 511) % 511;
+        }
+
+        /// <summary>Position on the green–brown–purple ramp (0–510) → color.</summary>
+        private static (int R, int G, int B) Stain(int s)
+        {
             return s <= 255 ? Lerp(Green, Brown, s) : Lerp(Brown, Purple, s - 255);
         }
 

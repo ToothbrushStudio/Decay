@@ -48,6 +48,7 @@ side.
   into four flat alpha levels. Each block takes the **single strongest**
   spore, competing against a faint olive wash; per-block speckle keeps blocks
   flat-colored. One stain per pixel keeps the blend invertible.
+- Color: a block's position on the 0–510 ramp is `(start + drift + jitter) mod 511`, where `start = index'·510/149`, `drift = (ValueNoise(cell·3/4) − 128)·3` and `jitter = (hash & 0xFF − 128)/4`. The character sets the starting hue and the noise carries neighboring blocks across the ramp, so each stain mixes green, brown and purple.
 - Blend: `p' = p + ((t − p)·a + 128 >> 8)`. Inverse:
   `p = floor(((p' << 8) − t·a + (256−a)/2) / (256−a))`, clamped.
 
