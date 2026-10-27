@@ -22,8 +22,8 @@ namespace Decay.Renderer
     /// Maps the user-facing strength slider (1–255, default 100) onto each
     /// style's raw pipeline intensity so that the whole slider stays within
     /// the recognizable range. Pipeline 1's op math is frozen and its raw
-    /// intensity destroys an image well before 255 (raw 25 is mild, ~40 is
-    /// the edge of recognizable, 65+ is gone), so Glitch compresses the
+    /// intensity destroys an image well before 255 (raw 25 is mild, ~50 is
+    /// the edge of recognizable, 65+ is gone (raw is a whole byte, so 50 is the cap)), so Glitch compresses the
     /// slider into raw 1–<see cref="GlitchMaxRaw"/>. Rot is already tuned so
     /// that its full range is recognizable and passes through unchanged.
     /// The raw value is what is recorded in the container, so decoding is
@@ -33,7 +33,7 @@ namespace Decay.Renderer
     {
         public const int Min = 1;
         public const int Max = 255;
-        public const int GlitchMaxRaw = 40;
+        public const int GlitchMaxRaw = 50;
 
         public static int ToRaw(DecayStyle style, int strength)
         {
