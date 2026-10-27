@@ -38,11 +38,16 @@ side.
 - Parameter byte = intensity (1–255, `0` ⇒ 100). Peak spore alpha =
   `24 + (intensity−1)·156/254` of 256 (24 … 180); wash alpha =
   `4 + (intensity−1)·52/254`. The whole range stays recognizable.
-- Spores cover ~85% of the area in total: base radius from the character
-  count, clamped to `[4, 35% of the short side]`.
-- Each pixel takes the **single strongest** spore (soft quadratic falloff,
-  value-noise ragged edges, per-pixel speckle), competing against a faint
-  olive wash. One stain per pixel keeps the blend invertible.
+- Everything is computed on a grid of solid blocks (`block = max(2, short
+  side / 80)` pixels), so the rot reads as pixel decay. Positions and radii
+  are in block units.
+- Spores are squares (Chebyshev distance) jointly covering ~150% of the
+  grid (overlaps merge): base radius `isqrt(area·150% / (4·chars))`, clamped
+  to `[2, 35% of the short side]` blocks, scaled per spore by 70–130%.
+- Falloff is linear in ring distance, roughened with value noise and stepped
+  into four flat alpha levels. Each block takes the **single strongest**
+  spore, competing against a faint olive wash; per-block speckle keeps blocks
+  flat-colored. One stain per pixel keeps the blend invertible.
 - Blend: `p' = p + ((t − p)·a + 128 >> 8)`. Inverse:
   `p = floor(((p' << 8) − t·a + (256−a)/2) / (256−a))`, clamped.
 

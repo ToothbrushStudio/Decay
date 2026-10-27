@@ -25,7 +25,7 @@ namespace Decay.Renderer
         private const string SubkeyLabel = "decay-rot-v1-mask";
         private const int MinPeakAlpha = 24; // of 256
         private const int MaxPeakAlpha = 180; // of 256
-        private const int MinSporeRadius = 4;
+        private const int MinSporeRadius = 2; // in blocks
 
         private static readonly (int R, int G, int B) Green = (86, 130, 44);
         private static readonly (int R, int G, int B) Brown = (112, 78, 40);
@@ -207,54 +207,67 @@ namespace Decay.Renderer
         /// </summary>
         private Plan BuildPlan(int width, int height)
         {
-            int pixelCount = width * height;
-            int minDimension = Math.Min(width, height);
-            int cell = Math.Max(4, minDimension / 32);
+            // Everything is computed on a coarse grid of solid blocks, so
+            // the rot reads as chunky pixel decay rather than soft blobs.
+            int block = Math.Max(2, Math.Min(width, height) / 80);
+            int bw = (width + block - 1) / block;
+            int bh = (height + block - 1) / block;
+            int blockCount = bw * bh;
+            int minBlocks = Math.Min(bw, bh);
+            int cell = Math.Max(2, minBlocks / 16);
+
             // Even intensity 1 must visibly rot; 255 stays mostly recognizable.
             int peak = MinPeakAlpha + (Intensity - 1) * (MaxPeakAlpha - MinPeakAlpha) / 254;
             int washPeak = 4 + (Intensity - 1) * 52 / 254;
 
-            int[] best = new int[pixelCount];
-            int[] owner = new int[pixelCount];
+            int[] best = new int[blockCount];
+            int[] owner = new int[blockCount];
 
             Array.Fill(owner, -1);
 
             if (_spores.Length > 0)
             {
-                // Spores jointly cover about 85% of the image, however many
-                // characters there are.
-                long areaTarget = (long)pixelCount * 85 / 100;
-                int baseRadius = (int)Math.Sqrt(areaTarget * 100.0 / (_spores.Length * 314.0));
+                // Square spores jointly cover about 150% of the image (overlaps merge), however
+                // many characters there are (area of one is (2r)^2).
+                long areaTarget = (long)blockCount * 150 / 100;
+                int baseRadius = ISqrt(areaTarget / (4L * _spores.Length));
 
-                baseRadius = Math.Clamp(baseRadius, MinSporeRadius, Math.Max(MinSporeRadius, minDimension * 35 / 100));
+                baseRadius = Math.Clamp(baseRadius, MinSporeRadius, Math.Max(MinSporeRadius, minBlocks * 35 / 100));
 
                 for (int s = 0; s < _spores.Length; s++)
                 {
                     Spore spore = _spores[s];
-                    int cx = spore.X * width / 10000;
-                    int cy = spore.Y * height / 10000;
+                    int cx = spore.X * bw / 10000;
+                    int cy = spore.Y * bh / 10000;
                     int radius = Math.Max(MinSporeRadius, baseRadius * spore.RadiusScale / 100);
-                    long r2 = (long)radius * radius;
 
-                    for (int y = Math.Max(0, cy - radius); y <= Math.Min(height - 1, cy + radius); y++)
+                    for (int y = Math.Max(0, cy - radius); y <= Math.Min(bh - 1, cy + radius); y++)
                     {
-                        for (int x = Math.Max(0, cx - radius); x <= Math.Min(width - 1, cx + radius); x++)
+                        for (int x = Math.Max(0, cx - radius); x <= Math.Min(bw - 1, cx + radius); x++)
                         {
-                            long d2 = (long)(x - cx) * (x - cx) + (long)(y - cy) * (y - cy);
+                            // Chebyshev distance: square rings, not circles.
+                            int d = Math.Max(Math.Abs(x - cx), Math.Abs(y - cy));
 
-                            if (d2 >= r2)
+                            if (d >= radius)
                             {
                                 continue;
                             }
 
-                            int u = (int)((r2 - d2) * 256 / r2);
-                            int w = u * u >> 8;
+                            int u = (radius - d) * 256 / radius;
+                            int w = u * 2;
 
-                            // Ragged, mottled — mold, not a vector circle.
-                            w += (ValueNoise(x, y, cell, 1) - 128) * 3 / 4;
+                            // Ragged, mottled edges; then stepped into four
+                            // flat levels so it looks like pixel rot.
+                            w += (ValueNoise(x, y, cell, 1) - 128) / 2;
                             w = Math.Clamp(w, 0, 256);
+                            w = (w + 32) / 64 * 64;
 
-                            int i = y * width + x;
+                            if (w == 0)
+                            {
+                                continue;
+                            }
+
+                            int i = y * bw + x;
 
                             if (w > best[i])
                             {
@@ -266,6 +279,7 @@ namespace Decay.Renderer
                 }
             }
 
+            int pixelCount = width * height;
             byte[] alpha = new byte[pixelCount];
             byte[] color = new byte[pixelCount * 3];
 
@@ -273,20 +287,24 @@ namespace Decay.Renderer
             {
                 for (int x = 0; x < width; x++)
                 {
+                    int bx = x / block;
+                    int by = y / block;
+                    int bi = by * bw + bx;
                     int i = y * width + x;
-                    int washAlpha = washPeak * (160 + ValueNoise(x, y, cell * 4, 2) * 96 / 255) >> 8;
+                    int washAlpha = washPeak * (160 + ValueNoise(bx, by, cell * 3, 2) * 96 / 255) >> 8;
                     int a = washAlpha;
                     (int R, int G, int B) target = Wash;
 
-                    if (owner[i] >= 0)
+                    if (owner[bi] >= 0)
                     {
-                        int speckle = (int)(Hash(x, y, 3) & 0xFF);
-                        int sporeAlpha = (peak * best[i] >> 8) * (205 + speckle * 50 / 255) >> 8;
+                        // Per-block speckle keeps the blocks flat-colored.
+                        int speckle = (int)(Hash(bx, by, 3) & 0xFF);
+                        int sporeAlpha = (peak * Math.Min(best[bi], 256) >> 8) * (205 + speckle * 50 / 255) >> 8;
 
                         if (sporeAlpha > washAlpha)
                         {
                             a = sporeAlpha;
-                            target = Stain(_spores[owner[i]].Index);
+                            target = Stain(_spores[owner[bi]].Index);
                         }
                     }
 
@@ -298,6 +316,18 @@ namespace Decay.Renderer
             }
 
             return new Plan { Alpha = alpha, Color = color };
+        }
+
+        private static int ISqrt(long value)
+        {
+            long r = 0;
+
+            while ((r + 1) * (r + 1) <= value)
+            {
+                r++;
+            }
+
+            return (int)r;
         }
 
         /// <summary>Character value → position on the green–brown–purple ramp.</summary>
