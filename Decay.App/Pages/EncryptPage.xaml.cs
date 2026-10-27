@@ -9,7 +9,6 @@ namespace Decay.App.Pages
         private static readonly int[] Sizes = { 256, 384, 512, 768, 1024 };
 
         private const int MaxCustomCarrierDimension = 2048;
-        private const int CustomCarrierDefaultIntensity = 50;
 
         private int _carrierSeed = Random.Shared.Next();
         private PixelBuffer? _carrier;
@@ -123,13 +122,6 @@ namespace Decay.App.Pages
                 // stays as the retry/change-image affordance.
                 if (_customCarrier is null)
                 {
-                    // A personal photo should still look like itself. Gentler
-                    // than the preset default (100), which is fine for
-                    // procedural noise but drowns a recognizable image.
-                    IntensitySlider.Value = SelectedStyle == DecayStyle.Rot
-                        ? TierPolicy.LockedIntensity
-                        : CustomCarrierDefaultIntensity;
-
                     await PickCustomCarrierAsync();
                 }
 
@@ -139,11 +131,6 @@ namespace Decay.App.Pages
             ChooseImageButton.IsVisible = false;
             SizePicker.IsEnabled = true;
             _customCarrier = null;
-
-            // Presets are procedural noise, not a personal image — full
-            // intensity is the better look there, so leaving custom mode
-            // undoes its gentler default.
-            IntensitySlider.Value = TierPolicy.LockedIntensity;
 
             if (!TierPolicy.AllowsPreset(AppState.Tier, SelectedPreset))
             {
@@ -164,15 +151,6 @@ namespace Decay.App.Pages
 
         private void OnStyleChanged(object? sender, EventArgs e)
         {
-            if (AppState.Tier == DecayTier.Pro)
-            {
-                // Rot stains are gentle by design, so 100 suits every
-                // carrier; Glitch wants a lighter touch on a personal photo.
-                IntensitySlider.Value = SelectedStyle == DecayStyle.Rot || !IsCustomSelected
-                    ? TierPolicy.LockedIntensity
-                    : CustomCarrierDefaultIntensity;
-            }
-
             _art = null;
             PlayButton.IsEnabled = false;
             SaveImageButton.IsEnabled = false;

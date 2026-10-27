@@ -35,9 +35,9 @@ side.
 - Public seed: `SHA-256("decay-rot-v1" || container)`, xoshiro256**. First
   draw is the noise seed; then per character, in order: `x = Draw(10000)`,
   `y = Draw(10000)`, `radiusScale = 70 + Draw(60)`.
-- Parameter byte = intensity percent (1–255, `0` ⇒ 100). Peak spore alpha =
-  `clamp(intensity*90/100, 8, 180)` of 256; wash alpha =
-  `clamp(intensity*22/100, 1, 60)`.
+- Parameter byte = intensity (1–255, `0` ⇒ 100). Peak spore alpha =
+  `24 + (intensity−1)·156/254` of 256 (24 … 180); wash alpha =
+  `4 + (intensity−1)·52/254`. The whole range stays recognizable.
 - Spores cover ~85% of the area in total: base radius from the character
   count, clamped to `[4, 35% of the short side]`.
 - Each pixel takes the **single strongest** spore (soft quadratic falloff,

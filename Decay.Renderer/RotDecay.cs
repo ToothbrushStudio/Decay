@@ -23,6 +23,7 @@ namespace Decay.Renderer
         public const int DefaultIntensity = 100;
 
         private const string SubkeyLabel = "decay-rot-v1-mask";
+        private const int MinPeakAlpha = 24; // of 256
         private const int MaxPeakAlpha = 180; // of 256
         private const int MinSporeRadius = 4;
 
@@ -209,8 +210,9 @@ namespace Decay.Renderer
             int pixelCount = width * height;
             int minDimension = Math.Min(width, height);
             int cell = Math.Max(4, minDimension / 32);
-            int peak = Math.Clamp(Intensity * 90 / 100, 8, MaxPeakAlpha);
-            int washPeak = Math.Clamp(Intensity * 22 / 100, 1, 60);
+            // Even intensity 1 must visibly rot; 255 stays mostly recognizable.
+            int peak = MinPeakAlpha + (Intensity - 1) * (MaxPeakAlpha - MinPeakAlpha) / 254;
+            int washPeak = 4 + (Intensity - 1) * 52 / 254;
 
             int[] best = new int[pixelCount];
             int[] owner = new int[pixelCount];

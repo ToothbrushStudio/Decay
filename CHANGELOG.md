@@ -2,6 +2,10 @@
 
 ## 0.1.0 — pre-launch (unreleased)
 
+- **Strength slider stays recognizable**: Glitch's slider (1–255) now maps onto
+  raw intensity 1–40 (it used to send raw 100+ by default, which obliterated
+  the image). Rot gains a visible minimum. Decoding is unaffected.
+
 - **Rot decay style (pipeline 2)**: an alternative to Glitch that keeps the
   image recognizable — each character stains the carrier with a green, brown
   or purple spore chosen by the character's value (masked with a

@@ -211,6 +211,40 @@ namespace Decay.Renderer.Tests
             Assert.NotNull(result.Rot);
         }
 
+        [Fact]
+        public void Strength_KeepsGlitchWithinTheRecognizableRange()
+        {
+            Assert.Equal(1, DecayStrength.ToRaw(DecayStyle.Glitch, 1));
+            Assert.Equal(DecayStrength.GlitchMaxRaw, DecayStrength.ToRaw(DecayStyle.Glitch, 255));
+
+            int previous = 0;
+
+            for (int s = 1; s <= 255; s++)
+            {
+                int raw = DecayStrength.ToRaw(DecayStyle.Glitch, s);
+
+                Assert.InRange(raw, previous, DecayStrength.GlitchMaxRaw);
+                previous = raw;
+            }
+
+            // The Free tier's locked default must not wreck the image.
+            Assert.True(DecayStrength.ToRaw(DecayStyle.Glitch, TierPolicy.LockedIntensity) <= 25);
+            Assert.Equal(200, DecayStrength.ToRaw(DecayStyle.Rot, 200));
+        }
+
+        [Fact]
+        public void RotMinimum_IsStillVisible_AndMaximumRecognizable()
+        {
+            PixelBuffer carrier = CarrierPresets.Voronoi(128, 128, seed: 9);
+            byte[] container = DecayCipher.SealContainer(
+                Message, Passphrase, RotDecay.PipelineId, 100, TestIterations);
+            long min = Distance(carrier, RotDecay.FromContainer(Reparam((byte[])container.Clone(), 1), Message, Passphrase)!.Apply(carrier));
+            long max = Distance(carrier, RotDecay.FromContainer(Reparam((byte[])container.Clone(), 255), Message, Passphrase)!.Apply(carrier));
+
+            Assert.True(min > carrier.Pixels.Length / 2, "Minimum rot should still be visible.");
+            Assert.True(max < carrier.Pixels.Length * 70L, "Maximum rot should stay recognizable.");
+        }
+
         // Rewrites the (authenticated) intensity byte; fine here because
         // only the plan is built, never opened.
         private static byte[] Reparam(byte[] container, byte intensity)
