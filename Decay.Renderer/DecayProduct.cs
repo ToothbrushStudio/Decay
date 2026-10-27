@@ -8,6 +8,16 @@ namespace Decay.Renderer
         Pro,
     }
 
+    /// <summary>How the carrier is decayed.</summary>
+    public enum DecayStyle
+    {
+        /// <summary>Ciphertext-driven glitch: tears, swaps and static (pipeline 1).</summary>
+        Glitch,
+
+        /// <summary>Color rot: the image stays recognizable (pipeline 2).</summary>
+        Rot,
+    }
+
     /// <summary>
     /// What each tier may do. Product policy, deliberately separate from the
     /// frozen format: nothing here affects whether an image decrypts —
@@ -67,7 +77,8 @@ namespace Decay.Renderer
             int height,
             int carrierSeed,
             int intensity = TierPolicy.LockedIntensity,
-            int iterations = DecayCipher.DefaultIterations
+            int iterations = DecayCipher.DefaultIterations,
+            DecayStyle style = DecayStyle.Glitch
         )
         {
             ArgumentNullException.ThrowIfNull(preset);
@@ -83,7 +94,8 @@ namespace Decay.Renderer
                 tier,
                 preset.Generate(width, height, carrierSeed),
                 intensity,
-                iterations
+                iterations,
+                style
             );
         }
 
@@ -94,7 +106,8 @@ namespace Decay.Renderer
             DecayTier tier,
             PixelBuffer carrier,
             int intensity = TierPolicy.LockedIntensity,
-            int iterations = DecayCipher.DefaultIterations
+            int iterations = DecayCipher.DefaultIterations,
+            DecayStyle style = DecayStyle.Glitch
         )
         {
             if (!TierPolicy.AllowsCustomCarrier(tier))
@@ -102,7 +115,7 @@ namespace Decay.Renderer
                 throw new DecayTierException("Uploading your own carrier image");
             }
 
-            return Encrypt(plainText, passphrase, tier, carrier, intensity, iterations);
+            return Encrypt(plainText, passphrase, tier, carrier, intensity, iterations, style);
         }
 
         private static EncryptedArt Encrypt(
@@ -111,7 +124,8 @@ namespace Decay.Renderer
             DecayTier tier,
             PixelBuffer carrier,
             int intensity,
-            int iterations
+            int iterations,
+            DecayStyle style
         )
         {
             if (!TierPolicy.AllowsIntensity(tier, intensity))
@@ -119,13 +133,9 @@ namespace Decay.Renderer
                 throw new DecayTierException("Adjusting the decay intensity");
             }
 
-            EncryptedArt art = DecayArtist.Encrypt(
-                plainText,
-                passphrase,
-                carrier,
-                iterations,
-                intensity
-            );
+            EncryptedArt art = style == DecayStyle.Rot
+                ? DecayArtist.EncryptRot(plainText, passphrase, carrier, iterations, intensity)
+                : DecayArtist.Encrypt(plainText, passphrase, carrier, iterations, intensity);
 
             if (TierPolicy.AppliesWatermark(tier))
             {

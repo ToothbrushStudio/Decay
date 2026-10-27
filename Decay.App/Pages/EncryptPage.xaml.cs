@@ -22,6 +22,12 @@ namespace Decay.App.Pages
         {
             InitializeComponent();
 
+            StylePicker.ItemsSource = new List<string>
+            {
+                "Glitch — scramble the pixels",
+                "Rot — stain the colors (keeps the image recognizable)",
+            };
+            StylePicker.SelectedIndex = 0;
             PresetPicker.ItemsSource = CarrierPresets.All
                 .Select(p => p.FreeTier ? p.Name : $"{p.Name} (Pro)")
                 .Append("Custom Image (Pro)")
@@ -55,6 +61,9 @@ namespace Decay.App.Pages
             CarrierPresets.All[
                 Math.Clamp(PresetPicker.SelectedIndex, 0, CarrierPresets.All.Count - 1)
             ];
+
+        private DecayStyle SelectedStyle =>
+            StylePicker.SelectedIndex == 1 ? DecayStyle.Rot : DecayStyle.Glitch;
 
         private int SelectedSize => Sizes[Math.Max(0, SizePicker.SelectedIndex)];
 
@@ -117,7 +126,9 @@ namespace Decay.App.Pages
                     // A personal photo should still look like itself. Gentler
                     // than the preset default (100), which is fine for
                     // procedural noise but drowns a recognizable image.
-                    IntensitySlider.Value = CustomCarrierDefaultIntensity;
+                    IntensitySlider.Value = SelectedStyle == DecayStyle.Rot
+                        ? TierPolicy.LockedIntensity
+                        : CustomCarrierDefaultIntensity;
 
                     await PickCustomCarrierAsync();
                 }
@@ -149,6 +160,23 @@ namespace Decay.App.Pages
             }
 
             RegenerateCarrier();
+        }
+
+        private void OnStyleChanged(object? sender, EventArgs e)
+        {
+            if (AppState.Tier == DecayTier.Pro)
+            {
+                // Rot stains are gentle by design, so 100 suits every
+                // carrier; Glitch wants a lighter touch on a personal photo.
+                IntensitySlider.Value = SelectedStyle == DecayStyle.Rot || !IsCustomSelected
+                    ? TierPolicy.LockedIntensity
+                    : CustomCarrierDefaultIntensity;
+            }
+
+            _art = null;
+            PlayButton.IsEnabled = false;
+            SaveImageButton.IsEnabled = false;
+            ShareButton.IsEnabled = false;
         }
 
         private void OnSizeChanged(object? sender, EventArgs e)
@@ -307,6 +335,7 @@ namespace Decay.App.Pages
             int size = SelectedSize;
             int seed = _carrierSeed;
             int intensity = (int)IntensitySlider.Value;
+            DecayStyle style = SelectedStyle;
 
             EncryptButton.IsEnabled = false;
             StatusLabel.Text = "Deriving key and rotting the carrier…";
@@ -332,7 +361,8 @@ namespace Decay.App.Pages
                         passphrase,
                         AppState.Tier,
                         customCarrier,
-                        intensity
+                        intensity,
+                        style: style
                     ))
                     : await Task.Run(() => DecayProduct.EncryptWithPreset(
                         message,
@@ -342,7 +372,8 @@ namespace Decay.App.Pages
                         size,
                         size,
                         seed,
-                        intensity
+                        intensity,
+                        style: style
                     ));
 
                 byte[] png = await Task.Run(() => DecayPng.Encode(_art.FinalImage));
@@ -386,12 +417,26 @@ namespace Decay.App.Pages
             PlayButton.IsEnabled = false;
             StatusLabel.Text = "Rendering decay frames…";
 
-            // Walk the exported image back to its start state, then play the
-            // rot forward — the exact bijection replay the receiver gets in
-            // reverse.
             EncryptedArt art = _art;
-            PixelBuffer start = await Task.Run(() => art.Sequence.Unrot(art.FinalImage));
-            FramePlayer player = await FramePlayer.RenderForwardAsync(art.Sequence, start);
+            FramePlayer player;
+
+            if (art.Rot is RotDecay rot)
+            {
+                // Rot style: fade from the clean carrier into the stained image.
+                PixelBuffer clean = await Task.Run(() => rot.Restore(art.FinalImage));
+
+                player = await FramePlayer.RenderCrossfadeAsync(clean, art.FinalImage);
+            }
+            else
+            {
+                // Walk the exported image back to its start state, then play
+                // the rot forward — the exact bijection replay the receiver
+                // gets in reverse.
+                DecaySequence sequence = art.Sequence!;
+                PixelBuffer start = await Task.Run(() => sequence.Unrot(art.FinalImage));
+
+                player = await FramePlayer.RenderForwardAsync(sequence, start);
+            }
 
             StatusLabel.Text = "The rot, frame by frame.";
             player.Play(

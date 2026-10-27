@@ -112,3 +112,4 @@ the identity; the op pipeline provides the rot.
 |---|---|---|---|
 | 0 | v1.0 | Reserved | No pipeline; data-only image, no animation |
 | 1 | v1.0 (launch) | Current | This document |
+| 2 | post-launch | Experimental | Rot — color stains, [docs/render-pipeline-v2-rot.md](render-pipeline-v2-rot.md) |

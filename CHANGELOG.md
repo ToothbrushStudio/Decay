@@ -2,6 +2,13 @@
 
 ## 0.1.0 — pre-launch (unreleased)
 
+- **Rot decay style (pipeline 2)**: an alternative to Glitch that keeps the
+  image recognizable — each character stains the carrier with a green, brown
+  or purple spore chosen by the character's value (masked with a
+  passphrase-derived keystream so the colors leak nothing). Selectable on the
+  Encrypt tab; Decrypt drains the stains and restores the carrier to within
+  a couple of levels per channel.
+
 The rewrite from prototype to product.
 
 - **Frozen payload format v1**: AES-256-GCM + PBKDF2-HMAC-SHA256, versioned
