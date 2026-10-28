@@ -2,6 +2,17 @@
 
 ## 0.1.0 — pre-launch (unreleased)
 
+- **Strength slider stays recognizable**: Glitch's slider (1–255) now maps onto
+  raw intensity 1–50 (it used to send raw 100+ by default, which obliterated
+  the image). Rot gains a visible minimum. Decoding is unaffected.
+
+- **Rot decay style (pipeline 2)**: an alternative to Glitch that keeps the
+  image recognizable — each character stains the carrier with a green, brown
+  or purple spore chosen by the character's value (masked with a
+  passphrase-derived keystream so the colors leak nothing). Selectable on the
+  Encrypt tab; Decrypt drains the stains and restores the carrier to within
+  a couple of levels per channel.
+
 The rewrite from prototype to product.
 
 - **Frozen payload format v1**: AES-256-GCM + PBKDF2-HMAC-SHA256, versioned

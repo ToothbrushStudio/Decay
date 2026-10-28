@@ -32,6 +32,15 @@ through a platform that re-compresses images, or any resize destroys the
 message forever. Decay letters are delicate objects, and that delicacy is
 deliberate: it makes receiving one intact mean something.
 
+## Decay styles
+
+**Glitch** (default) scrambles the carrier with ciphertext-driven tears and
+static. **Rot** keeps the image recognizable and stains it instead: every
+character drops a spore of sickly green, brown or bruise purple, colored by
+the character's value. Rot recovery is approximate (within a couple of levels
+per channel); the message itself is always exact. See the
+[Rot spec](docs/render-pipeline-v2-rot.md).
+
 ## Carriers
 
 ![The five carrier presets](docs/media/presets.png)

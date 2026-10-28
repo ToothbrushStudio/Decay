@@ -73,6 +73,29 @@ namespace Decay.App
         }
 
         /// <summary>
+        /// Rot style: a cross-fade between two images. Encrypt previews
+        /// carrier → rotted; decrypt reveals rotted → restored.
+        /// </summary>
+        public static Task<FramePlayer> RenderCrossfadeAsync(
+            PixelBuffer from,
+            PixelBuffer to,
+            int steps = 24
+        )
+        {
+            return Task.Run(() =>
+            {
+                List<byte[]> frames = new List<byte[]>(steps + 1);
+
+                for (int step = 0; step <= steps; step++)
+                {
+                    frames.Add(DecayPng.Encode(RotDecay.Interpolate(from, to, step, steps)));
+                }
+
+                return new FramePlayer(frames);
+            });
+        }
+
+        /// <summary>
         /// Plays the frames into the target. onFrame reports (index, total)
         /// each tick — the decrypt page uses it to reveal the message text in
         /// step with the un-rot.

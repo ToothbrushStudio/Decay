@@ -5,23 +5,27 @@ namespace Decay.Renderer
     /// <summary>
     /// The result of encrypting a message into art: the exported image, the
     /// sequence that produced it (for the forward preview animation), and
-    /// the watermark-safe pixel boundary.
+    /// the watermark-safe pixel boundary. Exactly one of Sequence (Glitch
+    /// style) and Rot (Rot style) is set.
     /// </summary>
     public sealed record EncryptedArt(
         PixelBuffer FinalImage,
-        DecaySequence Sequence,
-        int PayloadPixelExtent
+        DecaySequence? Sequence,
+        int PayloadPixelExtent,
+        RotDecay? Rot = null
     );
 
     /// <summary>
     /// The result of decrypting a Decay image: the message, and — when the
     /// image was made with a pipeline this build knows — the sequence to
     /// play backwards as the reveal animation. A null Sequence is normal for
-    /// data-only images and images from newer pipelines.
+    /// data-only images and images from newer pipelines. Rot images carry
+    /// their stain plan in Rot instead of a Sequence.
     /// </summary>
     public sealed record DecryptedArt(
         string PlainText,
-        DecaySequence? Sequence
+        DecaySequence? Sequence,
+        RotDecay? Rot = null
     );
 
     /// <summary>
@@ -70,6 +74,41 @@ namespace Decay.Renderer
         }
 
         /// <summary>
+        /// Encrypts the message in the Rot style: the carrier keeps its look
+        /// and is stained green, brown and purple by the characters of the
+        /// message. Same container, same embed and watermark rules as Encrypt.
+        /// </summary>
+        /// <param name="intensity">
+        /// Stain strength in percent, 1–255; 100 is the default. Recorded in
+        /// the container, so the receiver restores with exactly the same plan.
+        /// </param>
+        public static EncryptedArt EncryptRot(
+            string plainText,
+            string passphrase,
+            PixelBuffer carrier,
+            int iterations = DecayCipher.DefaultIterations,
+            int intensity = RotDecay.DefaultIntensity
+        )
+        {
+            ArgumentNullException.ThrowIfNull(carrier);
+            ArgumentOutOfRangeException.ThrowIfLessThan(intensity, 1);
+            ArgumentOutOfRangeException.ThrowIfGreaterThan(intensity, 255);
+
+            byte[] container = DecayCipher.SealContainer(
+                plainText,
+                passphrase,
+                RotDecay.PipelineId,
+                (byte)intensity,
+                iterations
+            );
+            RotDecay rot = RotDecay.FromContainer(container, plainText, passphrase)!;
+            PixelBuffer final = rot.Apply(carrier);
+            int extent = DecayCipher.EmbedContainer(container, final);
+
+            return new EncryptedArt(final, null, extent, rot);
+        }
+
+        /// <summary>
         /// Decrypts a Decay image and, when possible, rebuilds the decay
         /// sequence so the UI can un-rot the image as the message reveals
         /// (walk RevertFrame from frame 39 down to 0, or call Unrot for the
@@ -83,7 +122,11 @@ namespace Decay.Renderer
             byte[] container = DecayCipher.ExtractContainer(image);
             string plainText = DecayCipher.OpenContainer(container, passphrase);
 
-            return new DecryptedArt(plainText, DecaySequence.FromContainer(container));
+            return new DecryptedArt(
+                plainText,
+                DecaySequence.FromContainer(container),
+                RotDecay.FromContainer(container, plainText, passphrase)
+            );
         }
     }
 }

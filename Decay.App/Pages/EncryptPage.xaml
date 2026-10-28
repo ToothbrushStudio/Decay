@@ -33,6 +33,10 @@
                         Clicked="OnTogglePassphrase" />
             </Grid>
 
+            <Picker x:Name="StylePicker"
+                    Title="Decay style"
+                    SelectedIndexChanged="OnStyleChanged" />
+
             <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
                 <Picker x:Name="PresetPicker"
                         Grid.Column="0"

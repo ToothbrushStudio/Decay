@@ -209,6 +209,36 @@ namespace Decay.Core
             );
         }
 
+        /// <summary>
+        /// Derives a label-separated 32-byte subkey from the same
+        /// passphrase-derived key that protects the message (HMAC-SHA256 of
+        /// the label under that key). Renderers use it to mask anything
+        /// visible that depends on the plaintext, so the art leaks nothing
+        /// a passphrase-less observer could read. Costs one more PBKDF2 run.
+        /// </summary>
+        internal static byte[] DeriveSubkey(
+            ReadOnlySpan<byte> container,
+            string passphrase,
+            ReadOnlySpan<byte> label
+        )
+        {
+            ContainerInfo info = ReadHeader(container);
+            byte[] key = DeriveKey(
+                passphrase,
+                container.Slice(SaltOffset, SaltSize),
+                info.Iterations
+            );
+
+            try
+            {
+                return HMACSHA256.HashData(key, label);
+            }
+            finally
+            {
+                CryptographicOperations.ZeroMemory(key);
+            }
+        }
+
         private static byte[] DeriveKey(string passphrase, ReadOnlySpan<byte> salt, int iterations)
         {
             return Rfc2898DeriveBytes.Pbkdf2(

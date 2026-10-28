@@ -174,7 +174,11 @@ namespace Decay.Renderer.Tests
             DecryptedArt result = DecayArtist.Decrypt(art.FinalImage, Passphrase);
 
             Assert.Equal("full access", result.PlainText);
-            Assert.Equal(42, result.Sequence!.Intensity);
+            // The slider's 42 is recorded as the style's raw intensity.
+            Assert.Equal(
+                DecayStrength.ToRaw(DecayStyle.Glitch, 42),
+                result.Sequence!.Intensity
+            );
         }
 
         [Fact]

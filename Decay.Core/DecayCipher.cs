@@ -121,6 +121,24 @@ namespace Decay.Core
         }
 
         /// <summary>
+        /// A secret 32-byte value bound to the container and passphrase, for
+        /// renderers that must hide plaintext-dependent visuals from anyone
+        /// without the passphrase. Different labels give independent values.
+        /// </summary>
+        public static byte[] DeriveSubkey(byte[] container, string passphrase, string label)
+        {
+            ArgumentNullException.ThrowIfNull(container);
+            ArgumentException.ThrowIfNullOrEmpty(passphrase);
+            ArgumentException.ThrowIfNullOrEmpty(label);
+
+            return PayloadContainer.DeriveSubkey(
+                container,
+                passphrase,
+                System.Text.Encoding.UTF8.GetBytes(label)
+            );
+        }
+
+        /// <summary>
         /// Simple path: encrypts the message and embeds it into the carrier's
         /// pixels in place, with no decay pipeline recorded.
         /// </summary>

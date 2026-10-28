@@ -87,6 +87,34 @@ namespace Decay.App.Pages
                 _message = result.PlainText;
                 CopyButton.IsEnabled = true;
 
+                if (result.Rot is RotDecay rot)
+                {
+                    // Rot style: drain the stains. The restored image is the
+                    // carrier to within a couple of levels per channel.
+                    StatusLabel.Text = "Draining the rot…";
+
+                    PixelBuffer restored = await Task.Run(() => rot.Restore(received));
+                    FramePlayer fade = await FramePlayer.RenderCrossfadeAsync(received, restored);
+
+                    _recoveredImagePng = fade.LastFramePng;
+                    SaveImageButton.IsEnabled = true;
+
+                    fade.Play(
+                        Preview,
+                        Dispatcher,
+                        TimeSpan.FromMilliseconds(70),
+                        onFrame: (index, total) =>
+                            MessageLabel.Text = RevealSlice(_message, index, total),
+                        onDone: () =>
+                        {
+                            MessageLabel.Text = _message;
+                            StatusLabel.Text = "The rot drained from the image.";
+                        }
+                    );
+
+                    return;
+                }
+
                 if (result.Sequence is null)
                 {
                     // Data-only image, or a newer pipeline: no animation, and
