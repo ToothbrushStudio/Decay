@@ -24,7 +24,7 @@ namespace Decay.App.Pages
             StylePicker.ItemsSource = new List<string>
             {
                 "Glitch — scramble the pixels",
-                "Rot — stain the colors (keeps the image recognizable)",
+                "Rot (Pro) — stain the colors (keeps the image recognizable)",
             };
             StylePicker.SelectedIndex = 0;
             PresetPicker.ItemsSource = CarrierPresets.All
@@ -80,6 +80,11 @@ namespace Decay.App.Pages
             {
                 IntensitySlider.Value = TierPolicy.LockedIntensity;
                 _customCarrier = null;
+
+                if (StylePicker.SelectedIndex != 0)
+                {
+                    StylePicker.SelectedIndex = 0;
+                }
 
                 if (IsCustomSelected || !SelectedPreset.FreeTier)
                 {
@@ -149,8 +154,20 @@ namespace Decay.App.Pages
             RegenerateCarrier();
         }
 
-        private void OnStyleChanged(object? sender, EventArgs e)
+        private async void OnStyleChanged(object? sender, EventArgs e)
         {
+            if (!TierPolicy.AllowsStyle(AppState.Tier, SelectedStyle))
+            {
+                await DisplayAlertAsync(
+                    "Decay Pro",
+                    "Rot mode requires Decay Pro.",
+                    "OK"
+                );
+                StylePicker.SelectedIndex = 0;
+
+                return;
+            }
+
             _art = null;
             PlayButton.IsEnabled = false;
             SaveImageButton.IsEnabled = false;

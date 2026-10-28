@@ -191,12 +191,30 @@ namespace Decay.Renderer.Tests
         }
 
         [Fact]
-        public void Product_RotStyle_WatermarksFreeAndKeepsMessage()
+        public void Product_RotStyle_IsProOnly()
+        {
+            Assert.Throws<DecayTierException>(() =>
+                DecayProduct.EncryptWithPreset(
+                    "free rot",
+                    Passphrase,
+                    DecayTier.Free,
+                    CarrierPresets.Default,
+                    256,
+                    256,
+                    carrierSeed: 11,
+                    iterations: TestIterations,
+                    style: DecayStyle.Rot
+                )
+            );
+        }
+
+        [Fact]
+        public void Product_RotStyle_ProKeepsMessage()
         {
             EncryptedArt art = DecayProduct.EncryptWithPreset(
-                "free rot",
+                "pro rot",
                 Passphrase,
-                DecayTier.Free,
+                DecayTier.Pro,
                 CarrierPresets.Default,
                 256,
                 256,
@@ -207,7 +225,7 @@ namespace Decay.Renderer.Tests
 
             DecryptedArt result = DecayArtist.Decrypt(art.FinalImage, Passphrase);
 
-            Assert.Equal("free rot", result.PlainText);
+            Assert.Equal("pro rot", result.PlainText);
             Assert.NotNull(result.Rot);
         }
 

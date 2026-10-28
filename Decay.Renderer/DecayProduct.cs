@@ -73,6 +73,11 @@ namespace Decay.Renderer
             return tier == DecayTier.Pro || preset.FreeTier;
         }
 
+        public static bool AllowsStyle(DecayTier tier, DecayStyle style)
+        {
+            return tier == DecayTier.Pro || style != DecayStyle.Rot;
+        }
+
         public static bool AllowsIntensity(DecayTier tier, int intensity)
         {
             return tier == DecayTier.Pro || intensity == LockedIntensity;
@@ -156,6 +161,11 @@ namespace Decay.Renderer
             DecayStyle style
         )
         {
+            if (!TierPolicy.AllowsStyle(tier, style))
+            {
+                throw new DecayTierException("Rot mode");
+            }
+
             if (!TierPolicy.AllowsIntensity(tier, intensity))
             {
                 throw new DecayTierException("Adjusting the decay intensity");
