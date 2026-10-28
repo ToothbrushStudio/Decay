@@ -61,6 +61,7 @@ stages of decay, or (Pro) any image of your own:
 | Encrypt & send | ✔ | ✔ |
 | **Decrypt anything** | **✔ always** | **✔ always** |
 | Carrier presets | TV Static | All five |
+| Rot mode (encrypt) | — | ✔ |
 | Custom carrier images | — | ✔ |
 | Decay intensity dial (1–255) | locked at 100 | ✔ |
 | Watermark on exports | small mark | none |
