@@ -86,6 +86,42 @@ honest copy ("Instagram: screenshot support is experimental").
 Posting from the sender's side is easy on all four. It's the receiver's side
 that decides the level.
 
+### 3.2 Link-out: the practical answer for Instagram
+
+Instead of making the posted image carry the message, the post can be a
+**teaser** and the caption can point to a host that serves the **original,
+byte-identical PNG**. The receiver downloads that file and opens it in Decay,
+which is plain v1 (exact reveal, full capacity, no resilient layer needed).
+
+- Works on every platform, not just Instagram, and removes the need for R3.
+- Keeps v1's strengths: any size, exact un-rot, files and decoys later.
+- Costs nothing in the app: Decay stays offline. The user chooses the host.
+
+Host requirements: serves the uploaded bytes unchanged (no recompression, no
+PNG-to-JPEG conversion, no metadata stripping that touches pixels), lets
+anyone download without an account, and keeps files long enough. **Verify any
+host by uploading a PNG and comparing the SHA-256 of the downloaded file.**
+
+Hosts, from a quick check (unverified claims need the checksum test):
+- **Cloud-drive share links** (Google Drive, Dropbox, OneDrive): store and
+  serve the file as uploaded, so they are the safest default.
+- **Imgur: not recommended.** Reported to recompress larger images
+  (including PNG to JPEG over 5 MB), it deleted inactive anonymous uploads
+  from 2023, and it has been blocked in the UK since Sept 2025.
+- **Image hosts such as Imghippo:** advertise unaltered storage; not verified
+  by us. Small free services come and go, so treat links as perishable.
+
+Instagram specifics: links in captions and comments are not clickable, so the
+instructions should be "link in bio" or a story link sticker, or a short URL
+people can type. Possible app support later: a "Share to Instagram" guide
+after export that lists these steps; an optional field that stores the link
+alongside a local archive entry. Do **not** add upload-to-host inside Decay
+without a deliberate decision, since it breaks "nothing leaves your device".
+
+Risks: link rot loses the letter for everyone but the sender (keep a copy),
+and the host sees the image, which is safe because it only contains
+ciphertext, but is worth saying plainly in the guide.
+
 ## 4. The technique
 
 ### 4.1 Where to hide the data
