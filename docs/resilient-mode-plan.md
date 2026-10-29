@@ -17,6 +17,18 @@ colour channel, which re-encoding destroys by design. Resilient mode means
 hiding the data somewhere re-encoding does **not** destroy, and adding enough
 redundancy to repair what it does damage.
 
+## 1.1 Scope decisions
+
+- **Target platforms:** Instagram, X, Reddit, Facebook. Bluesky is out of scope
+  for now. Mastodon and others are not targets.
+- **Text only.** No files or photos in resilient mode.
+- **Image size.** The app generates 512×512 by default, but this is a picker in
+  `EncryptPage.xaml.cs` (`Sizes = 256, 384, 512, 768, 1024`), not a hard
+  limit. Custom carriers must match the chosen size. Capacity scales with
+  area (§4.5), so Feed mode should default to **1024×1024**, which is a
+  multiple of 8 and, as far as we know, below every target platform's size cap
+  **(to measure)**.
+
 ## 2. How hard is it? (the honest summary)
 
 It splits into three levels of difficulty, and they should be built and judged
@@ -53,6 +65,26 @@ facts, per platform, with real uploads. Expect these transformations:
 
 Chat apps are a separate case: they usually recompress photos but treat
 "send as file/document" as lossless. That already works with v1.
+
+### 3.1 The four target platforms
+
+What we believe today, to be replaced by Phase 0 measurements. The most
+important column is whether a receiver can get the image *out* of the app.
+
+| Platform | Can receivers save the image? | Likely level needed | Notes |
+|---|---|---|---|
+| **Reddit** | Usually yes (long-press / right-click on the image). | R1 | Image hosting has several variants; the full-size one may even stay lossless for small images. Previews and thumbnails are recompressed and smaller. Measure which variant "save" returns. |
+| **X** | Yes (mobile "save image", web "save as"). | R1, maybe R2 | Serves recompressed variants and picks sizes itself. Test both the in-feed and open-full-image variants, and web vs. app. |
+| **Facebook** | Yes (download from the photo menu / web). | R1, maybe R2 | Typically recompresses hard and strips metadata. Test with the "high quality upload" setting on and off. |
+| **Instagram** | **No, not for other people's posts.** | **R3 (screenshot)** | Receivers would have to screenshot, which means non-integer scaling, UI chrome and colour changes. Do not promise Instagram until R3 has a measured pass rate. |
+
+Consequence: **Reddit, X and Facebook are reachable with R1 (+ R2 if needed).
+Instagram is only reachable with R3**, the research-grade level. Plan the
+launch around the first three and treat Instagram as a stretch goal, with
+honest copy ("Instagram: screenshot support is experimental").
+
+Posting from the sender's side is easy on all four. It's the receiver's side
+that decides the level.
 
 ## 4. The technique
 
@@ -141,16 +173,23 @@ What this tells us:
 
 ### 4.5 Capacity estimate **(spike-derived, rough)**
 
-At 1080×1080 with 145,800 raw sites:
+Raw sites = (size ÷ 8)² blocks × 8 coefficients = size² ÷ 8. Plaintext is
+what's left after the 59-byte v1 container overhead and a small frame header.
+ASCII text is 1 byte per character; accented letters take 2 bytes and emoji
+or CJK 3–4, so non-English text fits fewer characters.
 
-| Setting | Info bits | Usable plaintext |
-|---|---|---|
-| Repetition 4 + RS rate ¾ | ~27,000 | **≈ 3.3 KB** |
-| Repetition 8 + RS rate ½ | ~9,100 | ≈ 1.1 KB |
+| Size (Decay picker) | Raw sites | Rep 4 + RS ¾ (balanced) | Rep 8 + RS ½ (tough) |
+|---|---|---|---|
+| 256×256 | 8,192 | ~130 B | ~40 B |
+| **512×512 (current default)** | 32,768 | **~700 B** (a long tweet or a short letter) | ~190 B |
+| 768×768 | 73,728 | ~1.6 KB | ~420 B |
+| **1024×1024 (recommended for Feed)** | 131,072 | **~3.0 KB** (a full page) | ~790 B |
 
-1080×1350 gives about 25% more. So resilient letters are **text of up to a
-few thousand characters, plus tiny extras**. They are not for photos or
-files. This is a real product limit and the UI must show a live capacity meter.
+So with text only, **512 is enough for short notes but tight for a real
+letter, and 1024 gives about 4× more room** at the same robustness. Resilient
+letters are not for photos or files. The UI must show a live capacity meter,
+and Feed mode should switch the size picker to 1024 by default (with 512
+available for short notes where a smaller image is wanted).
 
 ## 5. Interaction with the existing visuals
 
@@ -193,10 +232,14 @@ add ±1–3 per channel, far below Δ, so they don't disturb the robust layer.
 Resizing and cropping are the real danger (§2). The cheapest defence is to
 **never give the platform a reason to touch the geometry**:
 
-- **Export "social-safe canvases":** 1080×1080 and 1080×1350 (and perhaps
-  1080×566 for wide). These sit inside the limits of mainstream platforms
-  **(to measure)**. If the platform keeps the size, the 8×8 grid stays aligned
-  and only compression happens.
+- **Export "social-safe canvases".** Decay already offers square sizes, and
+  square is the one shape every target platform accepts without cropping. Use
+  **1024×1024** (preferred) or 512×512. Both are below the size caps we expect
+  on Reddit, X, Facebook and Instagram **(to measure)**. If the platform keeps
+  the size, the 8×8 grid stays aligned and only compression happens.
+  Watch for the opposite problem too: a platform that **upscales** small
+  images (some do for very small uploads) would also break alignment, so
+  Phase 0 must test 512 and 1024 specifically.
 - Always export at exact multiples of 8 in both dimensions.
 - Export upright (no EXIF rotation), opaque, sRGB.
 - Keep the data off the outer few blocks, where platforms sometimes trim.
@@ -305,7 +348,7 @@ Effort numbers are rough ranges for one developer and assume no surprises.
 
 | Phase | Work | Exit criterion (go / no-go) |
 |---|---|---|
-| **0. Measure** (1–2 wk) | Upload test images to each target platform in each surface, download every available variant, record format, dimensions, quality (from JPEG quant tables). Port the spike to C# against the real pixel buffer. Test Glitch-inverse on degraded pixels. | At least the priority platforms leave the image in a decodable state at the chosen canvas, and we know which save paths work. If none do, stop here. |
+| **0. Measure** (1–2 wk) | Upload test images (512×512 and 1024×1024, PNG, opaque sRGB) to Reddit, X, Facebook and Instagram, on web and mobile, in each surface, download every available variant, record format, dimensions, quality (from JPEG quant tables). Port the spike to C# against the real pixel buffer. Test Glitch-inverse on degraded pixels. | At least the priority platforms leave the image in a decodable state at the chosen canvas, and we know which save paths work. If none do, stop here. |
 | **1. R1 engine** (3–5 wk) | `Dct`, `ReedSolomon`, `RobustCodec` in `Decay.Core`; frame + header; decode order; fixed-point DCT; golden vectors; channel simulator. | ≥ 99% decode across the sweep at q ≥ 50 / WebP ≥ 75. |
 | **2. App integration** (3–4 wk) | Feed mode on Encrypt, JPEG/WebP open on Decrypt, capacity meter, Test-it button, hybrid image, Rot + reveal behaviour, Studio gating, watermark exclusion. | Round trip through two real platforms by hand, on each OS. |
 | **3. R2 geometry** (3–6 wk) | Pilot, scale/offset search, canonical resample, tiling. | Survives the platform resizes measured in Phase 0 without special canvases. |
@@ -346,14 +389,14 @@ then add Phase 3 in a point release. Phase 4 only ships if it clears its gate.
   with" in the UI, never "guaranteed".
 
 **Open questions**
-1. Which platforms are the launch priority? This decides the Phase 0 matrix
-   and the canvas sizes.
+1. ~~Which platforms are the launch priority?~~ **Decided:** Instagram, X,
+   Reddit, Facebook (§1.1). Open: is a launch without working Instagram
+   support acceptable, given receivers can't save from it (§3.1)?
 2. Is Glitch worth supporting in Feed mode, or do we launch Rot and one or
    two new smooth styles first? (Depends on the Phase 0 inverse test.)
 3. Do we want the hybrid image by default, or a separate export?
-4. Is a few-KB text limit acceptable, or does the product want a "link to a
-   file" scheme? (A link would need hosting, which breaks the no-servers
-   promise, so the recommendation is no.)
+4. ~~Is a text-only limit acceptable?~~ **Decided: yes.** (A "link to a file"
+   scheme would need hosting, which breaks the no-servers promise.)
 5. Fixed-point DCT from day one, or float first and freeze later? Recommend
    fixed-point from day one: retrofitting a frozen spec is painful.
 6. Should Feed mode cost Studio price, or be bundled in Pro to grow reach?
