@@ -1,8 +1,27 @@
-# Decay — Roadmap sketch: v2 "Studio" and v3
+# Decay — Roadmap sketch
 
 *Status: planning sketch, not a spec. Nothing here changes format v1, which
 stays frozen. Every item is additive and every future decoder keeps reading
 every past version.*
+
+## Release order (revised)
+
+| Version | Theme | Where it's planned |
+|---|---|---|
+| **v2** | **Resilient mode**: letters that survive being posted to social apps | [resilient-mode-plan.md](resilient-mode-plan.md) |
+| v3 | "Studio": decoys, file payloads, new styles, reveal export, desktop workflow | Below (was v2) |
+| v4 | "Letters": multi-recipient, keyfiles, carrier packs, stationery, archive | Below (was v3) |
+
+Resilient mode was promoted to v2. It changes the pixel encoding, so it comes
+before the payload-container work in v3. Two consequences to carry forward:
+
+- **File payloads (v3) need big images.** Resilient images carry only a few KB,
+  so file payloads stay Original-mode only.
+- **Decoys and multi-recipient (v3/v4)** must be designed to work inside the
+  resilient frame, or be explicitly Original-only. Decide when v3 starts.
+
+The section numbers below still say "Version 2" and "Version 3" from the first
+draft. Read them as v3 and v4.
 
 ## Ground rules (carried over from the README promises)
 
@@ -215,21 +234,9 @@ image), and a per-recipient generated passphrase.
 - Custom-carrier tooling: crop, fit, "auto-tune intensity" so the result stays
   recognizable.
 
-## 3.4 Resilient mode (opt-in) **[Studio]**
+## 3.4 Resilient mode: moved to v2
 
-The biggest and riskiest item. An error-corrected embedding that survives
-mild recompression, resizing, and ideally a screenshot.
-
-- New payload version (the format doc already reserves this: "error-correction
-  redundancy, if ever added, arrives as a new additive format version").
-- Likely design: Reed-Solomon over a spread-spectrum or DCT-domain embedding
-  rather than raw LSBs. This is a research project, not a feature. Budget a
-  prototype and a robustness test harness (resize 50-100%, JPEG q60-95,
-  screenshot captures from the real platforms) *before* promising anything.
-- UI: a clearly separate toggle with copy that is honest about the trade-off
-  ("this letter will survive a screenshot, and it will be less delicate").
-  Capacity drops sharply, so expect text and small files only.
-- Fragile stays the default, so the brand survives.
+Promoted to the next release. See [resilient-mode-plan.md](resilient-mode-plan.md).
 
 ## 3.5 Stationery and letter formatting **[Studio]**
 
