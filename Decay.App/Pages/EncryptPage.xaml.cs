@@ -6,7 +6,7 @@ namespace Decay.App.Pages
 {
     public partial class EncryptPage : ContentPage
     {
-        private static readonly int[] Sizes = { 256, 384, 512, 768, 1024 };
+        private static readonly int[] Sizes = SendGuide.DecaySizes;
 
         private const int MaxCustomCarrierDimension = 2048;
 
@@ -472,6 +472,11 @@ namespace Decay.App.Pages
             {
                 await DisplayAlertAsync("Not available here", exception.Message, "OK");
             }
+        }
+
+        private async void OnHowToSend(object? sender, EventArgs e)
+        {
+            await Shell.Current.GoToAsync(SendGuide.Route);
         }
 
         private async void OnShare(object? sender, EventArgs e)

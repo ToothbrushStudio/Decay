@@ -9,6 +9,8 @@ namespace Decay.App
         {
             InitializeComponent();
 
+            Routing.RegisterRoute(SendGuide.Route, typeof(Pages.HowToSendPage));
+
             // The title is the watermark: same glyphs, same plate, rendered
             // by the same engine code that marks Free exports.
             byte[] badge = DecayPng.Encode(Watermark.RenderBadge(scale: 3));

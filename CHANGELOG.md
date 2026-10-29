@@ -2,6 +2,14 @@
 
 ## 0.1.0 — pre-launch (unreleased)
 
+- **How to send guide and clearer errors**: a new "How to send it safely"
+  page (linked from the Encrypt tab) lists the safe and destructive ways to
+  send a Decay image. Decrypt failures now explain the likely cause — a
+  re-compressed, resized or screenshotted image — and offer the guide. The
+  open dialog accepts any image type so a JPEG/WebP copy gets an explanation
+  instead of being hidden, and an image that isn't a Decay size is flagged.
+  No format or crypto changes.
+
 - **Strength slider stays recognizable**: Glitch's slider (1–255) now maps onto
   raw intensity 1–50 (it used to send raw 100+ by default, which obliterated
   the image). Rot gains a visible minimum. Decoding is unaffected.

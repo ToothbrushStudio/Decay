@@ -104,6 +104,12 @@
                    FontSize="12"
                    TextColor="{StaticResource Warn}" />
 
+            <Button Text="How to send it safely…"
+                    FontSize="12"
+                    BackgroundColor="{StaticResource Panel}"
+                    TextColor="{StaticResource Accent}"
+                    Clicked="OnHowToSend" />
+
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>
