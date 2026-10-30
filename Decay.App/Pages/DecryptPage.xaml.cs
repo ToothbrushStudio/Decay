@@ -19,7 +19,10 @@ namespace Decay.App.Pages
             FileResult? file = await FilePicker.Default.PickAsync(new PickOptions
             {
                 PickerTitle = "Open a Decay image",
-                FileTypes = FilePickerFileType.Png,
+
+                // Not just PNG: if someone picks a JPEG saved from a chat or
+                // a site, we can explain what happened instead of hiding it.
+                FileTypes = FilePickerFileType.Images,
             });
 
             if (file is null)
@@ -41,13 +44,31 @@ namespace Decay.App.Pages
                 SaveImageButton.IsEnabled = false;
                 _recoveredImagePng = null;
                 MessageLabel.Text = "";
+                string hint = SendGuide.LoadedHint(_received.Width, _received.Height);
+
                 StatusLabel.Text = $"Loaded {_received.Width}×{_received.Height}. "
-                    + "If this file was screenshotted or re-compressed along the way, "
-                    + "the message inside it is already gone.";
+                    + (hint.Length > 0
+                        ? hint
+                        : "If this file was screenshotted or re-compressed along the way, "
+                            + "the message inside it is already gone.");
             }
-            catch (InvalidDataException exception)
+            catch (InvalidDataException)
             {
-                await DisplayAlertAsync("Can't read image", exception.Message, "OK");
+                await ShowProblemAsync("Can't read this file", SendGuide.NotReadableMessage(file.FileName));
+            }
+        }
+
+        /// <summary>
+        /// Explains a failure and offers the "How to send" tips, which cover
+        /// both what the sender should do and what to check on this end.
+        /// </summary>
+        private async Task ShowProblemAsync(string title, string message)
+        {
+            bool wantsTips = await DisplayAlertAsync(title, message, "Show tips", "OK");
+
+            if (wantsTips)
+            {
+                await Shell.Current.GoToAsync(SendGuide.Route);
             }
         }
 
@@ -154,17 +175,20 @@ namespace Decay.App.Pages
                     }
                 );
             }
-            catch (DecayAuthenticationException exception)
+            catch (DecayAuthenticationException)
             {
-                await DisplayAlertAsync("Locked", exception.Message, "OK");
+                await ShowProblemAsync("Couldn't unlock it", SendGuide.CouldNotUnlock());
             }
             catch (DecayVersionException exception)
             {
                 await DisplayAlertAsync("Update needed", exception.Message, "OK");
             }
-            catch (DecayFormatException exception)
+            catch (DecayFormatException)
             {
-                await DisplayAlertAsync("Not a Decay image", exception.Message, "OK");
+                await ShowProblemAsync(
+                    "No message found",
+                    SendGuide.NoMessageFound(received.Width, received.Height)
+                );
             }
             finally
             {

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ContentPage
+    x:Class="Decay.App.Pages.HowToSendPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    Title="How to send">
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="12">
+
+            <Label Text="SEND THE FILE ITSELF"
+                   TextColor="{StaticResource Accent}"
+                   FontAttributes="Bold" />
+
+            <Label Text="A Decay image only works as the exact original file. Anything that re-compresses, resizes, or re-saves it destroys the message, permanently. How you send it matters more than anything else." />
+
+            <Label Text="SAFE WAYS TO SEND"
+                   TextColor="{StaticResource Accent}"
+                   FontAttributes="Bold" />
+
+            <Border BackgroundColor="{StaticResource Panel}"
+                    StrokeThickness="1"
+                    Stroke="{StaticResource InkDim}"
+                    Padding="12">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="✔  Email, as an attachment. Attach the file; don't paste it into the body of the message. On an iPhone, if Mail asks for an image size, choose Actual Size." />
+                    <Label Text="✔  AirDrop, Nearby Share, or a USB drive." />
+                    <Label Text="✔  A cloud-drive link (Google Drive, Dropbox, OneDrive). The receiver downloads the original file." />
+                    <Label Text="✔  Chat apps, only as a File or Document. WhatsApp: Document. Telegram: Send as File. Signal: attach as a File. Discord and Slack file uploads are usually fine too." />
+                </VerticalStackLayout>
+            </Border>
+
+            <Label Text="WAYS THAT DESTROY IT"
+                   TextColor="{StaticResource Warn}"
+                   FontAttributes="Bold" />
+
+            <Border BackgroundColor="{StaticResource Panel}"
+                    StrokeThickness="1"
+                    Stroke="{StaticResource InkDim}"
+                    Padding="12">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="✘  Sending it as a photo in a chat app. Most compress photos." />
+                    <Label Text="✘  Posting it to Instagram, X, Facebook, Reddit, or any social site. They all re-compress." />
+                    <Label Text="✘  Screenshots and screen recordings." />
+                    <Label Text="✘  Editing, cropping, adding filters, or saving it as a JPEG." />
+                    <Label Text="✘  Pasting it into a document or the body of an email." />
+                </VerticalStackLayout>
+            </Border>
+
+            <Label Text="TIP" TextColor="{StaticResource Accent}" FontAttributes="Bold" />
+            <Label Text="On a phone, save the image to your Files app and share it from there, not from your Photos app. Photos apps are more likely to convert or compress what they share." />
+
+            <Label Text="WANT TO POST IT ONLINE?" TextColor="{StaticResource Accent}" FontAttributes="Bold" />
+            <Label Text="Social sites will re-compress the image, so the copy people can see there can't be decrypted. Post the image as a teaser, and put a link to the original file (a cloud-drive share link) in your bio or caption. People download the original from the link and open it in Decay." />
+
+            <Label Text="IF AN IMAGE WON'T OPEN" TextColor="{StaticResource Accent}" FontAttributes="Bold" />
+            <Label Text="1. Check the passphrase: spelling, capital letters, spaces.&#10;2. Make sure you have the original file, not a preview, a thumbnail, or a screenshot.&#10;3. Ask the sender to send it again as a file attachment or a cloud-drive link.&#10;&#10;Decrypting is always free. You never need Pro to open an image." />
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
