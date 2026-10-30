@@ -58,8 +58,8 @@ are in `docs/itch-release.md`, `docs/release.md` and `docs/repo-security.md`.
       dashboard or email. Don't ship unsigned. Windows Smart App Control will
       block it for many users.
 - [ ] **Publish the release build.**
-  - `dotnet publish Decay.App -f net10.0-windows10.0.19041.0 -c Release -r win-x64 -p:SelfContained=true`
-  - The app is in `Decay.App\bin\Release\net10.0-windows10.0.19041.0\win-x64\publish\`.
+  - `dotnet publish Decay.App -f net10.0-windows10.0.19041.0 -c Release -p:WindowsPackageType=None -p:WindowsAppSDKSelfContained=true -o publish`
+  - The app is in the `publish` folder in the repo root (from `-o publish`).
     Zip that whole folder, not just the exe. It also holds the runtime files.
   - Run `Decay.App.exe` from that folder once to confirm it opens before signing.
 - [ ] **Sign the exe or MSIX** with your signing service, following its
