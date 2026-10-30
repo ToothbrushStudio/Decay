@@ -77,9 +77,12 @@ says so.
 
 ## Packaging notes
 
-- **Windows:** `dotnet publish Decay.App -f net10.0-windows10.0.19041.0 -c Release -r win-x64 -p:SelfContained=true`
-  (unpackaged and self-contained, the default; zip the publish folder). For an
-  MSIX build, add `-p:WindowsPackageType=MSIX`. A packaged exe only runs once
+- **Windows:** `dotnet publish Decay.App -f net10.0-windows10.0.19041.0 -c Release -p:WindowsPackageType=None -p:WindowsAppSDKSelfContained=true -o publish`
+  (unpackaged and self-contained; zip the contents of the `publish` folder).
+  Verified working. Do NOT add `-r win-x64` or `-p:SelfContained=true`: global
+  properties apply to the Android/iOS/Mac Catalyst targets too and restore
+  fails with NU1102 (missing Mono runtime pack for win-x64). For an MSIX
+  build, use `-p:WindowsPackageType=MSIX` in place of `None`. A packaged exe only runs once
   the MSIX is installed; launching the raw exe just spins and exits.
 - **Android:** publish an `.aab` with your keystore
   (`-p:AndroidKeyStore=true` + signing properties).
