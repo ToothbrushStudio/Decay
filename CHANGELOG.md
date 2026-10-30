@@ -8,6 +8,11 @@
   typos and bad exports; it can't predict what a chat app or site does to the
   file later. No format or crypto changes.
 
+- **Help tab**: the send guide is now a tab after License (no back button to
+  hunt for), with the app version and a website link. The Encrypt tab's
+  button and the error dialogs jump to it. "Test open" stays under the Save
+  and Share buttons on Encrypt.
+
 - **Cloud-drive-first send guide**: the How to send page and error messages
   now lead with Google Drive / OneDrive / iCloud Drive links.
 

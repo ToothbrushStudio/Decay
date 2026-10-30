@@ -96,6 +96,10 @@
                         IsEnabled="False" Clicked="OnShare" />
             </Grid>
 
+            <Label x:Name="StatusLabel"
+                   FontSize="12"
+                   TextColor="{StaticResource InkDim}" />
+
             <Label Text="TEST BEFORE YOU SEND (OPTIONAL)"
                    TextColor="{StaticResource Accent}"
                    FontAttributes="Bold" />
@@ -114,15 +118,11 @@
                         Clicked="OnTestOpen" />
             </Grid>
 
-            <Label x:Name="StatusLabel"
-                   FontSize="12"
-                   TextColor="{StaticResource InkDim}" />
-
             <Label Text="⚠ A Decay image survives only as the original file. Send the PNG itself — a screenshot, repost, or platform re-compression destroys the message forever."
                    FontSize="12"
                    TextColor="{StaticResource Warn}" />
 
-            <Button Text="How to send it safely…"
+            <Button Text="How to send it safely (Help tab)…"
                     FontSize="12"
                     BackgroundColor="{StaticResource Panel}"
                     TextColor="{StaticResource Accent}"
