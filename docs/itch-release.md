@@ -41,7 +41,7 @@ Background: docs/release.md (build, licensing, signing).
 
 1. `dotnet test Decay.Core.Tests && dotnet test Decay.Renderer.Tests && dotnet test Decay.Licensing.Tests`
    (FrozenFormatTests must pass).
-2. Confirm `ApplicationDisplayVersion` (`1.0.0.0` on Windows) and
+2. Confirm `ApplicationDisplayVersion` (`1.0.0`; Windows packages it as `1.0.0.0`) and
    `ApplicationVersion` in `Decay.App/Decay.App.csproj`.
 3. `dotnet publish Decay.App -f net10.0-windows10.0.19041.0 -c Release`
 4. Authenticode-sign the exe/MSIX (Azure Trusted Signing or similar).

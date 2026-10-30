@@ -13,9 +13,10 @@
     <ApplicationTitle>Decay</ApplicationTitle>
     <ApplicationId>studio.toothbrush.decay</ApplicationId>
     <ApplicationDisplayVersion>1.0.0</ApplicationDisplayVersion>
-    <!-- Windows packages use a four-part version; Apple bundle versions allow only three parts. -->
-    <ApplicationDisplayVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">1.0.0.0</ApplicationDisplayVersion>
     <ApplicationVersion>2</ApplicationVersion>
+    <!-- MAUI needs a three-part display version. On Windows it appends ApplicationVersion
+         as the fourth part, so 0 here gives the package version 1.0.0.0. -->
+    <ApplicationVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">0</ApplicationVersion>
 
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">15.0</SupportedOSPlatformVersion>
