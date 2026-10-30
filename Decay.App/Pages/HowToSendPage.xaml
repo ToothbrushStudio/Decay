@@ -13,7 +13,24 @@
 
             <Label Text="A Decay image only works as the exact original file. Anything that re-compresses, resizes, or re-saves it destroys the message, permanently. How you send it matters more than anything else." />
 
-            <Label Text="SAFE WAYS TO SEND"
+            <Label Text="THE EASIEST WAY: A CLOUD-DRIVE LINK"
+                   TextColor="{StaticResource Accent}"
+                   FontAttributes="Bold" />
+
+            <Border BackgroundColor="{StaticResource Panel}"
+                    StrokeThickness="1"
+                    Stroke="{StaticResource InkDim}"
+                    Padding="12">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Upload the image to Google Drive, OneDrive, or iCloud Drive (Dropbox works too), set the link to Anyone with the link, and send the link. Your friend downloads the original file, so nothing changes along the way." />
+                    <Label Text="✔  Your friend should use the Download button. Saving the picture from the browser preview can give them a changed copy that won't open." />
+                    <Label Text="✔  Send the passphrase a different way from the link: in person, by phone, or in another chat." />
+                    <Label Text="✘  Google Photos, iCloud Photos, and Apple Photos are not cloud drives. They may shrink or convert images. Use the file side: Drive, OneDrive, or iCloud Drive in the Files app." />
+                    <Label Text="Keep your own copy of the file. If the link is turned off, it is the only way to read the message." />
+                </VerticalStackLayout>
+            </Border>
+
+            <Label Text="OTHER SAFE WAYS TO SEND"
                    TextColor="{StaticResource Accent}"
                    FontAttributes="Bold" />
 
@@ -24,7 +41,6 @@
                 <VerticalStackLayout Spacing="8">
                     <Label Text="✔  Email, as an attachment. Attach the file; don't paste it into the body of the message. On an iPhone, if Mail asks for an image size, choose Actual Size." />
                     <Label Text="✔  AirDrop, Nearby Share, or a USB drive." />
-                    <Label Text="✔  A cloud-drive link (Google Drive, Dropbox, OneDrive). The receiver downloads the original file." />
                     <Label Text="✔  Chat apps, only as a File or Document. WhatsApp: Document. Telegram: Send as File. Signal: attach as a File. Discord and Slack file uploads are usually fine too." />
                 </VerticalStackLayout>
             </Border>

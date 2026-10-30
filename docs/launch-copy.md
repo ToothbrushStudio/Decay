@@ -11,6 +11,9 @@ something delicate — before it is a cipher.
 - Ruined on purpose. Readable by one person.
 - Send something delicate.
 
+*Note: v1 ships on Windows through itch.io. The App Store / Play sections
+below are for when mobile ships; reuse them for the itch listing meanwhile.*
+
 ## App Store / Play — short description (≤80 chars)
 
 > Encrypt messages into glitch art. Only the passphrase un-rots them.
@@ -31,6 +34,10 @@ something delicate — before it is a cipher.
 > **Delicate on purpose.** A Decay image lives only as the original file.
 > Screenshots, reposts, and platform compression destroy the message
 > forever — so receiving one intact means someone took care.
+>
+> **Send it as a file.** Share the image through Google Drive, OneDrive,
+> iCloud Drive, or an email attachment. Don't post it to social sites or
+> send it as a chat photo, since those re-compress it.
 >
 > — No accounts. No servers. Nothing leaves your device.
 > — Decrypting is free, forever, for everyone.
@@ -54,6 +61,9 @@ letters, aesthetic, vaporwave, datamosh, secure notes, art
 >
 > Screenshot it and it dies forever. Send the file. Take care of it.
 >
+> (The image in this post is a preview — posting re-compresses it. The real
+> file travels by cloud-drive link, email, or AirDrop.)
+>
 > Decay — encrypt your message into the rot. [link]
 
 ## Launch post (longer, for Reddit r/SideProject etc.)
@@ -75,7 +85,9 @@ letters, aesthetic, vaporwave, datamosh, secure notes, art
 > - The format is frozen and versioned — anything encrypted today opens in
 >   any future version.
 >
-> Windows / iOS / Android / macOS, .NET MAUI, C#.
+> Windows first (itch.io); built on .NET MAUI and C#, so other platforms are
+> possible later. To send one, upload the file to Google Drive, OneDrive, or
+> iCloud Drive and share the link. The image posted here is only a preview.
 
 ## Press boilerplate
 
@@ -87,7 +99,7 @@ letters, aesthetic, vaporwave, datamosh, secure notes, art
 
 ## Open launch items (not copy)
 
-- [ ] First device builds of Decay.App (Windows, then iOS/Android)
+- [ ] First device build of Decay.App (Windows for v1; other platforms later)
 - [x] Run KeyGen; fill PublisherKey.cs; store private key offline
 - [ ] Choose a source license for the repo (or keep private) — engine-open
       vs fully proprietary is a business call, not made in code

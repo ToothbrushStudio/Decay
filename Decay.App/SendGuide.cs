@@ -14,9 +14,9 @@ namespace Decay.App
         public static readonly int[] DecaySizes = { 256, 384, 512, 768, 1024 };
 
         private const string ResendAdvice =
-            "Ask the sender to send the image again as a file — an email attachment, "
-            + "AirDrop, a cloud-drive link, or \"File\" / \"Document\" in a chat app — "
-            + "not as a photo.";
+            "Ask the sender to send the image again as a file — a cloud-drive link "
+            + "(Google Drive, OneDrive, iCloud Drive), an email attachment, AirDrop, "
+            + "or \"File\" / \"Document\" in a chat app — not as a photo.";
 
         public static bool IsDecaySize(int width, int height) =>
             width == height && Array.IndexOf(DecaySizes, width) >= 0;
