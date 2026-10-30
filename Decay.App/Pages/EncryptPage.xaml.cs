@@ -563,6 +563,11 @@ namespace Decay.App.Pages
                 StatusLabel.Text = "";
                 await DisplayAlertAsync("Test failed", SendGuide.TestOpenCouldNotUnlock, "OK");
             }
+            catch (DecayVersionException exception)
+            {
+                StatusLabel.Text = "";
+                await DisplayAlertAsync("Update needed", exception.Message, "OK");
+            }
             catch (DecayFormatException)
             {
                 StatusLabel.Text = "";
@@ -571,11 +576,6 @@ namespace Decay.App.Pages
                     SendGuide.NoMessageFound(width, height),
                     "OK"
                 );
-            }
-            catch (DecayVersionException exception)
-            {
-                StatusLabel.Text = "";
-                await DisplayAlertAsync("Update needed", exception.Message, "OK");
             }
             finally
             {
