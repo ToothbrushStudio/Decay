@@ -3,9 +3,13 @@
     x:Class="Decay.App.Pages.HowToSendPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    Title="How to send">
+    Title="Help">
     <ScrollView>
         <VerticalStackLayout Padding="16" Spacing="12">
+
+            <Label Text="HOW TO SEND IT SAFELY"
+                   FontSize="20"
+                   FontAttributes="Bold" />
 
             <Label Text="SEND THE FILE ITSELF"
                    TextColor="{StaticResource Accent}"
@@ -70,6 +74,23 @@
 
             <Label Text="IF AN IMAGE WON'T OPEN" TextColor="{StaticResource Accent}" FontAttributes="Bold" />
             <Label Text="1. Check the passphrase: spelling, capital letters, spaces.&#10;2. Make sure you have the original file, not a preview, a thumbnail, or a screenshot.&#10;3. Ask the sender to send it again as a file attachment or a cloud-drive link.&#10;&#10;Decrypting is always free. You never need Pro to open an image." />
+
+            <Label Text="ABOUT" TextColor="{StaticResource Accent}" FontAttributes="Bold" />
+            <Label x:Name="VersionLabel" FontSize="12" TextColor="{StaticResource InkDim}" />
+            <Label Text="Decay works entirely on your device. There are no accounts and no servers, so nobody can recover a lost message or passphrase."
+                   FontSize="12"
+                   TextColor="{StaticResource InkDim}" />
+
+            <VerticalStackLayout x:Name="SupportSection" Spacing="12" IsVisible="False">
+                <Label Text="SUPPORT" TextColor="{StaticResource Accent}" FontAttributes="Bold" />
+                <Label x:Name="SupportLabel" FontSize="12" />
+            </VerticalStackLayout>
+
+            <Button Text="toothbrush.studio"
+                    FontSize="12"
+                    BackgroundColor="{StaticResource Panel}"
+                    TextColor="{StaticResource Accent}"
+                    Clicked="OnWebsite" />
 
         </VerticalStackLayout>
     </ScrollView>

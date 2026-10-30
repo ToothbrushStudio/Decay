@@ -7,8 +7,16 @@ namespace Decay.App
     /// </summary>
     public static class SendGuide
     {
-        /// <summary>Shell route of the "How to send" page (see AppShell).</summary>
-        public const string Route = "howtosend";
+        /// <summary>
+        /// Absolute Shell route of the Help tab, which holds the send guide
+        /// (see AppShell).
+        /// </summary>
+        public const string Route = "//help";
+
+        /// <summary>Support contact shown on the Help tab. Empty hides the section.</summary>
+        public const string SupportEmail = "";
+
+        public const string WebsiteUrl = "https://toothbrush.studio";
 
         /// <summary>The square sizes the Encrypt tab can produce.</summary>
         public static readonly int[] DecaySizes = { 256, 384, 512, 768, 1024 };
