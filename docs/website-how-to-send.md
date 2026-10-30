@@ -6,16 +6,67 @@ way, the message inside is gone for good, and nothing can bring it back.
 
 The good news: sending the file is easy once you know which ways are safe.
 
-## Safe ways to send it
+## The easiest way: a cloud-drive link
+
+Upload your Decay image to a cloud drive and send your friend the share link.
+They download the original file, so nothing in the image changes along the way.
+It works the same for everyone, on any phone or computer.
+
+**Google Drive**
+1. Upload the PNG to Drive. Use the **Files** or **Upload** option, not Google
+   Photos.
+2. Right-click the file, choose **Share**, and set access to **Anyone with the
+   link**.
+3. Copy the link and send it.
+
+**OneDrive**
+1. Upload the PNG to OneDrive (the web app, or your OneDrive folder on a
+   computer).
+2. Choose **Share**, and set the link to **Anyone with the link can view**.
+3. Copy the link and send it.
+
+**iCloud Drive**
+1. Save the PNG to **iCloud Drive** in the Files app, not to Photos.
+2. Touch and hold the file, then choose **Share**, then **Copy iCloud Link**.
+   Set access to **Anyone with the link**.
+3. Send the link.
+
+**Dropbox** works the same way: upload the file, create a share link, send it.
+
+### What your friend does
+
+1. Open the link and choose **Download**.
+2. Open the downloaded file in Decay, and enter the passphrase you gave them.
+
+They should use the **Download** button. Right-clicking or saving the picture
+from the preview in the browser can give them a copy that has been changed, and
+a changed copy won't open.
+
+### Send the passphrase separately
+
+Don't put the passphrase in the same message as the link. Anyone who gets both
+can read the letter. Tell your friend the passphrase another way: in person, by
+phone, or in a different chat.
+
+### Photo libraries are not cloud drives
+
+**Google Photos, iCloud Photos and Apple Photos** are made for pictures, and
+they may shrink, convert or re-compress what you put in them. A Decay image
+saved there may stop working. Always use the **file** side of the service:
+Google Drive, OneDrive, or iCloud Drive in the Files app.
+
+### Keep your own copy
+
+If you delete the file, or the link is turned off, the image is gone. Keep the
+original on your device for as long as the message matters.
+
+## Other safe ways to send it
 
 **Email, as an attachment.** Attach the PNG as a file. Don't paste it into the
 body of the message. On an iPhone, if Mail asks what size to send, choose
 **Actual Size**.
 
 **AirDrop, Nearby Share, or a USB drive.** These send the file untouched.
-
-**A cloud-drive link.** Upload the PNG to Google Drive, Dropbox, or OneDrive,
-and send the share link. Your friend downloads the original file.
 
 **Chat apps, as a file.** Most chat apps compress photos but leave files
 alone. Send the PNG as a **File** or **Document**, not as a picture:

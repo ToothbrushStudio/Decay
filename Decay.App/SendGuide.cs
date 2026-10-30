@@ -14,9 +14,9 @@ namespace Decay.App
         public static readonly int[] DecaySizes = { 256, 384, 512, 768, 1024 };
 
         private const string ResendAdvice =
-            "Ask the sender to send the image again as a file — an email attachment, "
-            + "AirDrop, a cloud-drive link, or \"File\" / \"Document\" in a chat app — "
-            + "not as a photo.";
+            "Ask the sender to send the image again as a file — a cloud-drive link "
+            + "(Google Drive, OneDrive, iCloud Drive), an email attachment, AirDrop, "
+            + "or \"File\" / \"Document\" in a chat app — not as a photo.";
 
         public static bool IsDecaySize(int width, int height) =>
             width == height && Array.IndexOf(DecaySizes, width) >= 0;
@@ -69,6 +69,29 @@ namespace Decay.App
                 + "re-compressed, resized, or screenshotted it. That destroys the message "
                 + "for good.\n\n" + ResendAdvice;
         }
+
+        /// <summary>"Test open" on the Encrypt tab: the saved file opened and matched.</summary>
+        public const string TestOpenPassed =
+            "Test passed: the saved file opens with that passphrase and holds your message. "
+            + "This doesn't cover what a chat app or website does to it later — "
+            + "send it as a file.";
+
+        /// <summary>"Test open": it opened, but the message isn't the one just written.</summary>
+        public const string TestOpenDifferentMessage =
+            "The file opened, but it holds a different message from the one in the "
+            + "editor. You may have picked an older image, or changed the message after "
+            + "encrypting. Encrypt again, save, and re-test.";
+
+        /// <summary>
+        /// "Test open": authentication failed. Either the passphrase differs
+        /// from the one used to encrypt, or the picked file isn't this image.
+        /// </summary>
+        public const string TestOpenCouldNotUnlock =
+            "That passphrase didn't open the file.\n\n"
+            + "Check that it matches the one you used to encrypt, including capital "
+            + "letters and spaces. If it does, make sure you picked the image you just "
+            + "saved, not an older one or a copy that was changed.\n\n"
+            + "If you can't open it now, the recipient won't be able to either.";
 
         /// <summary>
         /// Authentication failed. The cipher can't tell a wrong passphrase

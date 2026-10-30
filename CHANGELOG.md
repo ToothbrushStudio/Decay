@@ -1,6 +1,15 @@
 # Changelog
 
-## 0.1.0 — pre-launch (unreleased)
+## 1.0.0.0 — launch (unreleased)
+
+- **Test before you send**: an optional "Test open" row on the Encrypt tab.
+  Re-enter the passphrase (masked), pick the saved file, and Decay decrypts
+  it from disk and checks that the message matches. It catches passphrase
+  typos and bad exports; it can't predict what a chat app or site does to the
+  file later. No format or crypto changes.
+
+- **Cloud-drive-first send guide**: the How to send page and error messages
+  now lead with Google Drive / OneDrive / iCloud Drive links.
 
 - **How to send guide and clearer errors**: a new "How to send it safely"
   page (linked from the Encrypt tab) lists the safe and destructive ways to

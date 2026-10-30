@@ -96,6 +96,24 @@
                         IsEnabled="False" Clicked="OnShare" />
             </Grid>
 
+            <Label Text="TEST BEFORE YOU SEND (OPTIONAL)"
+                   TextColor="{StaticResource Accent}"
+                   FontAttributes="Bold" />
+            <Label Text="Save the image, then re-enter your passphrase and pick the saved file. This confirms the file on disk opens and that you remember the passphrase. It can't tell what a chat app or website will do to the image later."
+                   FontSize="12"
+                   TextColor="{StaticResource InkDim}" />
+            <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                <Entry x:Name="TestPassphraseEntry"
+                       Grid.Column="0"
+                       Placeholder="Re-enter passphrase"
+                       IsPassword="True" />
+                <Button x:Name="TestOpenButton"
+                        Grid.Column="1"
+                        Text="Test open…"
+                        IsEnabled="False"
+                        Clicked="OnTestOpen" />
+            </Grid>
+
             <Label x:Name="StatusLabel"
                    FontSize="12"
                    TextColor="{StaticResource InkDim}" />

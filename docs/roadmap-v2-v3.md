@@ -12,6 +12,10 @@ every past version.*
 | v3 | "Studio": decoys, file payloads, new styles, reveal export, desktop workflow | Below (was v2) |
 | v4 | "Letters": multi-recipient, keyfiles, carrier packs, stationery, archive | Below (was v3) |
 
+**Go/no-go for v2:** build resilient mode if v1 reaches **100 Pro sales**.
+Free downloads and activations are tracked but don't count toward the number.
+Until then, v1 relies on cloud-drive sharing (see the send guide).
+
 Resilient mode was promoted to v2. It changes the pixel encoding, so it comes
 before the payload-container work in v3. Two consequences to carry forward:
 

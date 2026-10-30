@@ -92,7 +92,8 @@ activation server, no expiry.
   bit-exact, forever
 - A built-in PNG codec; the engine has **zero external dependencies** and
   compiles to ~54 KB. It would fit on a floppy disk 26 times.
-- .NET 10 / .NET MAUI: one codebase for Windows, iOS, Android, and macOS
+- .NET 10 / .NET MAUI: one codebase that targets Windows, iOS, Android, and
+  macOS. Version 1 ships on Windows first.
 
 ## Building
 
