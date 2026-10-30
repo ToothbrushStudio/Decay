@@ -24,8 +24,8 @@ Background: docs/release.md (build, licensing, signing).
 1. `cd tools/Decay.KeyGen && dotnet run gen`. Store `decay-publisher-private.pem`
    offline and backed up. Never commit it.
 2. Paste the printed public key into `Decay.App/PublisherKey.cs`. Until this is
-   done, builds are Free-only. (The file currently holds a key; confirm it is
-   the one you will sell with.)
+   done, builds are Free-only. (Done: the key in the file is the one the
+   launch keys are signed with.)
 3. Create the itch.io project (Dashboard > Create new project):
    - Kind of project: **Downloadable**
    - Pricing: **Paid** (or "$0 or donate" if Free tier is the itch download and
@@ -176,7 +176,7 @@ hash text, and the Pro button after deploy.
 
 ## Launch checklist
 
-- [ ] Keygen private key generated and backed up; public key in `PublisherKey.cs`
+- [x] Keygen private key generated and backed up; public key in `PublisherKey.cs`
 - [ ] Tests pass (incl. FrozenFormatTests); version bumped
 - [ ] Windows build signed, zipped, hash recorded
 - [ ] itch page created with copy, media, Pro description (incl. Rot)

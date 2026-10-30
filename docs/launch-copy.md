@@ -88,7 +88,7 @@ letters, aesthetic, vaporwave, datamosh, secure notes, art
 ## Open launch items (not copy)
 
 - [ ] First device builds of Decay.App (Windows, then iOS/Android)
-- [ ] Run KeyGen; fill PublisherKey.cs; store private key offline
+- [x] Run KeyGen; fill PublisherKey.cs; store private key offline
 - [ ] Choose a source license for the repo (or keep private) — engine-open
       vs fully proprietary is a business call, not made in code
 - [ ] App Store export-compliance answers (see release.md)

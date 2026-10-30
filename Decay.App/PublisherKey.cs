@@ -1,12 +1,11 @@
 namespace Decay.App
 {
     /// <summary>
-    /// The publisher's license-verification public key. Intentionally empty
-    /// in the repository: run `dotnet run gen` in tools/Decay.KeyGen once,
-    /// keep the private key OFFLINE, and paste the printed public key here
-    /// before shipping. While empty, no license can activate (Free-only
-    /// builds), and nothing else in the app is affected — decryption never
-    /// needs a license.
+    /// The publisher's license-verification public key, generated with
+    /// tools/Decay.KeyGen. The matching private key is kept OFFLINE and is
+    /// never part of the repository or a build. If this were empty, no
+    /// license could activate (Free-only builds), and nothing else in the app
+    /// would be affected — decryption never needs a license.
     /// </summary>
     public static class PublisherKey
     {
