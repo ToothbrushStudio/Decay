@@ -43,7 +43,10 @@ Background: docs/release.md (build, licensing, signing).
    (FrozenFormatTests must pass).
 2. Confirm `ApplicationDisplayVersion` (`1.0.0`; Windows packages it as `1.0.0.0`) and
    `ApplicationVersion` in `Decay.App/Decay.App.csproj`.
-3. `dotnet publish Decay.App -f net10.0-windows10.0.19041.0 -c Release`
+3. `dotnet publish Decay.App -f net10.0-windows10.0.19041.0 -c Release -r win-x64 -p:SelfContained=true`
+   Output: `Decay.App\bin\Release\net10.0-windows10.0.19041.0\win-x64\publish\`
+   (unpackaged and self-contained; zip the whole folder). Run the exe there once
+   to confirm it opens before signing.
 4. Authenticode-sign the exe/MSIX (Azure Trusted Signing or similar).
 5. Zip as `Decay-<version>-win-x64.zip`. This exact name is what the website's
    verify instructions assume.
