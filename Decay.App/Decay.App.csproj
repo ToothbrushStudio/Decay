@@ -13,6 +13,8 @@
     <ApplicationTitle>Decay</ApplicationTitle>
     <ApplicationId>studio.toothbrush.decay</ApplicationId>
     <ApplicationDisplayVersion>1.0.0</ApplicationDisplayVersion>
+    <!-- Windows packages use a four-part version; Apple bundle versions allow only three parts. -->
+    <ApplicationDisplayVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">1.0.0.0</ApplicationDisplayVersion>
     <ApplicationVersion>2</ApplicationVersion>
 
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>

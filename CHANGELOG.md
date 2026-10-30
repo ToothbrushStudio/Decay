@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.1.0 — pre-launch (unreleased)
+## 1.0.0.0 — launch (unreleased)
 
 - **How to send guide and clearer errors**: a new "How to send it safely"
   page (linked from the Encrypt tab) lists the safe and destructive ways to
