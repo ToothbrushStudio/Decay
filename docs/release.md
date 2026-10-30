@@ -77,8 +77,10 @@ says so.
 
 ## Packaging notes
 
-- **Windows:** `dotnet publish -f net10.0-windows10.0.19041.0 -c Release`
-  (MSIX via the appxmanifest, or unpackaged distribution).
+- **Windows:** `dotnet publish Decay.App -f net10.0-windows10.0.19041.0 -c Release -r win-x64 -p:SelfContained=true`
+  (unpackaged and self-contained, the default; zip the publish folder). For an
+  MSIX build, add `-p:WindowsPackageType=MSIX`. A packaged exe only runs once
+  the MSIX is installed; launching the raw exe just spins and exits.
 - **Android:** publish an `.aab` with your keystore
   (`-p:AndroidKeyStore=true` + signing properties).
 - **iOS / Mac Catalyst:** archive from a Mac with an Apple Developer
