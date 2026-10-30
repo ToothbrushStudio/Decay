@@ -14,7 +14,7 @@ namespace Decay.App
         public const string Route = "//help";
 
         /// <summary>Support contact shown on the Help tab. Empty hides the section.</summary>
-        public const string SupportEmail = "";
+        public const string SupportEmail = "contact@toothbrush.studio";
 
         public const string WebsiteUrl = "https://toothbrush.studio";
 
