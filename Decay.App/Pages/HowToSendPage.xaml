@@ -72,6 +72,9 @@
             <Label Text="WANT TO POST IT ONLINE?" TextColor="{StaticResource Accent}" FontAttributes="Bold" />
             <Label Text="Social sites will re-compress the image, so the copy people can see there can't be decrypted. Post the image as a teaser, and put a link to the original file (a cloud-drive share link) in your bio or caption. People download the original from the link and open it in Decay." />
 
+            <Label Text="TEST IT BEFORE YOU SEND" TextColor="{StaticResource Accent}" FontAttributes="Bold" />
+            <Label Text="Before you send an image, decrypt it yourself. Save the image, open the Decrypt tab, pick the saved file, and enter your passphrase. If your message appears, you know the passphrase is right and the file is in the correct format, so it can be opened. If it doesn't open for you, it won't open for your friend either: encrypt again and re-test.&#10;&#10;This can't tell you what a chat app or website will do to the image later, so still send it as a file." />
+
             <Label Text="IF AN IMAGE WON'T OPEN" TextColor="{StaticResource Accent}" FontAttributes="Bold" />
             <Label Text="1. Check the passphrase: spelling, capital letters, spaces.&#10;2. Make sure you have the original file, not a preview, a thumbnail, or a screenshot.&#10;3. Ask the sender to send it again as a file attachment or a cloud-drive link.&#10;&#10;Decrypting is always free. You never need Pro to open an image." />
 

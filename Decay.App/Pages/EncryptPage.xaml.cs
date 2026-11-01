@@ -53,6 +53,20 @@ namespace Decay.App.Pages
             UpdateTierUi();
         }
 
+        private void SetResultButtons(bool ready)
+        {
+            ResultRow.IsVisible = ready;
+            PlayButton.IsEnabled = ready;
+            SaveImageButton.IsEnabled = ready;
+            ShareButton.IsEnabled = ready;
+        }
+
+        private void OnToggleAdvanced(object? sender, EventArgs e)
+        {
+            AdvancedSection.IsVisible = !AdvancedSection.IsVisible;
+            AdvancedToggle.Text = AdvancedSection.IsVisible ? "Advanced ▾" : "Advanced ▸";
+        }
+
         private bool IsCustomSelected =>
             PresetPicker.SelectedIndex == CarrierPresets.All.Count;
 
@@ -169,9 +183,7 @@ namespace Decay.App.Pages
             }
 
             _art = null;
-            PlayButton.IsEnabled = false;
-            SaveImageButton.IsEnabled = false;
-            ShareButton.IsEnabled = false;
+            SetResultButtons(false);
         }
 
         private void OnSizeChanged(object? sender, EventArgs e)
@@ -245,9 +257,7 @@ namespace Decay.App.Pages
 
                 _customCarrier = carrier;
                 _art = null;
-                PlayButton.IsEnabled = false;
-                SaveImageButton.IsEnabled = false;
-                ShareButton.IsEnabled = false;
+                SetResultButtons(false);
 
                 byte[] png = await Task.Run(() => DecayPng.Encode(carrier));
 
@@ -285,9 +295,7 @@ namespace Decay.App.Pages
 
             _art = null;
             _customCarrier = null;
-            PlayButton.IsEnabled = false;
-            SaveImageButton.IsEnabled = false;
-            ShareButton.IsEnabled = false;
+            SetResultButtons(false);
 
             _carrier = await Task.Run(() => preset.Generate(size, size, seed));
 
@@ -374,9 +382,7 @@ namespace Decay.App.Pages
                 byte[] png = await Task.Run(() => DecayPng.Encode(_art.FinalImage));
 
                 Preview.Source = ImageSource.FromStream(() => new MemoryStream(png));
-                PlayButton.IsEnabled = true;
-                SaveImageButton.IsEnabled = true;
-                ShareButton.IsEnabled = true;
+                SetResultButtons(true);
                 StatusLabel.Text = "Encrypted. The image now IS the message — save or share the file itself.";
             }
             catch (DecayTierException exception)

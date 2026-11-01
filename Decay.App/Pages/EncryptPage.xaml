@@ -37,42 +37,48 @@
                     Title="Decay style"
                     SelectedIndexChanged="OnStyleChanged" />
 
-            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
-                <Picker x:Name="PresetPicker"
-                        Grid.Column="0"
-                        Title="Carrier"
-                        SelectedIndexChanged="OnPresetChanged" />
-                <Picker x:Name="SizePicker"
-                        Grid.Column="1"
-                        Title="Size"
-                        SelectedIndexChanged="OnSizeChanged" />
-            </Grid>
+            <Picker x:Name="PresetPicker"
+                    Title="Carrier"
+                    SelectedIndexChanged="OnPresetChanged" />
 
             <Button x:Name="ChooseImageButton"
                     Text="Choose image… (PNG)"
                     IsVisible="False"
                     Clicked="OnChooseImage" />
 
-            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
-                <Label Grid.Column="0" Text="Intensity" VerticalOptions="Center" />
-                <Slider x:Name="IntensitySlider"
-                        Grid.Column="1"
-                        Minimum="1" Maximum="255" Value="100"
-                        ValueChanged="OnIntensityChanged" />
-                <Label x:Name="IntensityValueLabel"
-                       Grid.Column="2"
-                       Text="100"
-                       VerticalOptions="Center"
-                       TextColor="{StaticResource Accent}" />
-            </Grid>
+            <Button x:Name="AdvancedToggle"
+                    Text="Advanced ▸"
+                    FontSize="12"
+                    BackgroundColor="{StaticResource Panel}"
+                    TextColor="{StaticResource Accent}"
+                    Clicked="OnToggleAdvanced" />
 
-            <HorizontalStackLayout x:Name="DevTierRow" Spacing="8">
-                <Switch x:Name="ProSwitch" Toggled="OnProToggled" />
-                <Label Text="Pro override (debug builds only)"
-                       FontSize="12"
-                       VerticalOptions="Center"
-                       TextColor="{StaticResource InkDim}" />
-            </HorizontalStackLayout>
+            <VerticalStackLayout x:Name="AdvancedSection" Spacing="12" IsVisible="False">
+                <Picker x:Name="SizePicker"
+                        Title="Size"
+                        SelectedIndexChanged="OnSizeChanged" />
+
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                    <Label Grid.Column="0" Text="Intensity" VerticalOptions="Center" />
+                    <Slider x:Name="IntensitySlider"
+                            Grid.Column="1"
+                            Minimum="1" Maximum="255" Value="100"
+                            ValueChanged="OnIntensityChanged" />
+                    <Label x:Name="IntensityValueLabel"
+                           Grid.Column="2"
+                           Text="100"
+                           VerticalOptions="Center"
+                           TextColor="{StaticResource Accent}" />
+                </Grid>
+
+                <HorizontalStackLayout x:Name="DevTierRow" Spacing="8">
+                    <Switch x:Name="ProSwitch" Toggled="OnProToggled" />
+                    <Label Text="Pro override (debug builds only)"
+                           FontSize="12"
+                           VerticalOptions="Center"
+                           TextColor="{StaticResource InkDim}" />
+                </HorizontalStackLayout>
+            </VerticalStackLayout>
 
             <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
                 <Button Grid.Column="0" Text="New carrier" Clicked="OnNewCarrier" />
@@ -87,7 +93,7 @@
                        HeightRequest="320" />
             </Border>
 
-            <Grid ColumnDefinitions="*,*,*" ColumnSpacing="8">
+            <Grid x:Name="ResultRow" IsVisible="False" ColumnDefinitions="*,*,*" ColumnSpacing="8">
                 <Button x:Name="PlayButton" Grid.Column="0" Text="Play decay"
                         IsEnabled="False" Clicked="OnPlayDecay" />
                 <Button x:Name="SaveImageButton" Grid.Column="1" Text="Save image…"
@@ -100,14 +106,10 @@
                    FontSize="12"
                    TextColor="{StaticResource InkDim}" />
 
-            <Label Text="⚠ A Decay image survives only as the original file. Send the PNG itself — a screenshot, repost, or platform re-compression destroys the message forever."
-                   FontSize="12"
-                   TextColor="{StaticResource Warn}" />
-
-            <Button Text="How to send it safely (Help tab)…"
+            <Button Text="⚠ Send the PNG file itself, never a screenshot. How to send and test it (Help)…"
                     FontSize="12"
                     BackgroundColor="{StaticResource Panel}"
-                    TextColor="{StaticResource Accent}"
+                    TextColor="{StaticResource Warn}"
                     Clicked="OnHowToSend" />
 
         </VerticalStackLayout>

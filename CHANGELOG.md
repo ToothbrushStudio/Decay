@@ -2,6 +2,13 @@
 
 ## 1.0.0.0 — launch (unreleased)
 
+- **Slimmer Encrypt tab**: Size, Intensity and the debug Pro override moved
+  into a collapsed "Advanced" section; Carrier now has its own row; Play,
+  Save and Share appear only after you encrypt; the send warning and the
+  Help link are one button. The Help tab gained a "Test it before you send"
+  section: decrypt your own saved image to confirm the passphrase and file
+  work.
+
 - **Help tab**: the send guide is now a tab after License (no back button to
   hunt for), with the app version and a website link. The Encrypt tab's
   button and the error dialogs jump to it.
