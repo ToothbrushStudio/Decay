@@ -15,9 +15,6 @@ namespace Decay.App.Pages
         private PixelBuffer? _customCarrier;
         private EncryptedArt? _art;
 
-        // What the current image was made from, kept for "Test open".
-        private string _sentMessage = "";
-
         private PixelBuffer? ActiveCarrier => _customCarrier ?? _carrier;
 
         public EncryptPage()
@@ -175,7 +172,6 @@ namespace Decay.App.Pages
             PlayButton.IsEnabled = false;
             SaveImageButton.IsEnabled = false;
             ShareButton.IsEnabled = false;
-            TestOpenButton.IsEnabled = false;
         }
 
         private void OnSizeChanged(object? sender, EventArgs e)
@@ -252,7 +248,6 @@ namespace Decay.App.Pages
                 PlayButton.IsEnabled = false;
                 SaveImageButton.IsEnabled = false;
                 ShareButton.IsEnabled = false;
-                TestOpenButton.IsEnabled = false;
 
                 byte[] png = await Task.Run(() => DecayPng.Encode(carrier));
 
@@ -293,7 +288,6 @@ namespace Decay.App.Pages
             PlayButton.IsEnabled = false;
             SaveImageButton.IsEnabled = false;
             ShareButton.IsEnabled = false;
-            TestOpenButton.IsEnabled = false;
 
             _carrier = await Task.Run(() => preset.Generate(size, size, seed));
 
@@ -377,15 +371,12 @@ namespace Decay.App.Pages
                         style: style
                     ));
 
-                _sentMessage = message;
-
                 byte[] png = await Task.Run(() => DecayPng.Encode(_art.FinalImage));
 
                 Preview.Source = ImageSource.FromStream(() => new MemoryStream(png));
                 PlayButton.IsEnabled = true;
                 SaveImageButton.IsEnabled = true;
                 ShareButton.IsEnabled = true;
-                TestOpenButton.IsEnabled = true;
                 StatusLabel.Text = "Encrypted. The image now IS the message — save or share the file itself.";
             }
             catch (DecayTierException exception)
@@ -480,106 +471,6 @@ namespace Decay.App.Pages
             catch (PlatformNotSupportedException exception)
             {
                 await DisplayAlertAsync("Not available here", exception.Message, "OK");
-            }
-        }
-
-        /// <summary>
-        /// Re-opens a saved file with a freshly typed passphrase and checks
-        /// that the message comes back unchanged. Reads the file from disk,
-        /// so it covers the export, not just the in-memory image.
-        /// </summary>
-        private async void OnTestOpen(object? sender, EventArgs e)
-        {
-            string passphrase = TestPassphraseEntry.Text ?? "";
-
-            if (_art is null)
-            {
-                return;
-            }
-
-            if (passphrase.Length == 0)
-            {
-                await DisplayAlertAsync("Passphrase", "Re-enter the passphrase to test it.", "OK");
-
-                return;
-            }
-
-            FileResult? file = await FilePicker.Default.PickAsync(new PickOptions
-            {
-                PickerTitle = "Pick the saved Decay image to test",
-                FileTypes = FilePickerFileType.Images,
-            });
-
-            if (file is null)
-            {
-                return;
-            }
-
-            TestOpenButton.IsEnabled = false;
-            StatusLabel.Text = "Testing the saved file…";
-
-            string sent = _sentMessage;
-            int width = 0;
-            int height = 0;
-
-            try
-            {
-                await using Stream stream = await file.OpenReadAsync();
-
-                PixelBuffer saved = await Task.Run(() => DecayPng.Decode(stream));
-
-                width = saved.Width;
-                height = saved.Height;
-
-                DecryptedArt result = await Task.Run(
-                    () => DecayArtist.Decrypt(saved, passphrase)
-                );
-
-                if (string.Equals(result.PlainText, sent, StringComparison.Ordinal))
-                {
-                    StatusLabel.Text = SendGuide.TestOpenPassed;
-                }
-                else
-                {
-                    StatusLabel.Text = "";
-                    await DisplayAlertAsync(
-                        "Different message",
-                        SendGuide.TestOpenDifferentMessage,
-                        "OK"
-                    );
-                }
-            }
-            catch (InvalidDataException)
-            {
-                StatusLabel.Text = "";
-                await DisplayAlertAsync(
-                    "Can't read this file",
-                    SendGuide.NotReadableMessage(file.FileName),
-                    "OK"
-                );
-            }
-            catch (DecayAuthenticationException)
-            {
-                StatusLabel.Text = "";
-                await DisplayAlertAsync("Test failed", SendGuide.TestOpenCouldNotUnlock, "OK");
-            }
-            catch (DecayVersionException exception)
-            {
-                StatusLabel.Text = "";
-                await DisplayAlertAsync("Update needed", exception.Message, "OK");
-            }
-            catch (DecayFormatException)
-            {
-                StatusLabel.Text = "";
-                await DisplayAlertAsync(
-                    "No message found",
-                    SendGuide.NoMessageFound(width, height),
-                    "OK"
-                );
-            }
-            finally
-            {
-                TestOpenButton.IsEnabled = _art is not null;
             }
         }
 
