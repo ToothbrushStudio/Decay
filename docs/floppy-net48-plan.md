@@ -102,7 +102,7 @@ decay selftest
 
 - Passphrase is read from a no-echo console prompt, not from the command
   line. A `--pass` flag could be added for scripting, with a warning.
-- Calls go to `DecayProduct.EncryptWithPreset` (Free tier) and
+- Calls go to `DecayProduct.EncryptWithPreset` (tier from the license, Free if none) and
   `DecayArtist.Decrypt`.
 - Custom carriers are PNG only (no ImageSharp). Anything else is rejected
   with a clear message.
