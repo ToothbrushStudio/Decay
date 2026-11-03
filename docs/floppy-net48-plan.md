@@ -59,7 +59,7 @@ The first real compile will probably find a few more.
 | `"DCAY"u8` literals, `ReadOnlySpan<byte>` | `PayloadContainer`, `DecayPng` | Compiles with `System.Memory`; verify. |
 | `readonly record struct` / `record` | `PayloadContainer`, Renderer | Add an `IsExternalInit` polyfill. |
 | `Span<T>`, `BinaryPrimitives`, `stackalloc Span` | many (about 23 `Span<` uses) | Provided by the `System.Memory` NuGet package. |
-| `System.Text.Json`, `ECDsa` key import, `DateOnly` | `Decay.Licensing` only | **Left out of v1.** See decision 2. |
+| `System.Text.Json`, `ImportSubjectPublicKeyInfo`, `DateOnly` | `Decay.Licensing` only | Not linked. Replaced by a small verify-only mirror, `Decay.Console/Licensing/`. See "Licensing" below. |
 
 ## Decisions needed before Phase 2
 
@@ -70,11 +70,9 @@ The first real compile will probably find a few more.
    and the existing tests guard them. The alternative is a build-time text
    transform, which is fragile. *Recommendation: make the edits, in their own
    commit.*
-2. **Licensing.** The CLI should ship Free tier only in v1. That means a
-   watermark, preset carriers only and locked intensity (see `TierPolicy`).
-   Key validation needs JSON parsing and SPKI public-key import, neither of
-   which exists on net48. If the floppy edition should unlock Pro, that is a
-   Phase 5 add-on.
+2. **Licensing.** Proposed: support offline keys in v1 through a verify-only
+   wrapper (see "Licensing" below). If you'd rather ship Free-only first,
+   skip that section; the rest of the plan doesn't depend on it.
 3. **Name.** Decided: the project is `Decay.Console`. Set `RootNamespace` to
    `Decay.Cli` and `AssemblyName` to `decay`. A namespace called `Decay.Console`
    would shadow `System.Console` for every file under `namespace Decay.*`,
@@ -132,8 +130,44 @@ in this document. If it is tight, try ILRepack to merge the DLLs into the
 exe. Only after this works on a real machine should the command go into
 CLAUDE.md, which is for verified commands.
 
-**Optional - Pro licensing,** if wanted: hand-parse the small license payload
-and import the public key through `ECDsa`/`ECDsaCng` with a custom SPKI reader.
+## Licensing (offline keys)
+
+Yes, this can be wrapped. The key format is already self-contained:
+`DECAY1.<base64url JSON {n,t,d}>.<base64url ECDSA P-256 signature>`, checked
+against the publisher public key. No server is involved, and the console
+build needs only the verify half. `Sign` stays in `tools/Decay.KeyGen` on
+net10.
+
+`Decay.Licensing/LicenseKey.cs` is not linked, because it uses three things
+net48 lacks. The mirror (`Decay.Console/Licensing/LicenseValidator.cs`,
+about 60 lines) replaces them:
+
+| net10 code | net48 replacement |
+|---|---|
+| `ECDsa.ImportSubjectPublicKeyInfo` | The P-256 public key is a fixed 91-byte SPKI: a 26-byte header, then `04 \|\| X \|\| Y`. Check the header, slice X and Y, and call `ECDsa.Create(new ECParameters { Curve = nistP256, Q = ... })` (net47+). Signatures are IEEE P1363 `r\|\|s` on both sides. |
+| `System.Text.Json` for `{n,t,d}` | `JavaScriptSerializer` from `System.Web.Extensions`, which is in-box on net48 and adds no file to the floppy. |
+| `DateOnly` | `DateTime.ParseExact(d, "yyyy-MM-dd")`, wrapped in a small local license type. |
+
+- `DecayTier` and `TierPolicy` come from the linked Renderer, so **the Pro
+  gates (custom carrier, rot style, intensity, watermark) come for free.**
+  `DecayProduct` already takes a tier.
+- `PublisherKey.SubjectPublicKeyInfoBase64` is a plain constant in
+  `Decay.App/PublisherKey.cs`. Link that one file; no copy to keep in sync.
+  An empty key still means Free-only, as in the GUI.
+- Same safety property as the GUI: decryption never needs a license.
+
+Where the key lives (checked in this order):
+1. `--license <key>` on the command line
+2. `DECAY_LICENSE` environment variable
+3. `license.key` next to `decay.exe`, so a key can travel on the floppy
+4. `%APPDATA%\Decay\license.key`
+
+`decay activate <key>` validates, then saves to #4, or to #3 with `--portable`.
+`decay license` prints the licensee and tier. `decay deactivate` deletes the file.
+
+Verification: add known-good keys signed by the real net10 `KeyGen` to
+`selftest` (and a tampered, a truncated and a wrong-key case that must be
+rejected). They must validate identically on net48 and net10.
 
 ## Risks
 
@@ -146,6 +180,8 @@ and import the public key through `ECDsa`/`ECDsaCng` with a custom SPKI reader.
   none of this has been compiled yet.
 - **Slower KDF.** 600,000 PBKDF2 iterations on the net48 path may take
   noticeably longer than on net10.
+- **Licensing mirror drift.** The mirror duplicates the verify logic. The
+  shared test keys catch any divergence.
 - **Old Windows.** CNG's GCM support makes Windows 10/11 the practical target.
 
 ## Fallback
