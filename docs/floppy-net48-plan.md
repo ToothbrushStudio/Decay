@@ -52,10 +52,15 @@ The first real compile will probably find a few more.
 | `AesGcm` | `PayloadContainer.cs` | No managed type exists. Write a small `bcrypt.dll` P/Invoke wrapper (CNG, GCM mode, 12 B nonce, 16 B tag). About 100 lines and no extra dependency. |
 | `ZLibStream` | `DecayPng.cs` (read and write) | Wrapper class: 2-byte zlib header + `DeflateStream` + Adler-32 trailer on write, skip header on read. About 40 lines. |
 | `Rfc2898DeriveBytes.Pbkdf2(...)` static | `PayloadContainer.DeriveKey` | Use the instance constructor with `HashAlgorithmName.SHA256` (net47+) and the same UTF-8 bytes. 600,000 iterations may be slower there; measure. |
-| `SHA256.HashData`, `HMACSHA256.HashData` | `DecaySequence`, `PayloadContainer` | Instance `ComputeHash`. |
-| `RandomNumberGenerator.GetBytes` static | `PayloadContainer.Seal` | `RandomNumberGenerator.Create().GetBytes`. |
+| `SHA256.HashData`, `HMACSHA256.HashData` | `DecaySequence`, `RotDecay`, `PayloadContainer` (3 sites) | Instance `ComputeHash`. Edit needed. |
+| `RandomNumberGenerator.GetBytes` static | `PayloadContainer.Seal` (2 sites) | `RandomNumberGenerator.Create().GetBytes`. Edit needed. |
 | `CryptographicOperations.ZeroMemory` | `PayloadContainer` | `Array.Clear`. |
-| `ArgumentNullException.ThrowIfNull`, `ArgumentOutOfRangeException.ThrowIf*` | about 20 call sites | Cannot be shimmed from outside, because the real type shadows it. See decision 1. |
+| `ArgumentNullException.ThrowIfNull`, `ArgumentException.ThrowIfNullOrEmpty`, `ArgumentOutOfRangeException.ThrowIf*` | about 50 call sites in 8 files (31 `ThrowIfNull`, 5 `ThrowIfNullOrEmpty`, 14 range checks) | New static methods on existing types cannot be added from outside. See decision 1. |
+| `Math.Clamp` | 7 sites (`CarrierPresets` 3, `RotDecay` 4) | Same problem: `Math` is a static class. Edit needed. |
+| `Array.Fill` | 1 site (`RotDecay`) | Edit needed. |
+| `Stream.Write(ReadOnlySpan<byte>)` | `DecayPng` (about 5 sites) | An extension method in the compat layer works; no engine edit. |
+| `[.. "..."u8, .. container]` collection spread | 1 site (`RotDecay`) | May compile with `System.Memory`; otherwise one edit. Verify. |
+| `required` and `init` members | `DecayOp`, `RotDecay` | Polyfill the compiler attributes (`IsExternalInit`, `RequiredMemberAttribute`, `CompilerFeatureRequiredAttribute`); no engine edit. |
 | `"DCAY"u8` literals, `ReadOnlySpan<byte>` | `PayloadContainer`, `DecayPng` | Compiles with `System.Memory`; verify. |
 | `readonly record struct` / `record` | `PayloadContainer`, Renderer | Add an `IsExternalInit` polyfill. |
 | `Span<T>`, `BinaryPrimitives`, `stackalloc Span` | many (about 23 `Span<` uses) | Provided by the `System.Memory` NuGet package. |
@@ -63,13 +68,21 @@ The first real compile will probably find a few more.
 
 ## Decisions needed before Phase 2
 
-1. **Engine edits.** The `ThrowIf*` calls and the static hash/RNG helpers
-   can only be made portable by a small mechanical edit to the shared engine
-   files (for example `if (x is null) throw new ArgumentNullException(...)`,
-   or an internal `Guard` helper). These edits are behavior-neutral on net10,
-   and the existing tests guard them. The alternative is a build-time text
-   transform, which is fragile. *Recommendation: make the edits, in their own
-   commit.*
+1. **Engine edits.** Missing *types* (`AesGcm`, `ZLibStream`,
+   `CryptographicOperations`, the compiler attributes) are defined in the
+   compat layer under their real namespaces, with no engine edit. Missing
+   *static methods on existing types* cannot be, so these engine lines
+   change, all one-line and behavior-neutral on net10:
+   - about 50 argument guards, to plain `if (x is null) throw new ArgumentNullException(nameof(x));`
+     (and the equivalent for range and empty-string checks);
+   - 7 `Math.Clamp`, 1 `Array.Fill`, 3 `HashData`, 2 `RandomNumberGenerator.GetBytes`,
+     1 `Rfc2898DeriveBytes.Pbkdf2`, and possibly 1 collection-spread;
+   - roughly 65 lines in about 12 files. They should land in their own commit,
+     guarded by the existing net10 test projects. Check that no test asserts
+     on exact exception messages.
+   *Recommendation: make the edits.* A trick with `global using` aliases that
+   shadow `SHA256`, `Math` etc. could avoid some of them, but it is invisible
+   magic and unverified, and `Math` and `Array` cannot be shadowed that way.
 2. **Licensing.** Proposed: support offline keys in v1 through a verify-only
    wrapper (see "Licensing" below). If you'd rather ship Free-only first,
    skip that section; the rest of the plan doesn't depend on it.
