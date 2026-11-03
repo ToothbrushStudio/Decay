@@ -55,9 +55,9 @@ namespace Decay.Renderer
             int intensity = 100
         )
         {
-            ArgumentNullException.ThrowIfNull(carrier);
-            ArgumentOutOfRangeException.ThrowIfLessThan(intensity, 1);
-            ArgumentOutOfRangeException.ThrowIfGreaterThan(intensity, 255);
+            if (carrier is null) throw new ArgumentNullException(nameof(carrier));
+            if (intensity < 1) throw new ArgumentOutOfRangeException(nameof(intensity));
+            if (intensity > 255) throw new ArgumentOutOfRangeException(nameof(intensity));
 
             byte[] container = DecayCipher.SealContainer(
                 plainText,
@@ -90,9 +90,9 @@ namespace Decay.Renderer
             int intensity = RotDecay.DefaultIntensity
         )
         {
-            ArgumentNullException.ThrowIfNull(carrier);
-            ArgumentOutOfRangeException.ThrowIfLessThan(intensity, 1);
-            ArgumentOutOfRangeException.ThrowIfGreaterThan(intensity, 255);
+            if (carrier is null) throw new ArgumentNullException(nameof(carrier));
+            if (intensity < 1) throw new ArgumentOutOfRangeException(nameof(intensity));
+            if (intensity > 255) throw new ArgumentOutOfRangeException(nameof(intensity));
 
             byte[] container = DecayCipher.SealContainer(
                 plainText,

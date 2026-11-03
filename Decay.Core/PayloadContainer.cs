@@ -40,8 +40,8 @@ namespace Decay.Core
             int iterations
         )
         {
-            byte[] salt = RandomNumberGenerator.GetBytes(SaltSize);
-            byte[] nonce = RandomNumberGenerator.GetBytes(NonceSize);
+            byte[] salt = RandomBytes(SaltSize);
+            byte[] nonce = RandomBytes(NonceSize);
 
             return Seal(
                 plainText,
@@ -231,7 +231,10 @@ namespace Decay.Core
 
             try
             {
-                return HMACSHA256.HashData(key, label);
+                using (HMACSHA256 hmac = new HMACSHA256(key))
+                {
+                    return hmac.ComputeHash(label.ToArray());
+                }
             }
             finally
             {
@@ -239,15 +242,31 @@ namespace Decay.Core
             }
         }
 
+        private static byte[] RandomBytes(int count)
+        {
+            byte[] bytes = new byte[count];
+
+            using (RandomNumberGenerator rng = RandomNumberGenerator.Create())
+            {
+                rng.GetBytes(bytes);
+            }
+
+            return bytes;
+        }
+
         private static byte[] DeriveKey(string passphrase, ReadOnlySpan<byte> salt, int iterations)
         {
-            return Rfc2898DeriveBytes.Pbkdf2(
-                passphrase,
-                salt,
-                iterations,
-                HashAlgorithmName.SHA256,
-                KeySize
-            );
+            using (
+                Rfc2898DeriveBytes kdf = new Rfc2898DeriveBytes(
+                    Encoding.UTF8.GetBytes(passphrase),
+                    salt.ToArray(),
+                    iterations,
+                    HashAlgorithmName.SHA256
+                )
+            )
+            {
+                return kdf.GetBytes(KeySize);
+            }
         }
 
         internal readonly record struct ContainerInfo(

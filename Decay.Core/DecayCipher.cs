@@ -32,8 +32,8 @@ namespace Decay.Core
             int iterations = DefaultIterations
         )
         {
-            ArgumentNullException.ThrowIfNull(plainText);
-            ArgumentException.ThrowIfNullOrEmpty(passphrase);
+            if (plainText is null) throw new ArgumentNullException(nameof(plainText));
+            if (string.IsNullOrEmpty(passphrase)) throw (passphrase is null ? (Exception)new ArgumentNullException(nameof(passphrase)) : new ArgumentException("The value cannot be an empty string.", nameof(passphrase)));
 
             return PayloadContainer.Seal(
                 plainText,
@@ -55,8 +55,8 @@ namespace Decay.Core
         /// </returns>
         public static int EmbedContainer(byte[] container, PixelBuffer image)
         {
-            ArgumentNullException.ThrowIfNull(container);
-            ArgumentNullException.ThrowIfNull(image);
+            if (container is null) throw new ArgumentNullException(nameof(container));
+            if (image is null) throw new ArgumentNullException(nameof(image));
 
             PixelCodec.Embed(container, image);
 
@@ -71,7 +71,7 @@ namespace Decay.Core
         /// <exception cref="DecayVersionException">Written by a newer format version.</exception>
         public static byte[] ExtractContainer(PixelBuffer image)
         {
-            ArgumentNullException.ThrowIfNull(image);
+            if (image is null) throw new ArgumentNullException(nameof(image));
 
             if (PixelCodec.Capacity(image) < PayloadContainer.MinContainerSize)
             {
@@ -92,8 +92,8 @@ namespace Decay.Core
         /// <exception cref="DecayAuthenticationException">Wrong passphrase or modified image.</exception>
         public static string OpenContainer(byte[] container, string passphrase)
         {
-            ArgumentNullException.ThrowIfNull(container);
-            ArgumentException.ThrowIfNullOrEmpty(passphrase);
+            if (container is null) throw new ArgumentNullException(nameof(container));
+            if (string.IsNullOrEmpty(passphrase)) throw (passphrase is null ? (Exception)new ArgumentNullException(nameof(passphrase)) : new ArgumentException("The value cannot be an empty string.", nameof(passphrase)));
 
             return PayloadContainer.Open(container, passphrase);
         }
@@ -104,7 +104,7 @@ namespace Decay.Core
         /// </summary>
         public static byte GetPipelineId(byte[] container)
         {
-            ArgumentNullException.ThrowIfNull(container);
+            if (container is null) throw new ArgumentNullException(nameof(container));
 
             return PayloadContainer.ReadHeader(container).PipelineId;
         }
@@ -115,7 +115,7 @@ namespace Decay.Core
         /// </summary>
         public static byte GetPipelineParameter(byte[] container)
         {
-            ArgumentNullException.ThrowIfNull(container);
+            if (container is null) throw new ArgumentNullException(nameof(container));
 
             return PayloadContainer.ReadHeader(container).PipelineParameter;
         }
@@ -127,9 +127,9 @@ namespace Decay.Core
         /// </summary>
         public static byte[] DeriveSubkey(byte[] container, string passphrase, string label)
         {
-            ArgumentNullException.ThrowIfNull(container);
-            ArgumentException.ThrowIfNullOrEmpty(passphrase);
-            ArgumentException.ThrowIfNullOrEmpty(label);
+            if (container is null) throw new ArgumentNullException(nameof(container));
+            if (string.IsNullOrEmpty(passphrase)) throw (passphrase is null ? (Exception)new ArgumentNullException(nameof(passphrase)) : new ArgumentException("The value cannot be an empty string.", nameof(passphrase)));
+            if (string.IsNullOrEmpty(label)) throw (label is null ? (Exception)new ArgumentNullException(nameof(label)) : new ArgumentException("The value cannot be an empty string.", nameof(label)));
 
             return PayloadContainer.DeriveSubkey(
                 container,
@@ -153,7 +153,7 @@ namespace Decay.Core
             int iterations = DefaultIterations
         )
         {
-            ArgumentNullException.ThrowIfNull(carrier);
+            if (carrier is null) throw new ArgumentNullException(nameof(carrier));
 
             byte[] container = SealContainer(
                 plainText,
@@ -173,7 +173,7 @@ namespace Decay.Core
         /// <exception cref="DecayAuthenticationException">Wrong passphrase or modified image.</exception>
         public static string Decrypt(PixelBuffer image, string passphrase)
         {
-            ArgumentException.ThrowIfNullOrEmpty(passphrase);
+            if (string.IsNullOrEmpty(passphrase)) throw (passphrase is null ? (Exception)new ArgumentNullException(nameof(passphrase)) : new ArgumentException("The value cannot be an empty string.", nameof(passphrase)));
 
             return OpenContainer(ExtractContainer(image), passphrase);
         }
@@ -184,7 +184,7 @@ namespace Decay.Core
         /// </summary>
         public static int MaxPlainTextBytes(PixelBuffer carrier)
         {
-            ArgumentNullException.ThrowIfNull(carrier);
+            if (carrier is null) throw new ArgumentNullException(nameof(carrier));
 
             return Math.Max(0, PixelCodec.Capacity(carrier) - PayloadContainer.MinContainerSize);
         }

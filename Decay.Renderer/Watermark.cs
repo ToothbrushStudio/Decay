@@ -39,8 +39,8 @@ namespace Decay.Renderer
         /// </exception>
         public static void Apply(PixelBuffer image, int payloadPixelExtent)
         {
-            ArgumentNullException.ThrowIfNull(image);
-            ArgumentOutOfRangeException.ThrowIfNegative(payloadPixelExtent);
+            if (image is null) throw new ArgumentNullException(nameof(image));
+            if (payloadPixelExtent < 0) throw new ArgumentOutOfRangeException(nameof(payloadPixelExtent));
 
             int scale = Math.Max(1, Math.Min(image.Width, image.Height) / 160);
             int padding = scale;
@@ -97,7 +97,7 @@ namespace Decay.Renderer
         /// </summary>
         public static PixelBuffer RenderBadge(int scale = 3)
         {
-            ArgumentOutOfRangeException.ThrowIfLessThan(scale, 1);
+            if (scale < 1) throw new ArgumentOutOfRangeException(nameof(scale));
 
             int padding = scale;
             int width = TextColumns * scale + 2 * padding;

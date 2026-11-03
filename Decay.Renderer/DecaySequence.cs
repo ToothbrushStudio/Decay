@@ -36,7 +36,7 @@ namespace Decay.Renderer
         /// </summary>
         public static DecaySequence? FromContainer(byte[] container)
         {
-            ArgumentNullException.ThrowIfNull(container);
+            if (container is null) throw new ArgumentNullException(nameof(container));
 
             if (DecayCipher.GetPipelineId(container) != PipelineV1)
             {
@@ -48,7 +48,13 @@ namespace Decay.Renderer
             byte parameter = DecayCipher.GetPipelineParameter(container);
             int intensity = parameter == 0 ? 100 : parameter;
 
-            byte[] seed = SHA256.HashData(container);
+            byte[] seed;
+
+            using (SHA256 sha = SHA256.Create())
+            {
+                seed = sha.ComputeHash(container);
+            }
+
             Xoshiro256 random = new Xoshiro256(seed);
             DecayOp[] ops = new DecayOp[TotalOps];
 
@@ -63,9 +69,9 @@ namespace Decay.Renderer
         /// <summary>Applies one frame's ops in place (forward playback).</summary>
         public void ApplyFrame(PixelBuffer image, int frameIndex)
         {
-            ArgumentNullException.ThrowIfNull(image);
-            ArgumentOutOfRangeException.ThrowIfNegative(frameIndex);
-            ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(frameIndex, FrameCount);
+            if (image is null) throw new ArgumentNullException(nameof(image));
+            if (frameIndex < 0) throw new ArgumentOutOfRangeException(nameof(frameIndex));
+            if (frameIndex >= FrameCount) throw new ArgumentOutOfRangeException(nameof(frameIndex));
 
             for (int i = 0; i < OpsPerFrame; i++)
             {
@@ -76,9 +82,9 @@ namespace Decay.Renderer
         /// <summary>Inverts one frame's ops in place (reverse playback).</summary>
         public void RevertFrame(PixelBuffer image, int frameIndex)
         {
-            ArgumentNullException.ThrowIfNull(image);
-            ArgumentOutOfRangeException.ThrowIfNegative(frameIndex);
-            ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(frameIndex, FrameCount);
+            if (image is null) throw new ArgumentNullException(nameof(image));
+            if (frameIndex < 0) throw new ArgumentOutOfRangeException(nameof(frameIndex));
+            if (frameIndex >= FrameCount) throw new ArgumentOutOfRangeException(nameof(frameIndex));
 
             for (int i = OpsPerFrame - 1; i >= 0; i--)
             {
@@ -89,7 +95,7 @@ namespace Decay.Renderer
         /// <summary>The fully rotted final frame — the image to embed and export.</summary>
         public PixelBuffer RenderFinal(PixelBuffer carrier)
         {
-            ArgumentNullException.ThrowIfNull(carrier);
+            if (carrier is null) throw new ArgumentNullException(nameof(carrier));
 
             PixelBuffer image = carrier.Clone();
 
@@ -107,7 +113,7 @@ namespace Decay.Renderer
         /// </summary>
         public PixelBuffer Unrot(PixelBuffer rotted)
         {
-            ArgumentNullException.ThrowIfNull(rotted);
+            if (rotted is null) throw new ArgumentNullException(nameof(rotted));
 
             PixelBuffer image = rotted.Clone();
 

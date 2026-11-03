@@ -37,8 +37,8 @@ namespace Decay.Renderer
 
         public static int ToRaw(DecayStyle style, int strength)
         {
-            ArgumentOutOfRangeException.ThrowIfLessThan(strength, Min);
-            ArgumentOutOfRangeException.ThrowIfGreaterThan(strength, Max);
+            if (strength < Min) throw new ArgumentOutOfRangeException(nameof(strength));
+            if (strength > Max) throw new ArgumentOutOfRangeException(nameof(strength));
 
             return style == DecayStyle.Glitch
                 ? 1 + (strength - 1) * (GlitchMaxRaw - 1) / (Max - 1)
@@ -68,7 +68,7 @@ namespace Decay.Renderer
 
         public static bool AllowsPreset(DecayTier tier, CarrierPreset preset)
         {
-            ArgumentNullException.ThrowIfNull(preset);
+            if (preset is null) throw new ArgumentNullException(nameof(preset));
 
             return tier == DecayTier.Pro || preset.FreeTier;
         }
@@ -114,7 +114,7 @@ namespace Decay.Renderer
             DecayStyle style = DecayStyle.Glitch
         )
         {
-            ArgumentNullException.ThrowIfNull(preset);
+            if (preset is null) throw new ArgumentNullException(nameof(preset));
 
             if (!TierPolicy.AllowsPreset(tier, preset))
             {

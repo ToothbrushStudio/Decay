@@ -121,7 +121,7 @@ namespace Decay.Renderer
                     double v = (double)y / height;
                     double t = (u + v) / 2 + warpAmp * Math.Sin(warpFreq * Math.PI * v);
 
-                    t = Math.Clamp(t, 0, 1);
+                    t = Num.Clamp(t, 0, 1);
 
                     int offset = (y * width + x) * PixelBuffer.BytesPerPixel;
 
@@ -184,7 +184,7 @@ namespace Decay.Renderer
 
                     // Darken toward cell borders (where best ≈ second).
                     double edge = Math.Sqrt(second) - Math.Sqrt(best);
-                    double shade = Math.Clamp(edge / 18.0, 0.25, 1.0);
+                    double shade = Num.Clamp(edge / 18.0, 0.25, 1.0);
                     int offset = (y * width + x) * PixelBuffer.BytesPerPixel;
 
                     pixels[offset] = ClampByte((int)(cells[bestIndex].r * shade));
@@ -272,7 +272,7 @@ namespace Decay.Renderer
 
         private static byte ClampByte(int value)
         {
-            return (byte)Math.Clamp(value, 0, 255);
+            return (byte)Num.Clamp(value, 0, 255);
         }
     }
 }
