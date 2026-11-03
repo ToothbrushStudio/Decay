@@ -30,7 +30,7 @@ These are estimates. Measure after Phase 3 and record the real numbers here.
 
 ## Approach: a mirror, not a retarget
 
-New project `Decay.Floppy` (`net48`, `OutputType=Exe`) in `Decay.slnx`.
+New project `Decay.Console` (`net48`, `OutputType=Exe`) in `Decay.slnx`.
 It **compiles the engine's existing source files in place** with
 `<Compile Include="..\Decay.Core\**\*.cs" Exclude="..\Decay.Core\obj\**;..\Decay.Core\bin\**" />`
 (and the same for `Decay.Renderer`). No copies, no fork: the net10 engine
@@ -75,18 +75,21 @@ The first real compile will probably find a few more.
    Key validation needs JSON parsing and SPKI public-key import, neither of
    which exists on net48. If the floppy edition should unlock Pro, that is a
    Phase 5 add-on.
-3. **Name.** `Decay.Floppy` (proposed) vs. `Decay.Cli48`.
+3. **Name.** Decided: the project is `Decay.Console`. Set `RootNamespace` to
+   `Decay.Cli` and `AssemblyName` to `decay`. A namespace called `Decay.Console`
+   would shadow `System.Console` for every file under `namespace Decay.*`,
+   including the linked engine files, and break `Console.WriteLine`.
 
 ## Phases
 
 **Phase 0 - branch and baseline.** Done: branch exists. Run the three
 existing test projects on Windows first so there is a known-good baseline.
 
-**Phase 1 - scaffold.** `Decay.Floppy.csproj`, linked engine sources, polyfills,
+**Phase 1 - scaffold.** `Decay.Console.csproj` (`AssemblyName` `decay`, `RootNamespace` `Decay.Cli`), linked engine sources, polyfills,
 add to `Decay.slnx`. Goal: it compiles with a stub `Main`. Expect the error
 list to match the table above.
 
-**Phase 2 - compat layer (`Decay.Floppy/Compat/`).** `CngAesGcm`, `ZLib`
+**Phase 2 - compat layer (`Decay.Console/Compat/`).** `CngAesGcm`, `ZLib`
 wrapper, `IsExternalInit`, and the helpers behind the engine edits from
 decision 1.
 
@@ -121,7 +124,7 @@ the reverse.
   compressed size.
 
 **Phase 5 - packaging and measurement.** Build with
-`dotnet build Decay.Floppy -c Release`. Do not use the GUI publish command or
+`dotnet build Decay.Console -c Release`. Do not use the GUI publish command or
 global `RuntimeIdentifier` properties (see CLAUDE.md). Stage `decay.exe`, the
 needed `System.*.dll` files, `decay.exe.config` and a `README.TXT` into a
 folder, then record the real byte total and the FAT12 cluster-rounded total
@@ -150,5 +153,5 @@ and import the public key through `ECDsa`/`ECDsaCng` with a custom SPKI reader.
 If net48 turns out to be more trouble than it's worth, the other route is a
 NativeAOT console app on .NET 10. It reuses the engine unmodified, but
 the size is borderline (about 1.5-4 MB estimated) and it needs a Windows
-build machine with the C++ tools. The same `Decay.Floppy` CLI code would be
+build machine with the C++ tools. The same `Decay.Console` CLI code would be
 reusable there.
