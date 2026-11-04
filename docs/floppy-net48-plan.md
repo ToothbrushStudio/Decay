@@ -1,7 +1,82 @@
 # Floppy edition: a .NET Framework 4.8 console mirror
 
-Status: **plan only, nothing built yet.** Written on branch
-`claude/floppy-net48-plan`.
+Status: **built on branch `claude/floppy-net48-plan`** (Phases 1-5). It compiles
+and passes its self-test and cross-edition checks under Mono on Linux. It has
+**not yet been run on real Windows**; see "Results" and "Not verified" below.
+The sections after those are the original plan, kept for the reasoning.
+
+## Results
+
+What exists: `Decay.Console` (net48 exe `decay.exe`), in `Decay.slnx`. It
+compiles the engine's source in place, adds a compat layer, and offers
+`encrypt`, `decrypt`, `presets`, `activate`, `license`, `deactivate`,
+`selftest`, `version` and `help`. `dotnet build Decay.Console -c Release -t:PackFloppy`
+collects the floppy files into `Decay.Console/bin/floppy`.
+
+**Measured size (Release build):**
+
+| File | Bytes |
+|---|---|
+| `decay.exe` (engine + CLI + compat + self-test vectors) | 109,056 |
+| `System.Memory.dll` | 142,240 |
+| `System.Numerics.Vectors.dll` | 115,856 |
+| `System.Buffers.dll` | 20,856 |
+| `System.Runtime.CompilerServices.Unsafe.dll` | 16,768 |
+| `decay.exe.config`, `README.TXT` | 1,222 |
+| **Total** | **405,998** |
+
+About 408 KB after FAT12 cluster rounding, or **28% of the 1,457,664 usable
+bytes**. The disk has room for roughly 1 MB more.
+
+**How it differs from the plan above:**
+
+- **AES-GCM is managed, not `bcrypt.dll` P/Invoke.** `Compat/AesGcm.cs`
+  builds GCM from the platform's AES block cipher (counter mode + a
+  branch-free GHASH). One code path that can be tested on Linux, no native
+  interop. It is checked against NIST test cases 1, 2 and 4, against seven
+  vectors from .NET 10's `AesGcm` (lengths 0 to 1000, with and without AAD),
+  and against a container sealed by the net10 engine.
+- **Licensing uses a hand-written `MiniJson` reader**, not
+  `JavaScriptSerializer`. It needs no extra assembly, and because it has no
+  net48-only dependencies the same source also compiles on .NET 10, which made
+  differential testing against the real `LicenseKey.Validate` possible.
+- **More engine edits than first counted** (all behavior-neutral on net10):
+  the roughly 65 listed above, plus `ulong.RotateLeft` in `Xoshiro256`
+  (private helper) and a `#if NETFRAMEWORK` around PBKDF2 so net10 keeps the
+  original static `Pbkdf2` call. `System.Text.Rune` is polyfilled
+  (`Compat/Rune.cs`). `Decay.Renderer/Num.cs` is new (`Math.Clamp`).
+- `AssemblyName` is `decay`; `RootNamespace` is `Decay.Cli`.
+
+**Verification that has run (Linux, Mono 6.8 for the net48 exe, .NET 10 SDK):**
+
+| Check | Result |
+|---|---|
+| Existing net10 tests (Core 38, Renderer 52, Licensing 13) after the engine edits | all pass |
+| `decay selftest` (AES-GCM KATs, PBKDF2 KAT, net10 container, net10 PNG, PNG round trip, glitch and rot round trips incl. carrier restore) | all pass |
+| net48 `encrypt` (256 and 1024) -> net10 engine decrypts | match |
+| net10 engine glitch and rot images -> net48 `decrypt` | match; `--carrier-out` writes the restored carrier |
+| Wrong passphrase | exit 2, same message as the app |
+| `tools/Decay.Console.Compat licensetest`: console `LicenseValidator` vs the real `LicenseKey.Validate` | 2,349 comparisons (49 accepted by both, 2,300 rejected by both), 0 differences |
+| `tools/Decay.Console.Compat storetest`: license lookup order, save, clear | 9 of 9 pass |
+
+**Not verified (needs a real Windows machine):**
+
+- **Running on .NET Framework 4.8 itself.** Mono is a stand-in, not the real CLR.
+- **License verification on net48.** Mono 6.8 has no working ECDSA, so
+  `decay selftest` prints SKIP for the five license checks there. The
+  validator's logic is tested on .NET 10, but `ECDsa.Create(ECParameters)` and
+  `VerifyData` on .NET Framework 4.8 have never been exercised. **First thing
+  to do on Windows: run `decay selftest` and confirm there are no SKIPs.**
+- **PBKDF2 speed at 600,000 iterations** on .NET Framework. Under Mono it takes about 2 s for a full encrypt.
+- Console behaviors: hidden passphrase prompt, UTF-8 output in `cmd.exe`.
+- Running from an actual floppy or floppy image.
+
+**Compatibility note:** The net48 PNG writer's compressor differs from .NET
+10's, so PNG *bytes* differ for the same image, and its files are larger
+(noisy carriers compress badly: a 1024x1024 TV-static letter was 3.5 MB).
+The decoded pixels, the payload and the message are identical in both directions.
+
+## Original plan
 
 ## Goal
 

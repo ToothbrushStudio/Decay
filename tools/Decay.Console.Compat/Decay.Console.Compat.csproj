@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Dev tool (never ships). Cross-checks the .NET Framework 4.8 console
+    edition against the .NET 10 engine:
+      vectors <out.cs>   regenerate Decay.Console/Selftest/Vectors.g.cs
+      make <png> <passphrase> <text> [glitch|rot]   encrypt with the net10 engine
+      check <png> <passphrase> <expected-text>      decrypt with the net10 engine
+      licensetest        differential test: console LicenseValidator vs the real LicenseKey
+      storetest          license lookup order, save and clear (LicenseStore)
+      restoretest        prints the engine's worst-case carrier restore error
+    See docs/floppy-net48-plan.md, Phase 4.
+  -->
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Decay.Licensing\Decay.Licensing.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- The console edition's license validator, compiled here so it can be tested against the real one. -->
+    <Compile Include="..\..\Decay.Console\Licensing\LicenseValidator.cs" Link="Linked\LicenseValidator.cs" />
+    <Compile Include="..\..\Decay.Console\Licensing\MiniJson.cs" Link="Linked\MiniJson.cs" />
+    <Compile Include="..\..\Decay.Console\Licensing\LicenseStore.cs" Link="Linked\LicenseStore.cs" />
+    <Compile Include="..\..\Decay.App\PublisherKey.cs" Link="Linked\PublisherKey.cs" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>

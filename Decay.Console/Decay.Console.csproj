@@ -1,0 +1,70 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Decay for the command line, built on .NET Framework 4.8 so it runs on a
+    stock Windows 10/11 machine with nothing installed. The exe is small
+    enough for a 1.44 MB floppy. See docs/floppy-net48-plan.md.
+
+    The engine is NOT referenced as a project: net48 cannot reference the
+    net10.0 projects. Instead the engine's source files are compiled into
+    this assembly (the Compile Include items below), so there is one engine
+    and one source of truth. Build with:
+
+        dotnet build Decay.Console -c Release
+
+    Do not pass -r / RuntimeIdentifier / SelfContained: they are not needed
+    and would reach the MAUI project if used on the solution.
+  -->
+
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <AssemblyName>decay</AssemblyName>
+    <RootNamespace>Decay.Cli</RootNamespace>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Prefer32Bit>false</Prefer32Bit>
+    <Deterministic>true</Deterministic>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
+    <Optimize>true</Optimize>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Memory" Version="4.5.5" />
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.3" PrivateAssets="all" />
+    <Reference Include="System.IO.Compression" />
+  </ItemGroup>
+
+  <!-- The shared engine, compiled in place (no copies). -->
+  <ItemGroup>
+    <Compile Include="..\Decay.Core\**\*.cs" Exclude="..\Decay.Core\obj\**;..\Decay.Core\bin\**" LinkBase="Engine\Core" />
+    <Compile Include="..\Decay.Renderer\**\*.cs" Exclude="..\Decay.Renderer\obj\**;..\Decay.Renderer\bin\**" LinkBase="Engine\Renderer" />
+    <!-- The publisher's license-verification public key (a plain constant). -->
+    <Compile Include="..\Decay.App\PublisherKey.cs" Link="Engine\PublisherKey.cs" />
+  </ItemGroup>
+
+  <!--
+    dotnet build Decay.Console -c Release -t:PackFloppy
+    Collects exactly the files the floppy needs into bin/floppy.
+  -->
+  <Target Name="PackFloppy" DependsOnTargets="Build">
+    <ItemGroup>
+      <FloppyFile Include="$(OutDir)decay.exe;$(OutDir)decay.exe.config;$(OutDir)System.*.dll" />
+      <FloppyFile Include="$(MSBuildProjectDirectory)\Floppy\README.TXT" />
+    </ItemGroup>
+    <RemoveDir Directories="$(MSBuildProjectDirectory)\bin\floppy" />
+    <Copy SourceFiles="@(FloppyFile)" DestinationFolder="$(MSBuildProjectDirectory)\bin\floppy" />
+    <Message Importance="high" Text="Floppy files copied to $(MSBuildProjectDirectory)\bin\floppy" />
+  </Target>
+
+</Project>
