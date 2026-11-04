@@ -71,8 +71,8 @@ bytes**. The disk has room for roughly 1 MB more.
 - Console behaviors: hidden passphrase prompt, UTF-8 output in `cmd.exe`.
 - Running from an actual floppy or floppy image.
 
-**Letter size and PNG size:** The CLI makes every letter 512x512, the app's
-default; there is no `--size` option. A 512x512 Free-tier letter is about
+**PNG size:** `encrypt --size` accepts the app's sizes (256, 384, 512, 768,
+1024) and defaults to 512 like the app. A 512x512 Free-tier letter is about
 880 KB. That size comes from the TV-static carrier, not from the console
 edition: three of every four pixel bytes are random noise, which cannot be
 compressed below about 790 KB. Re-encoding the same image with the .NET 10
@@ -80,8 +80,8 @@ encoder gives the same size (884,695 bytes at 512, 221,809 at 256, 3,533,373
 at 1024), although the bytes differ because the zlib header and compressor
 differ. The decoded pixels, the payload and the message are identical in
 both directions. (An earlier version of this note said net48's PNGs were
-larger than the app's; that was not measured and is wrong.) Pro carriers
-passed with `--carrier` keep their own size.
+larger than the app's; that was not measured and is wrong.) A 1024x1024
+Free-tier letter is about 3.5 MB, so it will not fit on the floppy.
 
 ## Original plan
 
