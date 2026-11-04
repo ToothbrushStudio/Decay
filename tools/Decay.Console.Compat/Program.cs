@@ -33,6 +33,19 @@ switch (args[0])
         return 0;
     }
 
+    case "recompress":
+    {
+        // Decode a PNG and write it back with the .NET 10 encoder: same pixels, different zlib.
+        byte[] original = File.ReadAllBytes(args[1]);
+        PixelBuffer decoded = DecayPng.Decode(original);
+        byte[] again = DecayPng.Encode(decoded);
+
+        File.WriteAllBytes(args[2], again);
+        Console.WriteLine($"{decoded.Width}x{decoded.Height}: as written {original.Length:N0} bytes, re-encoded by net10 {again.Length:N0} bytes, raw pixels {decoded.Pixels.Length:N0} bytes");
+
+        return 0;
+    }
+
     case "restoretest":
     {
         const string message = "round trip \u2713 \u00fcn\u00efcode\nsecond line";

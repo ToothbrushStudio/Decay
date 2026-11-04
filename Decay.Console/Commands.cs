@@ -9,14 +9,17 @@ namespace Decay.Cli
     /// <summary>The encrypt, decrypt and presets commands: the same pipeline the app's pages call.</summary>
     internal static class Commands
     {
-        // The square sizes the app can produce; anything else was probably resized.
+        // The size every letter is made at, matching the app's default. The app can also
+        // produce 256, 384, 768 and 1024, so decrypt still accepts those as unresized.
+        private const int LetterSize = 512;
+
         private static readonly int[] DecaySizes = { 256, 384, 512, 768, 1024 };
 
         internal static int Encrypt(string[] argv)
         {
             Args args = Args.Parse(
                 argv,
-                new[] { "text", "in", "out", "preset", "size", "style", "strength", "carrier", "seed", "pass", "license" },
+                new[] { "text", "in", "out", "preset", "style", "strength", "carrier", "seed", "pass", "license" },
                 new[] { "force" }
             );
 
@@ -65,13 +68,6 @@ namespace Decay.Cli
             else
             {
                 CarrierPreset preset = ParsePreset(args.Get("preset"));
-                int size = ParseInt(args.Get("size"), "--size", 512);
-
-                if (Array.IndexOf(DecaySizes, size) < 0)
-                {
-                    throw new UsageException("--size must be one of " + string.Join(", ", DecaySizes) + ".");
-                }
-
                 int seed = ParseInt(args.Get("seed"), "--seed", RandomSeed());
 
                 art = DecayProduct.EncryptWithPreset(
@@ -79,8 +75,8 @@ namespace Decay.Cli
                     passphrase,
                     license.Tier,
                     preset,
-                    size,
-                    size,
+                    LetterSize,
+                    LetterSize,
                     seed,
                     strength,
                     style: style

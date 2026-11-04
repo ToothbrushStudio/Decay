@@ -130,13 +130,12 @@ Usage:
   decay selftest
   decay version
 
-encrypt options:
+encrypt options (letters are 512x512, like the app's default):
   --out <file.png>     Where to write the image (default letter.png)
   --preset <id|n>      Carrier preset, by id or number (see ""decay presets"")
-  --size <n>           256, 384, 512 (default), 768 or 1024
   --style glitch|rot   Decay style (rot needs Pro)
   --strength <1-255>   Decay strength, default 100 (Pro)
-  --carrier <file.png> Use your own PNG as the carrier (Pro)
+  --carrier <file.png> Use your own PNG as the carrier (Pro); keeps its size
   --seed <n>           Repeat a carrier
   --force              Overwrite the output file
 
