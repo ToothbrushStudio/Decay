@@ -136,7 +136,7 @@ namespace Decay.Cli.Selftest
                     && license.Issued == new DateTime(2026, 1, 2);
             });
 
-            Check("license: valid Free key accepted", () =>
+            Check("license: a validly signed non-Pro key does not unlock Pro", () =>
             {
                 ConsoleLicense? license = LicenseValidator.Validate(Vectors.LicenseFree, Vectors.LicensePublicKey);
 

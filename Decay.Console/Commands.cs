@@ -42,7 +42,7 @@ namespace Decay.Cli
                 throw new UsageException($"--strength must be {DecayStrength.Min}-{DecayStrength.Max}.");
             }
 
-            string passphrase = args.Get("pass") ?? Passphrase.ReadNew();
+            string passphrase = RequirePassphrase(args.Get("pass") ?? Passphrase.ReadNew());
 
             Console.Error.WriteLine("Deriving key and rotting the carrier...");
 
@@ -121,7 +121,7 @@ namespace Decay.Cli
                 );
             }
 
-            string passphrase = args.Get("pass") ?? Passphrase.Read("Passphrase: ");
+            string passphrase = RequirePassphrase(args.Get("pass") ?? Passphrase.Read("Passphrase: "));
 
             Console.Error.WriteLine("Deriving key...");
 
@@ -169,6 +169,18 @@ namespace Decay.Cli
         }
 
         // ------------------------------------------------------- helpers
+
+        private static string RequirePassphrase(string passphrase)
+        {
+            if (passphrase.Length == 0)
+            {
+                throw new UsageException(
+                    "A passphrase is required. If the message or input comes from a pipe, give it with --pass."
+                );
+            }
+
+            return passphrase;
+        }
 
         private static LicenseStore.Result ResolveLicense(Args args)
         {

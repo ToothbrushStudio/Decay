@@ -73,6 +73,13 @@ namespace Decay.Cli
 
                 return Exit.Usage;
             }
+            catch (ArgumentException exception)
+            {
+                // Bad values that got past the option checks (for example an out-of-range number).
+                Console.Error.WriteLine("decay: " + exception.Message);
+
+                return Exit.Usage;
+            }
             catch (DecayTierException exception)
             {
                 Console.Error.WriteLine("decay: " + exception.Message);
