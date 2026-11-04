@@ -256,6 +256,8 @@ namespace Decay.Core
 
         private static byte[] DeriveKey(string passphrase, ReadOnlySpan<byte> salt, int iterations)
         {
+#if NETFRAMEWORK
+            // .NET Framework has no static Pbkdf2; the instance form derives the same bytes.
             using (
                 Rfc2898DeriveBytes kdf = new Rfc2898DeriveBytes(
                     Encoding.UTF8.GetBytes(passphrase),
@@ -267,6 +269,15 @@ namespace Decay.Core
             {
                 return kdf.GetBytes(KeySize);
             }
+#else
+            return Rfc2898DeriveBytes.Pbkdf2(
+                passphrase,
+                salt,
+                iterations,
+                HashAlgorithmName.SHA256,
+                KeySize
+            );
+#endif
         }
 
         internal readonly record struct ContainerInfo(

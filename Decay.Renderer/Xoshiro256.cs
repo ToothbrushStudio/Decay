@@ -36,9 +36,14 @@ namespace Decay.Renderer
             _s3 = SplitMix64(ref seed);
         }
 
+        private static ulong RotateLeft(ulong value, int offset)
+        {
+            return (value << offset) | (value >> (64 - offset));
+        }
+
         internal ulong Next()
         {
-            ulong result = ulong.RotateLeft(_s1 * 5, 7) * 9;
+            ulong result = RotateLeft(_s1 * 5, 7) * 9;
             ulong t = _s1 << 17;
 
             _s2 ^= _s0;
@@ -46,7 +51,7 @@ namespace Decay.Renderer
             _s1 ^= _s2;
             _s0 ^= _s3;
             _s2 ^= t;
-            _s3 = ulong.RotateLeft(_s3, 45);
+            _s3 = RotateLeft(_s3, 45);
 
             return result;
         }
