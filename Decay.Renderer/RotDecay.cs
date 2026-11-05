@@ -57,8 +57,8 @@ namespace Decay.Renderer
             string passphrase
         )
         {
-            ArgumentNullException.ThrowIfNull(container);
-            ArgumentNullException.ThrowIfNull(plainText);
+            if (container is null) throw new ArgumentNullException(nameof(container));
+            if (plainText is null) throw new ArgumentNullException(nameof(plainText));
 
             if (DecayCipher.GetPipelineId(container) != PipelineId)
             {
@@ -68,9 +68,19 @@ namespace Decay.Renderer
             byte parameter = DecayCipher.GetPipelineParameter(container);
             int intensity = parameter == 0 ? DefaultIntensity : parameter;
 
-            byte[] publicSeed = SHA256.HashData(
-                [.. "decay-rot-v1"u8, .. container]
-            );
+            byte[] seedLabel = Encoding.ASCII.GetBytes("decay-rot-v1");
+            byte[] seedInput = new byte[seedLabel.Length + container.Length];
+
+            Buffer.BlockCopy(seedLabel, 0, seedInput, 0, seedLabel.Length);
+            Buffer.BlockCopy(container, 0, seedInput, seedLabel.Length, container.Length);
+
+            byte[] publicSeed;
+
+            using (SHA256 sha = SHA256.Create())
+            {
+                publicSeed = sha.ComputeHash(seedInput);
+            }
+
             Xoshiro256 place = new Xoshiro256(publicSeed);
             Xoshiro256 mask = new Xoshiro256(
                 DecayCipher.DeriveSubkey(container, passphrase, SubkeyLabel)
@@ -98,7 +108,7 @@ namespace Decay.Renderer
         /// <summary>Rots a carrier: returns a new, fully decayed image.</summary>
         public PixelBuffer Apply(PixelBuffer carrier)
         {
-            ArgumentNullException.ThrowIfNull(carrier);
+            if (carrier is null) throw new ArgumentNullException(nameof(carrier));
 
             PixelBuffer image = carrier.Clone();
             Plan plan = BuildPlan(image.Width, image.Height);
@@ -128,7 +138,7 @@ namespace Decay.Renderer
         /// </summary>
         public PixelBuffer Restore(PixelBuffer rotted)
         {
-            ArgumentNullException.ThrowIfNull(rotted);
+            if (rotted is null) throw new ArgumentNullException(nameof(rotted));
 
             PixelBuffer image = rotted.Clone();
             Plan plan = BuildPlan(image.Width, image.Height);
@@ -148,7 +158,7 @@ namespace Decay.Renderer
                         ? numerator / keep
                         : -((-numerator + keep - 1) / keep);
 
-                    pixels[offset + c] = (byte)Math.Clamp(p, 0, 255);
+                    pixels[offset + c] = (byte)Num.Clamp(p, 0, 255);
                 }
             }
 
@@ -162,10 +172,10 @@ namespace Decay.Renderer
         /// </summary>
         public static PixelBuffer Interpolate(PixelBuffer from, PixelBuffer to, int step, int steps)
         {
-            ArgumentNullException.ThrowIfNull(from);
-            ArgumentNullException.ThrowIfNull(to);
-            ArgumentOutOfRangeException.ThrowIfNegative(step);
-            ArgumentOutOfRangeException.ThrowIfGreaterThan(step, steps);
+            if (from is null) throw new ArgumentNullException(nameof(from));
+            if (to is null) throw new ArgumentNullException(nameof(to));
+            if (step < 0) throw new ArgumentOutOfRangeException(nameof(step));
+            if (step > steps) throw new ArgumentOutOfRangeException(nameof(step));
 
             if (from.Width != to.Width || from.Height != to.Height)
             {
@@ -223,7 +233,10 @@ namespace Decay.Renderer
             int[] best = new int[blockCount];
             int[] owner = new int[blockCount];
 
-            Array.Fill(owner, -1);
+            for (int i = 0; i < owner.Length; i++)
+            {
+                owner[i] = -1;
+            }
 
             if (_spores.Length > 0)
             {
@@ -232,7 +245,7 @@ namespace Decay.Renderer
                 long areaTarget = (long)blockCount * 150 / 100;
                 int baseRadius = ISqrt(areaTarget / (4L * _spores.Length));
 
-                baseRadius = Math.Clamp(baseRadius, MinSporeRadius, Math.Max(MinSporeRadius, minBlocks * 35 / 100));
+                baseRadius = Num.Clamp(baseRadius, MinSporeRadius, Math.Max(MinSporeRadius, minBlocks * 35 / 100));
 
                 for (int s = 0; s < _spores.Length; s++)
                 {
@@ -259,7 +272,7 @@ namespace Decay.Renderer
                             // Ragged, mottled edges; then stepped into four
                             // flat levels so it looks like pixel rot.
                             w += (ValueNoise(x, y, cell, 1) - 128) / 2;
-                            w = Math.Clamp(w, 0, 256);
+                            w = Num.Clamp(w, 0, 256);
                             w = (w + 32) / 64 * 64;
 
                             if (w == 0)
@@ -308,7 +321,7 @@ namespace Decay.Renderer
                         }
                     }
 
-                    alpha[i] = (byte)Math.Clamp(a, 0, 255);
+                    alpha[i] = (byte)Num.Clamp(a, 0, 255);
                     color[i * 3] = (byte)target.R;
                     color[i * 3 + 1] = (byte)target.G;
                     color[i * 3 + 2] = (byte)target.B;

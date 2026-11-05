@@ -46,7 +46,7 @@ namespace Decay.Core
                 throw new ArgumentOutOfRangeException(nameof(height));
             }
 
-            ArgumentNullException.ThrowIfNull(rgbaPixels);
+            if (rgbaPixels is null) throw new ArgumentNullException(nameof(rgbaPixels));
 
             if (rgbaPixels.Length != width * height * BytesPerPixel)
             {

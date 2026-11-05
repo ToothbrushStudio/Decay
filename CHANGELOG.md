@@ -2,6 +2,12 @@
 
 ## 1.0.0.0 — launch (unreleased)
 
+- **Console edition**: `decay.exe`, a command-line Decay for .NET Framework
+  4.8 that runs on a stock Windows 10/11 machine with nothing installed and
+  fits on a 1.44 MB floppy (about 400 KB). Encrypt and decrypt, Free and Pro
+  tiers with offline license keys, and a `selftest` command. It reads and
+  writes the same images as the app. No format or crypto changes.
+
 - **Slimmer Encrypt tab**: Size, Intensity and the debug Pro override moved
   into a collapsed "Advanced" section; Carrier now has its own row; Play,
   Save and Share appear only after you encrypt; the send warning and the

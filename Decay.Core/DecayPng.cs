@@ -21,7 +21,7 @@ namespace Decay.Core
 
         public static byte[] Encode(PixelBuffer image)
         {
-            ArgumentNullException.ThrowIfNull(image);
+            if (image is null) throw new ArgumentNullException(nameof(image));
 
             using MemoryStream output = new MemoryStream();
 
@@ -59,7 +59,7 @@ namespace Decay.Core
 
         public static void EncodeTo(PixelBuffer image, Stream destination)
         {
-            ArgumentNullException.ThrowIfNull(destination);
+            if (destination is null) throw new ArgumentNullException(nameof(destination));
 
             byte[] png = Encode(image);
 
@@ -70,7 +70,7 @@ namespace Decay.Core
 
         public static PixelBuffer Decode(byte[] pngBytes)
         {
-            ArgumentNullException.ThrowIfNull(pngBytes);
+            if (pngBytes is null) throw new ArgumentNullException(nameof(pngBytes));
 
             if (pngBytes.Length < 8 || !pngBytes.AsSpan(0, 8).SequenceEqual(Signature))
             {
@@ -185,7 +185,7 @@ namespace Decay.Core
 
         public static PixelBuffer Decode(Stream source)
         {
-            ArgumentNullException.ThrowIfNull(source);
+            if (source is null) throw new ArgumentNullException(nameof(source));
 
             using MemoryStream buffer = new MemoryStream();
 
