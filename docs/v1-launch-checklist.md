@@ -215,14 +215,13 @@ or move it to a later release.
 - [x] **Confirm the Windows CI job passes**: `decay selftest` on the real .NET
       Framework 4.8 (19 passed, license checks included) and the piped UTF-8
       round trips. Keep it green.
-- [ ] **Try it by hand on Windows**: the hidden passphrase prompt, and
+- [x] **Try it by hand on Windows**: the hidden passphrase prompt, and
       non-ASCII output in a `cmd.exe` and a PowerShell window.
 - [ ] **Sign `decay.exe`** in the same signing run as the app. The four
       `System.*.dll` files beside it are already signed by Microsoft.
 - [ ] **Zip `Decay.Cli/bin/cli`** as `Decay-1.0.0-console.zip` and add it to
-      the same itch page with the web uploader. Tick **Windows**. Leave the
-      demo box unticked to make it a Pro extra (only buyers can download it),
-      or tick it to make it free.
+      the same itch page with the web uploader. Tick **Windows** and the **demo**
+      box: it must be a free download, because decrypting is free for everyone.
 
 ## Later, not for 1.0
 
