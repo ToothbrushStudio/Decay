@@ -56,17 +56,14 @@
                         SelectedIndexChanged="OnPresetChanged" />
                 <!-- No vertical padding, so the button never sets the row's height:
                      it stretches to exactly the dropdown's height beside it. -->
-                <Button Grid.Row="1"
+                <!-- "New carrier" for a preset; "Choose image… (PNG)" for Custom Image. -->
+                <Button x:Name="NewCarrierButton"
+                        Grid.Row="1"
                         Grid.Column="1"
                         Padding="11,0"
                         Text="New carrier"
                         Clicked="OnNewCarrier" />
             </Grid>
-
-            <Button x:Name="ChooseImageButton"
-                    Text="Choose image… (PNG)"
-                    IsVisible="False"
-                    Clicked="OnChooseImage" />
 
             <Button x:Name="AdvancedToggle"
                     Text="Advanced ▸"

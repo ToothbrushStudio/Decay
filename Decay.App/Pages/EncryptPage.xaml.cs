@@ -10,6 +10,11 @@ namespace Decay.App.Pages
 
         private const int MaxCustomCarrierDimension = 2048;
 
+        // The button beside the carrier dropdown: a new random carrier for a
+        // preset, or a different image file for Custom Image.
+        private const string NewCarrierText = "New carrier";
+        private const string ChooseImageText = "Choose image… (PNG)";
+
         private int _carrierSeed = Random.Shared.Next();
         private PixelBuffer? _customCarrier;
         private byte[]? _carrierPreview;
@@ -111,8 +116,8 @@ namespace Decay.App.Pages
 
                 if (IsCustomSelected || !SelectedPreset.FreeTier)
                 {
-                    // Triggers OnPresetChanged, which regenerates and hides
-                    // the choose-image button.
+                    // Triggers OnPresetChanged, which regenerates the
+                    // carrier and relabels the button beside the dropdown.
                     PresetPicker.SelectedIndex = DefaultPresetIndex;
                 }
 
@@ -182,13 +187,13 @@ namespace Decay.App.Pages
                     return;
                 }
 
-                ChooseImageButton.IsVisible = true;
+                NewCarrierButton.Text = ChooseImageText;
                 SizePicker.IsEnabled = false;
                 ShowCarrierPreview();
                 UpdateCapacityLabel();
 
-                // First selection opens the dialog directly; the button
-                // stays as the retry/change-image affordance.
+                // First selection opens the dialog directly; after that the
+                // button beside the dropdown picks a different image.
                 if (_customCarrier is null)
                 {
                     await PickCustomCarrierAsync();
@@ -197,7 +202,7 @@ namespace Decay.App.Pages
                 return;
             }
 
-            ChooseImageButton.IsVisible = false;
+            NewCarrierButton.Text = NewCarrierText;
             SizePicker.IsEnabled = true;
             _customCarrier = null;
             _customCarrierPreview = null;
@@ -263,11 +268,6 @@ namespace Decay.App.Pages
         private void OnPassphraseChanged(object? sender, TextChangedEventArgs e)
         {
             InvalidateResult();
-        }
-
-        private async void OnChooseImage(object? sender, EventArgs e)
-        {
-            await PickCustomCarrierAsync();
         }
 
         private async Task PickCustomCarrierAsync()
