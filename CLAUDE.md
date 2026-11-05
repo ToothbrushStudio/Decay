@@ -22,21 +22,21 @@ files such as `itch-keys.txt`.
 ## Console edition (.NET Framework 4.8, floppy-sized)
 
 ```bash
-dotnet build Decay.Console -c Release -t:PackFloppy
+dotnet build Decay.Cli -c Release -t:PackCli
 ```
 
 Builds `decay.exe` and copies the floppy files (about 400 KB) to
-`Decay.Console/bin/floppy`. It compiles the `Decay.Core` and `Decay.Renderer`
+`Decay.Cli/bin/cli`. It compiles the `Decay.Core` and `Decay.Renderer`
 sources in place for `net48`, so **keep .NET-Core-only APIs out of those two
 projects** (static `HashData`/`GetBytes`/`Pbkdf2`, `Math.Clamp`,
 `ThrowIfNull`, `Array.Fill`, `ulong.RotateLeft`, and so on); building
-`Decay.Console` is the check. It is built and tested on Linux with Mono; it has
+`Decay.Cli` is the check. It is built and tested on Linux with Mono; it has
 not yet been run on Windows. On Windows, run `decay selftest` first and make
 sure nothing prints SKIP. Plan, results and what is unverified:
-`docs/floppy-net48-plan.md`.
+`docs/cli-net48-plan.md`.
 
-Cross-checks against the net10 engine (`tools/Decay.Console.Compat`):
+Cross-checks against the net10 engine (`tools/Decay.Cli.Compat`):
 `licensetest`, `storetest`, `make`/`check`, and `vectors <file>` (regenerates
-`Decay.Console/Selftest/Vectors.g.cs`). Build by project path as above; do not
+`Decay.Cli/Selftest/Vectors.g.cs`). Build by project path as above; do not
 publish the solution with global properties.
 

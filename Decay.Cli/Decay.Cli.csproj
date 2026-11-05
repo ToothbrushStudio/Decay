@@ -3,14 +3,14 @@
   <!--
     Decay for the command line, built on .NET Framework 4.8 so it runs on a
     stock Windows 10/11 machine with nothing installed. The exe is small
-    enough for a 1.44 MB floppy. See docs/floppy-net48-plan.md.
+    enough for a 1.44 MB floppy. See docs/cli-net48-plan.md.
 
     The engine is NOT referenced as a project: net48 cannot reference the
     net10.0 projects. Instead the engine's source files are compiled into
     this assembly (the Compile Include items below), so there is one engine
     and one source of truth. Build with:
 
-        dotnet build Decay.Console -c Release
+        dotnet build Decay.Cli -c Release
 
     Do not pass -r / RuntimeIdentifier / SelfContained: they are not needed
     and would reach the MAUI project if used on the solution.
@@ -54,17 +54,17 @@
   </ItemGroup>
 
   <!--
-    dotnet build Decay.Console -c Release -t:PackFloppy
-    Collects exactly the files the floppy needs into bin/floppy.
+    dotnet build Decay.Cli -c Release -t:PackCli
+    Collects exactly the files the floppy needs into bin/cli.
   -->
-  <Target Name="PackFloppy" DependsOnTargets="Build">
+  <Target Name="PackCli" DependsOnTargets="Build">
     <ItemGroup>
       <FloppyFile Include="$(OutDir)decay.exe;$(OutDir)decay.exe.config;$(OutDir)System.*.dll" />
       <FloppyFile Include="$(MSBuildProjectDirectory)\Floppy\README.TXT" />
     </ItemGroup>
-    <RemoveDir Directories="$(MSBuildProjectDirectory)\bin\floppy" />
-    <Copy SourceFiles="@(FloppyFile)" DestinationFolder="$(MSBuildProjectDirectory)\bin\floppy" />
-    <Message Importance="high" Text="Floppy files copied to $(MSBuildProjectDirectory)\bin\floppy" />
+    <RemoveDir Directories="$(MSBuildProjectDirectory)\bin\cli" />
+    <Copy SourceFiles="@(FloppyFile)" DestinationFolder="$(MSBuildProjectDirectory)\bin\cli" />
+    <Message Importance="high" Text="Floppy files copied to $(MSBuildProjectDirectory)\bin\cli" />
   </Target>
 
 </Project>

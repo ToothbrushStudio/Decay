@@ -1,17 +1,17 @@
 # Floppy edition: a .NET Framework 4.8 console mirror
 
-Status: **built on branch `claude/floppy-net48-plan`** (Phases 1-5). It compiles
+Status: **built on branch `claude/cli-net48-plan`** (Phases 1-5). It compiles
 and passes its self-test and cross-edition checks under Mono on Linux. It has
 **not yet been run on real Windows**; see "Results" and "Not verified" below.
 The sections after those are the original plan, kept for the reasoning.
 
 ## Results
 
-What exists: `Decay.Console` (net48 exe `decay.exe`), in `Decay.slnx`. It
+What exists: `Decay.Cli` (net48 exe `decay.exe`), in `Decay.slnx`. It
 compiles the engine's source in place, adds a compat layer, and offers
 `encrypt`, `decrypt`, `presets`, `activate`, `license`, `deactivate`,
-`selftest`, `version` and `help`. `dotnet build Decay.Console -c Release -t:PackFloppy`
-collects the floppy files into `Decay.Console/bin/floppy`.
+`selftest`, `version` and `help`. `dotnet build Decay.Cli -c Release -t:PackCli`
+collects the floppy files into `Decay.Cli/bin/cli`.
 
 **Measured size (Release build):**
 
@@ -56,8 +56,8 @@ bytes**. The disk has room for roughly 1 MB more.
 | net48 `encrypt` (256 and 1024) -> net10 engine decrypts | match |
 | net10 engine glitch and rot images -> net48 `decrypt` | match; `--carrier-out` writes the restored carrier |
 | Wrong passphrase | exit 2, same message as the app |
-| `tools/Decay.Console.Compat licensetest`: console `LicenseValidator` vs the real `LicenseKey.Validate` | 2,349 comparisons (49 accepted by both, 2,300 rejected by both), 0 differences |
-| `tools/Decay.Console.Compat storetest`: license lookup order, save, clear | 9 of 9 pass |
+| `tools/Decay.Cli.Compat licensetest`: console `LicenseValidator` vs the real `LicenseKey.Validate` | 2,349 comparisons (49 accepted by both, 2,300 rejected by both), 0 differences |
+| `tools/Decay.Cli.Compat storetest`: license lookup order, save, clear | 9 of 9 pass |
 
 **Not verified (needs a real Windows machine):**
 
@@ -112,7 +112,7 @@ These are estimates. Measure after Phase 3 and record the real numbers here.
 
 ## Approach: a mirror, not a retarget
 
-New project `Decay.Console` (`net48`, `OutputType=Exe`) in `Decay.slnx`.
+New project `Decay.Cli` (`net48`, `OutputType=Exe`) in `Decay.slnx`.
 It **compiles the engine's existing source files in place** with
 `<Compile Include="..\Decay.Core\**\*.cs" Exclude="..\Decay.Core\obj\**;..\Decay.Core\bin\**" />`
 (and the same for `Decay.Renderer`). No copies, no fork: the net10 engine
@@ -146,7 +146,7 @@ The first real compile will probably find a few more.
 | `"DCAY"u8` literals, `ReadOnlySpan<byte>` | `PayloadContainer`, `DecayPng` | Compiles with `System.Memory`; verify. |
 | `readonly record struct` / `record` | `PayloadContainer`, Renderer | Add an `IsExternalInit` polyfill. |
 | `Span<T>`, `BinaryPrimitives`, `stackalloc Span` | many (about 23 `Span<` uses) | Provided by the `System.Memory` NuGet package. |
-| `System.Text.Json`, `ImportSubjectPublicKeyInfo`, `DateOnly` | `Decay.Licensing` only | Not linked. Replaced by a small verify-only mirror, `Decay.Console/Licensing/`. See "Licensing" below. |
+| `System.Text.Json`, `ImportSubjectPublicKeyInfo`, `DateOnly` | `Decay.Licensing` only | Not linked. Replaced by a small verify-only mirror, `Decay.Cli/Licensing/`. See "Licensing" below. |
 
 ## Decisions needed before Phase 2
 
@@ -168,8 +168,8 @@ The first real compile will probably find a few more.
 2. **Licensing.** Proposed: support offline keys in v1 through a verify-only
    wrapper (see "Licensing" below). If you'd rather ship Free-only first,
    skip that section; the rest of the plan doesn't depend on it.
-3. **Name.** Decided: the project is `Decay.Console`. Set `RootNamespace` to
-   `Decay.Cli` and `AssemblyName` to `decay`. A namespace called `Decay.Console`
+3. **Name.** Decided: the project is `Decay.Cli`. Set `RootNamespace` to
+   `Decay.Cli` and `AssemblyName` to `decay`. A namespace called `Decay.Cli`
    would shadow `System.Console` for every file under `namespace Decay.*`,
    including the linked engine files, and break `Console.WriteLine`.
 
@@ -178,11 +178,11 @@ The first real compile will probably find a few more.
 **Phase 0 - branch and baseline.** Done: branch exists. Run the three
 existing test projects on Windows first so there is a known-good baseline.
 
-**Phase 1 - scaffold.** `Decay.Console.csproj` (`AssemblyName` `decay`, `RootNamespace` `Decay.Cli`), linked engine sources, polyfills,
+**Phase 1 - scaffold.** `Decay.Cli.csproj` (`AssemblyName` `decay`, `RootNamespace` `Decay.Cli`), linked engine sources, polyfills,
 add to `Decay.slnx`. Goal: it compiles with a stub `Main`. Expect the error
 list to match the table above.
 
-**Phase 2 - compat layer (`Decay.Console/Compat/`).** `CngAesGcm`, `ZLib`
+**Phase 2 - compat layer (`Decay.Cli/Compat/`).** `CngAesGcm`, `ZLib`
 wrapper, `IsExternalInit`, and the helpers behind the engine edits from
 decision 1.
 
@@ -217,7 +217,7 @@ the reverse.
   compressed size.
 
 **Phase 5 - packaging and measurement.** Build with
-`dotnet build Decay.Console -c Release`. Do not use the GUI publish command or
+`dotnet build Decay.Cli -c Release`. Do not use the GUI publish command or
 global `RuntimeIdentifier` properties (see CLAUDE.md). Stage `decay.exe`, the
 needed `System.*.dll` files, `decay.exe.config` and a `README.TXT` into a
 folder, then record the real byte total and the FAT12 cluster-rounded total
@@ -234,7 +234,7 @@ build needs only the verify half. `Sign` stays in `tools/Decay.KeyGen` on
 net10.
 
 `Decay.Licensing/LicenseKey.cs` is not linked, because it uses three things
-net48 lacks. The mirror (`Decay.Console/Licensing/LicenseValidator.cs`,
+net48 lacks. The mirror (`Decay.Cli/Licensing/LicenseValidator.cs`,
 about 60 lines) replaces them:
 
 | net10 code | net48 replacement |
@@ -284,5 +284,5 @@ rejected). They must validate identically on net48 and net10.
 If net48 turns out to be more trouble than it's worth, the other route is a
 NativeAOT console app on .NET 10. It reuses the engine unmodified, but
 the size is borderline (about 1.5-4 MB estimated) and it needs a Windows
-build machine with the C++ tools. The same `Decay.Console` CLI code would be
+build machine with the C++ tools. The same `Decay.Cli` CLI code would be
 reusable there.

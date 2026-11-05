@@ -5,11 +5,11 @@
     <Platform Name="x86" />
   </Configurations>
   <Folder Name="/tools/">
-    <Project Path="tools/Decay.Console.Compat/Decay.Console.Compat.csproj" />
+    <Project Path="tools/Decay.Cli.Compat/Decay.Cli.Compat.csproj" />
     <Project Path="tools/Decay.KeyGen/Decay.KeyGen.csproj" />
   </Folder>
   <Project Path="Decay.App/Decay.App.csproj" />
-  <Project Path="Decay.Console/Decay.Console.csproj" />
+  <Project Path="Decay.Cli/Decay.Cli.csproj" />
   <Project Path="Decay.Core.Tests/Decay.Core.Tests.csproj" />
   <Project Path="Decay.Core/Decay.Core.csproj" />
   <Project Path="Decay.Licensing.Tests/Decay.Licensing.Tests.csproj" />
