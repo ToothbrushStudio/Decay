@@ -26,8 +26,13 @@ Everything below serves one of those two.
 Making a repo public publishes its **entire history**, including files you
 deleted later. Scan it first.
 
-- Quick manual check (clean as of this writing, 53 commits scanned, no key
-  files and no private-key text found):
+- **Done on 2026-11-05:** gitleaks 8.16 over every branch found no secrets.
+  It flagged two strings that aren't secrets (Microsoft's public
+  `PublicKeyToken` in the retired WinForms prototype, and Rot's public mask
+  label); they are listed in `.gitleaksignore`. No license key in the history
+  validates against the shipped public key. Run the scan again just before
+  going public, since new commits land in between.
+- Quick manual check:
 
   ```bash
   git log --all --name-only --pretty=format: | sort -u | grep -iE "\.pem|\.pfx|\.p12|\.snk|keys?\.txt|secret|\.env|private"
@@ -51,19 +56,9 @@ deleted later. Scan it first.
 
 ### 2. Keep secret-looking files out of git going forward
 
-`.gitignore` already contains `*.pem`. Add the other files your release process
-creates:
-
-```
-# Release artifacts that must never be committed
-*.pfx
-*.p12
-*.snk
-itch-keys.txt
-keys.txt
-decay-publisher-private*
-*.env
-```
+**Done:** `.gitignore` now covers `*.pem`, `*.pfx`, `*.p12`, `*.snk`, `*.key`,
+`*.env`, `keys.txt`, `*-keys.txt` (so `itch-keys.txt`) and
+`decay-publisher-private*`.
 
 Keep the private key and the key pool (`itch-keys.txt`) outside the repo
 folder entirely, for example in a password manager or an encrypted drive.
@@ -80,6 +75,8 @@ read it but have no permission to use it. Decide on purpose:
 | Anyone may use and sell it, no strings | MIT or Apache-2.0 |
 | Others can read it and build it for themselves, but can't sell competing copies | A source-available license (for example PolyForm Noncommercial or BSL) |
 | Anything built on it must stay open | GPL-3.0 or AGPL-3.0 |
+
+**Decided:** all rights reserved (`LICENSE`), which can be relaxed later.
 
 Add the chosen text as a `LICENSE` file in the repo root. The Pro keys are
 checked offline, so anyone with the source could remove the check from their
@@ -164,31 +161,12 @@ because outside pull requests can try to run code in it.
   releases by hand on your own machine.
 - Pin third-party actions to a full commit SHA, not a tag.
 
-Minimal test workflow to start from (`.github/workflows/test.yml`):
-
-```yaml
-name: test
-on:
-  pull_request:
-  push:
-    branches: [main]
-permissions:
-  contents: read
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: 10.0.x
-      - run: dotnet test Decay.Core.Tests
-      - run: dotnet test Decay.Renderer.Tests
-      - run: dotnet test Decay.Licensing.Tests
-```
-
-(Pin the two `uses:` lines to commit SHAs when you add this. The test projects
-don't need the MAUI workload, so the app itself isn't built in CI.)
+**Done:** `.github/workflows/test.yml` runs on every push and pull request
+with read-only permissions and actions pinned to commit SHAs. A Linux job
+runs the three test projects (including the golden vectors) and the console
+license cross-checks. A Windows job builds the console edition and runs
+`decay selftest` on the real .NET Framework 4.8, plus round trips with the
+.NET 10 engine. The MAUI app isn't built in CI (it needs the MAUI workload).
 
 ### 9. Turn on automatic scanning
 
@@ -217,15 +195,18 @@ Under **Settings → Code security** (free on public repos):
 
 ## Checklist
 
-- [ ] History scanned with a real tool, no secrets found
-- [ ] `.gitignore` extended; key pool and private key stored outside the repo
-- [ ] License chosen and `LICENSE` added
-- [ ] `SECURITY.md` added; private vulnerability reporting on
+- [x] History scanned with a real tool, no secrets found (re-run before going public)
+- [x] `.gitignore` extended
+- [ ] Key pool and private key stored outside the repo folder
+- [x] License chosen and `LICENSE` added
+- [x] `SECURITY.md` added
+- [ ] Private vulnerability reporting on
 - [ ] Ruleset on `main`: PR required, 1 approval, code owner review, no force
-      pushes
-- [ ] `.github/CODEOWNERS` added with your handle
+      pushes, `test` workflow required
+- [x] `.github/CODEOWNERS` added with your handle
 - [ ] 2FA on for your account (and the org, if any)
-- [ ] CI workflow added with read-only permissions; fork-PR approval required
+- [x] CI workflow added with read-only permissions
+- [ ] Fork-PR workflow approval required
 - [ ] No signing keys or certificates in repo secrets
 - [ ] Secret scanning, push protection and Dependabot on
 - [ ] Then switch the repo to **public** (**Settings → General → Danger Zone →

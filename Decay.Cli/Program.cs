@@ -20,15 +20,72 @@ namespace Decay.Cli
 
         private static int Main(string[] argv)
         {
+            Encoding? consoleEncodingToRestore = UseUtf8Output();
+
             try
             {
-                Console.OutputEncoding = new UTF8Encoding(false);
+                return Run(argv);
+            }
+            finally
+            {
+                if (consoleEncodingToRestore is not null)
+                {
+                    try
+                    {
+                        Console.OutputEncoding = consoleEncodingToRestore;
+                    }
+                    catch (IOException)
+                    {
+                        // The console went away; nothing to restore.
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Everything decay prints is UTF-8, like the piped input it reads.
+        /// Output to a file or a pipe is written as UTF-8 bytes directly, so
+        /// it doesn't depend on the console's code page (or on there being a
+        /// console at all). A console window is switched to UTF-8 for the run;
+        /// the returned encoding is what to switch it back to afterwards, so
+        /// the user's window isn't left changed.
+        /// </summary>
+        private static Encoding? UseUtf8Output()
+        {
+            UTF8Encoding utf8 = new UTF8Encoding(false);
+
+            if (Console.IsOutputRedirected)
+            {
+                Console.SetOut(new StreamWriter(Console.OpenStandardOutput(), utf8) { AutoFlush = true });
+            }
+
+            if (Console.IsErrorRedirected)
+            {
+                Console.SetError(new StreamWriter(Console.OpenStandardError(), utf8) { AutoFlush = true });
+            }
+
+            if (Console.IsOutputRedirected && Console.IsErrorRedirected)
+            {
+                return null;
+            }
+
+            try
+            {
+                Encoding previous = Console.OutputEncoding;
+
+                Console.OutputEncoding = utf8;
+
+                return previous;
             }
             catch (IOException)
             {
-                // No console attached (redirected); keep the default.
+                // No console attached; keep the default.
+                return null;
             }
+        }
 
+        private static int Run(string[] argv)
+        {
             if (argv.Length == 0 || argv[0] is "help" or "--help" or "-h" or "/?")
             {
                 Console.Error.WriteLine(HelpText);
@@ -123,6 +180,14 @@ namespace Decay.Cli
 
                 return Exit.Failed;
             }
+            catch (Exception exception)
+            {
+                // Anything unexpected still gets a message and an exit code,
+                // not a stack trace or a Windows crash dialog.
+                Console.Error.WriteLine($"decay: unexpected error ({exception.GetType().Name}): {exception.Message}");
+
+                return Exit.Failed;
+            }
         }
 
         private const string HelpText = @"DECAY " + Version + @" - encrypt your message into the rot (console edition)
@@ -153,6 +218,8 @@ decrypt options:
 common options:
   --pass <passphrase>  Prefer the hidden prompt: command lines are visible
   --license <key>      Use this license key for this run
+
+Piped input (--in - and a piped passphrase) must be UTF-8 text.
 
 The image IS the message. Send the PNG file itself: a screenshot, resize or
 re-compression destroys it. Decryption is free for everyone, always.

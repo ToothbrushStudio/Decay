@@ -1,0 +1,14 @@
+# Every change needs the maintainer's review (docs/repo-security.md).
+*                                @ToothbrushStudio
+
+# The parts that must never change silently: the frozen format and art
+# pipelines, license checking and the public key, and the CI.
+/Decay.Core/                     @ToothbrushStudio
+/Decay.Renderer/                 @ToothbrushStudio
+/Decay.Licensing/                @ToothbrushStudio
+/Decay.Cli/Licensing/            @ToothbrushStudio
+/Decay.App/PublisherKey.cs       @ToothbrushStudio
+/docs/payload-format-v1.md       @ToothbrushStudio
+/docs/render-pipeline-v1.md      @ToothbrushStudio
+/docs/render-pipeline-v2-rot.md  @ToothbrushStudio
+/.github/                        @ToothbrushStudio

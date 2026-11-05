@@ -26,21 +26,32 @@ namespace Decay.App
             + "(Google Drive, OneDrive, iCloud Drive), an email attachment, AirDrop, "
             + "or \"File\" / \"Document\" in a chat app — not as a photo.";
 
+        /// <summary>
+        /// What the Decrypt tab's open dialog offers: every common image type,
+        /// not only PNG, so a copy that was converted along the way gets an
+        /// explanation instead of being invisible in the dialog.
+        /// </summary>
+        public static readonly FilePickerFileType OpenableImages = new FilePickerFileType(
+            new Dictionary<DevicePlatform, IEnumerable<string>>
+            {
+                [DevicePlatform.WinUI] = new[]
+                {
+                    ".png", ".jpg", ".jpeg", ".webp", ".heic", ".heif", ".avif", ".gif", ".bmp", ".tif", ".tiff",
+                },
+                [DevicePlatform.Android] = new[] { "image/*" },
+                [DevicePlatform.iOS] = new[] { "public.image" },
+                [DevicePlatform.MacCatalyst] = new[] { "public.image" },
+            }
+        );
+
         public static bool IsDecaySize(int width, int height) =>
             width == height && Array.IndexOf(DecaySizes, width) >= 0;
 
         /// <summary>
-        /// Shown under the preview once an image loads. Empty when nothing
-        /// looks wrong.
+        /// The file picked is not a PNG Decay can read. <paramref name="detail"/>
+        /// is the decoder's reason, shown for files that claim to be PNGs.
         /// </summary>
-        public static string LoadedHint(int width, int height) =>
-            IsDecaySize(width, height)
-                ? ""
-                : $"This image is {width}×{height}, which isn't a size Decay makes, so it has "
-                    + "probably been resized or cropped along the way. The message may be gone.";
-
-        /// <summary>The file picked is not a PNG Decay can read.</summary>
-        public static string NotReadableMessage(string fileName)
+        public static string NotReadableMessage(string fileName, string? detail = null)
         {
             string extension = Path.GetExtension(fileName).ToLowerInvariant();
 
@@ -49,13 +60,18 @@ namespace Decay.App
                 ".jpg" or ".jpeg" => "a JPEG",
                 ".webp" => "a WebP image",
                 ".heic" or ".heif" => "a HEIC photo",
+                ".avif" => "an AVIF image",
                 ".gif" => "a GIF",
+                ".bmp" => "a BMP image",
+                ".tif" or ".tiff" => "a TIFF image",
                 _ => null,
             };
 
             if (kind is null)
             {
-                return "This file isn't a PNG that Decay can read. It may be damaged, or it "
+                string reason = string.IsNullOrWhiteSpace(detail) ? "" : detail + "\n\n";
+
+                return "Decay can't read this file.\n\n" + reason + "It may be damaged, or it "
                     + "may have been converted along the way.\n\n" + ResendAdvice;
             }
 

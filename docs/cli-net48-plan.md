@@ -1,8 +1,10 @@
 # Floppy edition: a .NET Framework 4.8 console mirror
 
-Status: **built on branch `claude/cli-net48-plan`** (Phases 1-5). It compiles
-and passes its self-test and cross-edition checks under Mono on Linux. It has
-**not yet been run on real Windows**; see "Results" and "Not verified" below.
+Status: **built and merged** (Phases 1-5). It compiles and passes its
+self-test and cross-edition checks under Mono on Linux, and on the real
+.NET Framework 4.8 in the CI workflow's Windows job, which runs on every
+push (first run 2026-11-05: 19 passed, 0 skipped, 0 failed). It has **not
+yet been tried by hand on Windows**. See "Results" and "Not verified" below.
 The sections after those are the original plan, kept for the reasoning.
 
 ## Results
@@ -17,16 +19,16 @@ collects the floppy files into `Decay.Cli/bin/cli`.
 
 | File | Bytes |
 |---|---|
-| `decay.exe` (engine + CLI + compat + self-test vectors) | 109,056 |
+| `decay.exe` (engine + CLI + compat + self-test vectors) | 120,320 |
 | `System.Memory.dll` | 142,240 |
 | `System.Numerics.Vectors.dll` | 115,856 |
 | `System.Buffers.dll` | 20,856 |
 | `System.Runtime.CompilerServices.Unsafe.dll` | 16,768 |
-| `decay.exe.config`, `README.TXT` | 1,222 |
-| **Total** | **405,998** |
+| `decay.exe.config`, `README.TXT` | 1,270 |
+| **Total** | **417,310** |
 
-About 408 KB after FAT12 cluster rounding, or **28% of the 1,457,664 usable
-bytes**. The disk has room for roughly 1 MB more.
+About 419 KB after FAT12 cluster rounding, or **29% of the 1,457,664 usable
+bytes**. The disk has room for roughly 1 MB more. (Measured 2026-11-05.)
 
 **How it differs from the plan above:**
 
@@ -51,24 +53,30 @@ bytes**. The disk has room for roughly 1 MB more.
 
 | Check | Result |
 |---|---|
-| Existing net10 tests (Core 38, Renderer 52, Licensing 13) after the engine edits | all pass |
-| `decay selftest` (AES-GCM KATs, PBKDF2 KAT, net10 container, net10 PNG, PNG round trip, glitch and rot round trips incl. carrier restore) | all pass |
+| net10 tests (Core 55, Renderer 70, Licensing 13), incl. the frozen-format and frozen-pipeline golden vectors | all pass |
+| `decay selftest` (AES-GCM KATs, PBKDF2 KAT, net10 container, net10 PNG, PNG round trip, glitch and rot round trips incl. carrier restore, frozen Glitch and Rot art and reveal vs. the net10 engine) | 14 pass, 5 license checks SKIP (Mono only) |
 | net48 `encrypt` (256 and 1024) -> net10 engine decrypts | match |
 | net10 engine glitch and rot images -> net48 `decrypt` | match; `--carrier-out` writes the restored carrier |
+| Non-ASCII passphrase and `--in -` message piped in, in a non-UTF-8 terminal | match (read as UTF-8; invalid UTF-8 is refused) |
+| Damaged or oversized PNG | clear message, exit 2 (was an unhandled exception) |
 | Wrong passphrase | exit 2, same message as the app |
 | `tools/Decay.Cli.Compat licensetest`: console `LicenseValidator` vs the real `LicenseKey.Validate` | 2,349 comparisons (49 accepted by both, 2,300 rejected by both), 0 differences |
 | `tools/Decay.Cli.Compat storetest`: license lookup order, save, clear | 9 of 9 pass |
 
-**Not verified (needs a real Windows machine):**
+**Verification on Windows (CI, GitHub `windows-latest`, .NET Framework 4.8):**
 
-- **Running on .NET Framework 4.8 itself.** Mono is a stand-in, not the real CLR.
-- **License verification on net48.** Mono 6.8 has no working ECDSA, so
-  `decay selftest` prints SKIP for the five license checks there. The
-  validator's logic is tested on .NET 10, but `ECDsa.Create(ECParameters)` and
-  `VerifyData` on .NET Framework 4.8 have never been exercised. **First thing
-  to do on Windows: run `decay selftest` and confirm there are no SKIPs.**
-- **PBKDF2 speed at 600,000 iterations** on .NET Framework. Under Mono it takes about 2 s for a full encrypt.
-- Console behaviors: hidden passphrase prompt, UTF-8 output in `cmd.exe`.
+| Check | Result |
+|---|---|
+| `decay selftest`, with license checks (`ECDsa.Create(ECParameters)` and `VerifyData` on .NET Framework; a missing ECDSA would be a FAIL there, not a SKIP) | 19 pass, 0 skip, 0 fail |
+| `decay.exe encrypt` with a passphrase piped from PowerShell 7 -> net10 engine decrypts | match |
+| net10 Rot image -> `decay.exe decrypt` with a piped passphrase, output captured as UTF-8 | match; carrier restored |
+| A full Free-tier encrypt at 600,000 PBKDF2 iterations (256 px), including startup | about 2.2 s |
+
+**Not verified (needs a person at a Windows machine):**
+
+- Console behaviors: the hidden passphrase prompt, and non-ASCII output
+  shown in a `cmd.exe` or PowerShell window (redirected output is written as
+  UTF-8, and the console's code page is restored on exit).
 - Running from an actual floppy or floppy image.
 
 **PNG size:** `encrypt --size` accepts the app's sizes (256, 384, 512, 768,

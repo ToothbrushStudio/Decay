@@ -42,15 +42,9 @@ namespace Decay.Renderer
             if (image is null) throw new ArgumentNullException(nameof(image));
             if (payloadPixelExtent < 0) throw new ArgumentOutOfRangeException(nameof(payloadPixelExtent));
 
-            int scale = Math.Max(1, Math.Min(image.Width, image.Height) / 160);
-            int padding = scale;
-            int margin = 2 * scale;
-            int plateWidth = TextColumns * scale + 2 * padding;
-            int plateHeight = GlyphHeight * scale + 2 * padding;
-            int plateX = image.Width - plateWidth - margin;
-            int plateY = image.Height - plateHeight - margin;
+            Plate plate = Layout(image.Width, image.Height);
 
-            if (plateX < 0 || plateY < 0)
+            if (plate.X < 0 || plate.Y < 0)
             {
                 throw new DecayCapacityException(
                     $"A {image.Width}x{image.Height} image is too small to carry "
@@ -60,22 +54,22 @@ namespace Decay.Renderer
 
             // The watermark rule: the plate's smallest row-major pixel index
             // must lie beyond the payload. Verified BEFORE any pixel writes.
-            int firstTouchedIndex = plateY * image.Width + plateX;
+            int firstTouchedIndex = plate.Y * image.Width + plate.X;
 
             if (firstTouchedIndex < payloadPixelExtent)
             {
                 throw new DecayCapacityException(
-                    "The message is too large to leave watermark-safe room in this "
-                        + "image. Shorten the message, use a larger carrier, or "
-                        + "export without a watermark."
+                    "The message is too long for a Free image of this size: the "
+                        + "watermark needs the bottom-right corner. Shorten the "
+                        + "message or choose a larger size."
                 );
             }
 
             byte[] pixels = image.Pixels;
 
-            for (int y = plateY; y < plateY + plateHeight; y++)
+            for (int y = plate.Y; y < plate.Y + plate.Height; y++)
             {
-                for (int x = plateX; x < plateX + plateWidth; x++)
+                for (int x = plate.X; x < plate.X + plate.Width; x++)
                 {
                     int offset = (y * image.Width + x) * PixelBuffer.BytesPerPixel;
 
@@ -86,7 +80,57 @@ namespace Decay.Renderer
                 }
             }
 
-            DrawText(image, plateX + padding, plateY + padding, scale);
+            DrawText(image, plate.X + plate.Scale, plate.Y + plate.Scale, plate.Scale);
+        }
+
+        /// <summary>
+        /// How many leading pixels, in row-major order, the mark never
+        /// touches on an image of this size. A Free payload must fit within
+        /// them. Zero if the image is too small to carry the mark at all.
+        /// </summary>
+        public static int SafePixelCount(int width, int height)
+        {
+            if (width < 1) throw new ArgumentOutOfRangeException(nameof(width));
+            if (height < 1) throw new ArgumentOutOfRangeException(nameof(height));
+
+            Plate plate = Layout(width, height);
+
+            return plate.X < 0 || plate.Y < 0 ? 0 : plate.Y * width + plate.X;
+        }
+
+        private readonly struct Plate
+        {
+            internal Plate(int x, int y, int width, int height, int scale)
+            {
+                X = x;
+                Y = y;
+                Width = width;
+                Height = height;
+                Scale = scale;
+            }
+
+            internal int X { get; }
+            internal int Y { get; }
+            internal int Width { get; }
+            internal int Height { get; }
+            internal int Scale { get; } // also the padding around the text
+        }
+
+        private static Plate Layout(int imageWidth, int imageHeight)
+        {
+            int scale = Math.Max(1, Math.Min(imageWidth, imageHeight) / 160);
+            int padding = scale;
+            int margin = 2 * scale;
+            int plateWidth = TextColumns * scale + 2 * padding;
+            int plateHeight = GlyphHeight * scale + 2 * padding;
+
+            return new Plate(
+                imageWidth - plateWidth - margin,
+                imageHeight - plateHeight - margin,
+                plateWidth,
+                plateHeight,
+                scale
+            );
         }
 
         /// <summary>

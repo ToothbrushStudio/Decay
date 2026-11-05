@@ -6,7 +6,7 @@ namespace Decay.Cli.Selftest
 {
     internal static class Vectors
     {
-        internal const string ContainerHex = "44434159010100ce090afe8efd61eda322c1138ae601ea000003e823b4715e469f0eef560771ec0000002722841b2fdc78507c3ff414559468d27457ab1f6f825fcec21614d59e1ee8d0daf22f6d7ea4b557c9df4fdab0d2676a322c78139158d3b4";
+        internal const string ContainerHex = "4443415901010020dd18d0db393cd52af920f155e3296c000003e828c29be446fa08e95d2e5aee000000277518adee2632c9c091c5a69e2ac6ceef432c4478dba614c13e2a01a85e578efa9ececdf91cdd3c79414a2708d41731761747442b8ee5d7";
         internal const string ContainerPassphrase = "correct horse";
         internal const string ContainerPlainText = "cross-check: meet at dawn \u2713 \u00fcn\u00efcode";
         internal static readonly string[][] AesGcm =
@@ -21,12 +21,28 @@ namespace Decay.Cli.Selftest
         };
         internal const string PngBase64 = "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAACKUlEQVR4nA3MgQAAIQxA0RCGEMIQhhBCCEMYQgghDGEIIYSQwb97AK+11pAm9NbRplgzRhvMNvHmRAtWW+y2yZZUK0473HZ57dGaCCKNLopKx2QwxJjiuExCFkuCLUnKpuRwpLjyeHL/oHekK703tAvWJ6M7sxveB9E3qye7B9kX1S+nP24vXj9/oIpop6ug2jB1hk6mDlyN0GTpZusiNSh9HL1cPTytPzBDbNBtouaYNYYJ0zpuSlix7LDtkvYoC44trm2e5R+MgQyjD0fHxIYwRmMOxUcnxmGNYo9HjkuNxRnBHckb+w/mRKbTp6FzYLMzpjJnw6cQ87LmY88i56Hm5szkzuDN9QfuiE+6D9QNc2V4Z7rg3gh/LL9sP6QX5cnxzfXF8/iDCCQWPTYaiUUx4jDj4vGIaKwQdnQylArjxODG5IX/wVrICvpKdG1sHcYq5nr4usQS1mrspeTq1BqcZdzlvDX/YG9kJ30Huhe2L2M/5i58H2J31lb2buQWak/Odu423h5/kInkpudCM7B8jLzMPHgWkcrKzk4hs1HpnJzcHLy0P6hC6tDrovWwCkYtZm28kihj1WDXJMupapwSbnVe6R+cg5yin4eei53FOME8iZ9NnME6xj5Onkkd4ZzGPco7/Q/uRe6j30Lvwe5m3GTewO8i7mRdZ18j76Bu51zl3sa78gfvIe/S30FfYS8ZbzPfwl8Qz1lvst8gn1FPOa9zn/Be4wMRW2cfg+pG9wAAAABJRU5ErkJggg==";
         internal const string PngPixelsSha256 = "6a5193f3a5159bdb62ddffc9e643e55a2d02c1bc6954ef0fae42772b8f1fa688";
-        internal const string LicensePublicKey = "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEfuOgxIQsB+Nc5oR32rPltu2d8aoF+uaERp/h3YXHZNaAqXfbvetiIJfjVrxBYeu5CmHpTIHS+ZzM/ZCN8hgNFQ==";
-        internal const string LicenseGood = "DECAY1.eyJuIjoiVGVzdCBMaWNlbnNlZSBcdTAwRkMiLCJ0IjoicHJvIiwiZCI6IjIwMjYtMDEtMDIifQ.yaVse_fFJ_9aOaCiWC8_-8HW8cZJYW3Cj_mm5MhujopTf-3UMR8Xqrf9-1gShe3cuUuV9eXa10YZsKcG59aMPA";
+        internal const string GlitchContainerHex = "444341590101140102030405060708090a0b0c0d0e0f10000003e865666768696a6b6c6d6e6f7000000019081734c156b8e22ee8e2540a0ddb0d302f922f0d7929aad2bf468a457f6eeada55d8dec28410c916bf";
+        internal const string GlitchPlainText = "The glitch is the letter.";
+        internal const string GlitchPassphrase = "frozen glitch";
+        internal const int GlitchWidth = 72;
+        internal const int GlitchHeight = 48;
+        internal const string GlitchCarrierSha256 = "bd3022258417298698bfde532086607a426bea6ba050f6144e63a0b982f23719";
+        internal const string GlitchArtSha256 = "9048309f829dc6ceb1a7e7725280ace1bdcebbdf4bda30f65188b07afdc15b10";
+        internal const string GlitchRevealSha256 = "9b7476530c34efa63b4e76e76afe4c2a58742f73e6d88ba608d9f10e95d42d54";
+        internal const string RotContainerHex = "444341590102640102030405060708090a0b0c0d0e0f10000003e865666768696a6b6c6d6e6f700000002100742d4fc2c9bdafa5c6e4e08f63edc3c7fb05afc56f79fb7a3c6ea154f3e7132ef872367b67c652511995e2eed714dc4b";
+        internal const string RotPlainText = "Meet me at 9pm!\n\t\u00c9tude \ud83e\udda0 ok\r~";
+        internal const string RotPassphrase = "frozen rot";
+        internal const int RotWidth = 96;
+        internal const int RotHeight = 64;
+        internal const string RotCarrierSha256 = "c2ed8ac1b4188def7857d21ff05fd779ecd9b0b4c49b80c0ba4f4d6f1ffd1251";
+        internal const string RotArtSha256 = "91d0a992aaa35f9064885fd17e8abe8386be88dc3ea3a3c67984761d274e6f3f";
+        internal const string RotRevealSha256 = "08ef39ddd50022024814e38770683e06931bcc1a23cb77395d53ae1b19eac2ad";
+        internal const string LicensePublicKey = "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEAl5retxuJSU03V5wSOHPTaW0JKohgCnf6fiTFW/z5vuhzbb9XmLA6d3ixcr+Y3NfXNXBqEi4ntaM9sz9LIElNQ==";
+        internal const string LicenseGood = "DECAY1.eyJuIjoiVGVzdCBMaWNlbnNlZSBcdTAwRkMiLCJ0IjoicHJvIiwiZCI6IjIwMjYtMDEtMDIifQ.-ewSk0tuwIVqe6g_DMzvVGZSJsJ6TTFH0jxEWaV2TtKKVccDlqVzjEuppFpqX3UusX5rOsB0XhcxQjLxxykSog";
         internal const string LicenseGoodLicensee = "Test Licensee \u00fc";
-        internal const string LicenseFree = "DECAY1.eyJuIjoiRnJlZSBQZXJzb24iLCJ0IjoiZnJlZSIsImQiOiIyMDI2LTAzLTA0In0.ZnB441dxX0SIjnVcSEiQjK8BfVUw52N2enup04vx8c_6AJDGcxf__9zaOsZyuz1pp-ifwhNJfq3e1gXM5q30EA";
-        internal const string LicenseWrongKey = "DECAY1.eyJuIjoiSW1wb3N0b3IiLCJ0IjoicHJvIiwiZCI6IjIwMjYtMDEtMDIifQ.slSbdATITBI24Vfm6aYS2_MD5Ujff88UJHrh0U10aWUQVnwYt1sN58788F2giS55jweERdVM08bjaDg7chvVOw";
-        internal const string LicenseTampered = "DECAY1.eyJuIAoiVGVzdCBMaWNlbnNlZSBcdTAwRkMiLCJ0IjoicHJvIiwiZCI6IjIwMjYtMDEtMDIifQ.yaVse_fFJ_9aOaCiWC8_-8HW8cZJYW3Cj_mm5MhujopTf-3UMR8Xqrf9-1gShe3cuUuV9eXa10YZsKcG59aMPA";
-        internal const string LicenseTruncated = "DECAY1.eyJuIjoiVGVzdCBMaWNlbnNlZSBcdTAwRkMiLCJ0IjoicHJvIiwiZCI6IjIwMjYtMDEtMDIifQ.yaVse_fFJ_9aOaCiWC8_-8HW8cZJYW3Cj_mm5MhujopTf-3UMR8Xqrf9-1gShe3cuUuV9eXa10YZ";
+        internal const string LicenseFree = "DECAY1.eyJuIjoiRnJlZSBQZXJzb24iLCJ0IjoiZnJlZSIsImQiOiIyMDI2LTAzLTA0In0.47f2dVkkFi13tuNeZDyObH_6JzKW5ddA9-ci_uyl2fVTRu9uZSf2PjtWcfUrJvdSfSB7wQYKC29mBxs-mbS21w";
+        internal const string LicenseWrongKey = "DECAY1.eyJuIjoiSW1wb3N0b3IiLCJ0IjoicHJvIiwiZCI6IjIwMjYtMDEtMDIifQ.10I4yOZ47Xbp_VqXS6InRNnpKccowGQrBuyGTR3V8LsL8R4_SrWHvSV1kbJpnEbWkXgI_1IbbOT_2wbR47nd2g";
+        internal const string LicenseTampered = "DECAY1.eyJuIAoiVGVzdCBMaWNlbnNlZSBcdTAwRkMiLCJ0IjoicHJvIiwiZCI6IjIwMjYtMDEtMDIifQ.-ewSk0tuwIVqe6g_DMzvVGZSJsJ6TTFH0jxEWaV2TtKKVccDlqVzjEuppFpqX3UusX5rOsB0XhcxQjLxxykSog";
+        internal const string LicenseTruncated = "DECAY1.eyJuIjoiVGVzdCBMaWNlbnNlZSBcdTAwRkMiLCJ0IjoicHJvIiwiZCI6IjIwMjYtMDEtMDIifQ.-ewSk0tuwIVqe6g_DMzvVGZSJsJ6TTFH0jxEWaV2TtKKVccDlqVzjEuppFpqX3UusX5rOsB0Xhcx";
     }
 }

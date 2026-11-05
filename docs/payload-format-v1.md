@@ -1,8 +1,10 @@
 # Decay Payload Format — Version 1 (FROZEN)
 
-*Status: frozen upon merge. Post-launch changes are additive only — new format
+*Status: **FROZEN** (v1.0). Changes are additive only — new format
 versions may be introduced, but every future decoder must read every past
-version, forever. A letter encrypted at launch must still decode in 2036.*
+version, forever. A letter encrypted at launch must still decode in 2036.
+The golden vector in `Decay.Core.Tests/FrozenFormatTests.cs` guards this
+spec.*
 
 ---
 
@@ -42,8 +44,8 @@ All multi-byte integers are **big-endian, unsigned**.
 |---|---|---|---|
 | 0 | 4 | Magic | `0x44 0x43 0x41 0x59` (ASCII `DCAY`) |
 | 4 | 1 | Format version | `0x01` |
-| 5 | 1 | Pipeline id | Decay render pipeline that produced the art; `0x00` = none, `0x01` = pipeline v1 (docs/render-pipeline-v1.md) |
-| 6 | 1 | Pipeline parameter | Meaning defined by the pipeline. For pipeline v1: decay intensity in percent, 1–255, with `0x00` reserved to mean the default (100) |
+| 5 | 1 | Pipeline id | Decay render pipeline that produced the art; `0x00` = none, `0x01` = Glitch (docs/render-pipeline-v1.md), `0x02` = Rot (docs/render-pipeline-v2-rot.md) |
+| 6 | 1 | Pipeline parameter | Meaning defined by the pipeline. For pipelines 1 and 2: decay intensity, 1–255, with `0x00` reserved to mean the default (100) |
 | 7 | 16 | Salt | Random per message (PBKDF2 salt) |
 | 23 | 4 | Iterations | PBKDF2 iteration count; valid range 1 – 10,000,000 |
 | 27 | 12 | Nonce | Random per message (AES-GCM nonce) |
@@ -70,8 +72,14 @@ wholly to the pipeline it accompanies.
 - **Associated data (AAD):** container bytes `[0, 43)` — the full fixed
   header. Any tampering with magic, version, pipeline id, pipeline parameter, salt,
   iterations, nonce, or the declared length invalidates the tag.
+- **Passphrase:** used exactly as entered, as UTF-8. No Unicode
+  normalization, no trimming, no case folding: `é` typed as one code point
+  and `é` typed as `e` + combining accent are different passphrases. Every
+  implementation must pass the user's text through unchanged.
 - **Plaintext:** the message as UTF-8 bytes. GCM is unpadded, so
   `N` = UTF-8 byte length of the message. Zero-length messages are valid.
+  An unpaired UTF-16 surrogate in the input is encoded as U+FFFD
+  (`EF BF BD`), as standard UTF-8 encoders do.
 
 ### Decoder validation rules
 

@@ -363,3 +363,14 @@ MigrationBackup/
 FodyWeavers.xsd
 # Publisher license keys must never enter the repository
 *.pem
+
+# Release secrets and key pools: never commit these (docs/repo-security.md).
+# Keep the publisher key and the key pool outside the repo folder entirely.
+*.p12
+*.snk
+*.key
+*.env
+.env
+keys.txt
+*-keys.txt
+decay-publisher-private*

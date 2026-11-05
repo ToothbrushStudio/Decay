@@ -23,7 +23,8 @@
                 <Entry x:Name="PassphraseEntry"
                        Grid.Column="0"
                        Placeholder="Passphrase"
-                       IsPassword="True" />
+                       IsPassword="True"
+                       TextChanged="OnPassphraseChanged" />
                 <Button x:Name="PassphraseToggle"
                         Grid.Column="1"
                         Text="Show"
@@ -33,18 +34,36 @@
                         Clicked="OnTogglePassphrase" />
             </Grid>
 
-            <Picker x:Name="StylePicker"
-                    Title="Decay style"
-                    SelectedIndexChanged="OnStyleChanged" />
+            <!-- A typo in the passphrase locks the message away for good, so it's typed twice. -->
+            <Entry x:Name="RepeatPassphraseEntry"
+                   Placeholder="Repeat passphrase"
+                   IsPassword="True"
+                   TextChanged="OnPassphraseChanged" />
 
-            <Picker x:Name="PresetPicker"
-                    Title="Carrier"
-                    SelectedIndexChanged="OnPresetChanged" />
+            <!-- Dropdown titles are separate labels, not the pickers' own Title:
+                 on Windows a Title is drawn inside the dropdown control, which
+                 makes it taller than the dropdown itself. -->
+            <VerticalStackLayout Spacing="8">
+                <Label Text="Decay style" />
+                <Picker x:Name="StylePicker"
+                        SelectedIndexChanged="OnStyleChanged" />
+            </VerticalStackLayout>
 
-            <Button x:Name="ChooseImageButton"
-                    Text="Choose image… (PNG)"
-                    IsVisible="False"
-                    Clicked="OnChooseImage" />
+            <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="8" RowSpacing="8">
+                <Label Text="Carrier" />
+                <Picker x:Name="PresetPicker"
+                        Grid.Row="1"
+                        SelectedIndexChanged="OnPresetChanged" />
+                <!-- No vertical padding, so the button never sets the row's height:
+                     it stretches to exactly the dropdown's height beside it. -->
+                <!-- "New carrier" for a preset; "Choose image… (PNG)" for Custom Image. -->
+                <Button x:Name="NewCarrierButton"
+                        Grid.Row="1"
+                        Grid.Column="1"
+                        Padding="11,0"
+                        Text="New carrier"
+                        Clicked="OnNewCarrier" />
+            </Grid>
 
             <Button x:Name="AdvancedToggle"
                     Text="Advanced ▸"
@@ -54,9 +73,11 @@
                     Clicked="OnToggleAdvanced" />
 
             <VerticalStackLayout x:Name="AdvancedSection" Spacing="12" IsVisible="False">
-                <Picker x:Name="SizePicker"
-                        Title="Size"
-                        SelectedIndexChanged="OnSizeChanged" />
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Size" />
+                    <Picker x:Name="SizePicker"
+                            SelectedIndexChanged="OnSizeChanged" />
+                </VerticalStackLayout>
 
                 <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
                     <Label Grid.Column="0" Text="Intensity" VerticalOptions="Center" />
@@ -80,10 +101,7 @@
                 </HorizontalStackLayout>
             </VerticalStackLayout>
 
-            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
-                <Button Grid.Column="0" Text="New carrier" Clicked="OnNewCarrier" />
-                <Button x:Name="EncryptButton" Grid.Column="1" Text="Encrypt" Clicked="OnEncrypt" />
-            </Grid>
+            <Button x:Name="EncryptButton" Text="Encrypt" Clicked="OnEncrypt" />
 
             <Border BackgroundColor="{StaticResource Panel}"
                     StrokeThickness="1"

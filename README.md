@@ -91,7 +91,7 @@ activation server, no expiry.
   sealed container through a frozen deterministic PRNG — cross-platform,
   bit-exact, forever
 - A built-in PNG codec; the engine has **zero external dependencies** and
-  compiles to ~54 KB. It would fit on a floppy disk 26 times.
+  compiles to ~66 KB. It would fit on a floppy disk 22 times.
 - .NET 10 / .NET MAUI: one codebase that targets Windows, iOS, Android, and
   macOS. Version 1 ships on Windows first.
 
@@ -99,15 +99,31 @@ activation server, no expiry.
 
 ```bash
 dotnet test Decay.Core.Tests        # frozen format + crypto + PNG codec
-dotnet test Decay.Renderer.Tests    # decay pipeline, presets, watermark, tiers
+dotnet test Decay.Renderer.Tests    # frozen decay pipelines, presets, watermark, tiers
 dotnet test Decay.Licensing.Tests   # offline license keys
 
 dotnet workload install maui        # once
 dotnet build Decay.App -f net10.0-windows10.0.19041.0   # or -ios / -android / -maccatalyst
+
+dotnet build Decay.Cli -c Release -t:PackCli            # console edition (.NET Framework 4.8)
 ```
+
+Every push runs the tests on Linux and the console edition's self-test on
+Windows ([.github/workflows/test.yml](.github/workflows/test.yml)).
 
 See [docs/release.md](docs/release.md) for packaging, licensing operations,
 and store notes.
+
+## Contributing and security
+
+Bug reports and ideas are welcome as issues. Changes are reviewed and merged
+by the maintainer only. Please report security problems privately, as
+described in [SECURITY.md](SECURITY.md).
+
+## License
+
+Copyright © 2026 Toothbrush Studio, LLC. All rights reserved. See
+[LICENSE](LICENSE).
 
 ---
 

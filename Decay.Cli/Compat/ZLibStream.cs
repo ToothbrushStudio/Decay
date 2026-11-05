@@ -26,8 +26,9 @@ namespace System.IO.Compression
             _compress = true;
 
             // CMF = deflate with a 32K window; FLG chosen so the pair is a multiple of 31.
+            // FLEVEL is only a hint: 3 (maximum) for Optimal, 0 (fastest) otherwise.
             _stream.WriteByte(0x78);
-            _stream.WriteByte(level == CompressionLevel.Fastest ? (byte)0x01 : (byte)0xDA);
+            _stream.WriteByte(level == CompressionLevel.Optimal ? (byte)0xDA : (byte)0x01);
             _deflate = new DeflateStream(stream, level, leaveOpen: true);
         }
 

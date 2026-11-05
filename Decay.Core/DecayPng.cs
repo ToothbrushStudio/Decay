@@ -11,17 +11,63 @@ namespace Decay.Core
     /// palette, all filter types, non-interlaced. Exotic PNGs (16-bit,
     /// interlaced, low bit depths) are rejected with a clear message rather
     /// than mis-decoded — a wrong pixel is a destroyed payload.
+    ///
+    /// Every problem with the input file, including a damaged, hostile or
+    /// oversized one, is reported as an InvalidDataException.
     /// </summary>
     public static class DecayPng
     {
+        /// <summary>
+        /// The largest image Decay reads or writes: 64 megapixels (256 MB as
+        /// RGBA). Far above anything Decay makes (the app's largest carrier
+        /// is 2048×2048), and low enough that a huge or hostile file can't
+        /// exhaust memory or overflow the size arithmetic.
+        /// </summary>
+        public const int MaxPixelCount = 64 * 1024 * 1024;
+
+        /// <summary>The longest side Decay reads or writes, in pixels.</summary>
+        public const int MaxDimension = 32_768;
+
+        /// <summary>The largest PNG file Decay reads, in bytes.</summary>
+        public const int MaxFileBytes = 512 * 1024 * 1024;
+
         private static ReadOnlySpan<byte> Signature =>
             new byte[] { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A };
 
+        /// <summary>True if Decay can write, and read back, an image of this size.</summary>
+        public static bool IsWithinLimits(int width, int height)
+        {
+            return width >= 1
+                && height >= 1
+                && width <= MaxDimension
+                && height <= MaxDimension
+                && (long)width * height <= MaxPixelCount;
+        }
+
         // ---------------------------------------------------------- encode
 
+        /// <summary>Encodes with the smallest output. Use for files people keep.</summary>
         public static byte[] Encode(PixelBuffer image)
         {
+            return Encode(image, CompressionLevel.Optimal);
+        }
+
+        /// <summary>
+        /// Encodes with the given compression. The pixels are identical at
+        /// every level; NoCompression is several times faster and suits
+        /// throwaway frames such as animation previews.
+        /// </summary>
+        public static byte[] Encode(PixelBuffer image, CompressionLevel compression)
+        {
             if (image is null) throw new ArgumentNullException(nameof(image));
+
+            if (!IsWithinLimits(image.Width, image.Height))
+            {
+                throw new ArgumentException(
+                    $"A {image.Width}x{image.Height} image is larger than Decay can read back.",
+                    nameof(image)
+                );
+            }
 
             using MemoryStream output = new MemoryStream();
 
@@ -40,7 +86,7 @@ namespace Decay.Core
 
             using MemoryStream idat = new MemoryStream();
 
-            using (ZLibStream deflate = new ZLibStream(idat, CompressionLevel.Optimal, true))
+            using (ZLibStream deflate = new ZLibStream(idat, compression, true))
             {
                 int stride = image.Width * PixelBuffer.BytesPerPixel;
 
@@ -68,87 +114,178 @@ namespace Decay.Core
 
         // ---------------------------------------------------------- decode
 
+        /// <exception cref="InvalidDataException">
+        /// Not a PNG Decay can read: damaged, an unsupported kind, or larger
+        /// than <see cref="MaxPixelCount"/>.
+        /// </exception>
         public static PixelBuffer Decode(byte[] pngBytes)
         {
             if (pngBytes is null) throw new ArgumentNullException(nameof(pngBytes));
 
-            if (pngBytes.Length < 8 || !pngBytes.AsSpan(0, 8).SequenceEqual(Signature))
+            Parsed png = Parse(pngBytes, headerOnly: false);
+
+            int channels = png.ColorType switch
+            {
+                0 => 1, // gray
+                2 => 3, // rgb
+                3 => 1, // palette index
+                4 => 2, // gray + alpha
+                _ => 4, // rgba
+            };
+
+            byte[] raw;
+
+            using (MemoryStream compressed = png.Compressed!)
+            {
+                raw = Inflate(compressed, (png.Width * channels + 1) * png.Height);
+            }
+
+            Unfilter(raw, png.Width, png.Height, channels);
+
+            return ToRgba(raw, png.Width, png.Height, png.ColorType, channels, png.Palette, png.PaletteAlpha);
+        }
+
+        /// <summary>Reads at most <see cref="MaxFileBytes"/> from the stream and decodes it.</summary>
+        /// <exception cref="InvalidDataException">Not a PNG Decay can read.</exception>
+        public static PixelBuffer Decode(Stream source)
+        {
+            return Decode(ReadBytes(source));
+        }
+
+        /// <summary>
+        /// Reads just the width and height from the PNG header, without
+        /// decoding any pixels, so a caller can turn away an image that is too
+        /// large before paying for it. The size is reported even when it is
+        /// beyond what <see cref="Decode(byte[])"/> accepts.
+        /// </summary>
+        /// <exception cref="InvalidDataException">Not a PNG Decay can read.</exception>
+        public static (int Width, int Height) ReadSize(byte[] pngBytes)
+        {
+            if (pngBytes is null) throw new ArgumentNullException(nameof(pngBytes));
+
+            Parsed png = Parse(pngBytes, headerOnly: true);
+
+            return (png.Width, png.Height);
+        }
+
+        /// <summary>
+        /// Reads a whole file into memory, refusing anything larger than
+        /// <see cref="MaxFileBytes"/> instead of reading it all.
+        /// </summary>
+        /// <exception cref="InvalidDataException">The file is too large.</exception>
+        public static byte[] ReadBytes(Stream source)
+        {
+            if (source is null) throw new ArgumentNullException(nameof(source));
+
+            if (source.CanSeek && source.Length - source.Position > MaxFileBytes)
+            {
+                throw new InvalidDataException("The image file is too large to open.");
+            }
+
+            using MemoryStream buffer = new MemoryStream();
+            byte[] chunk = new byte[81920];
+            int n;
+
+            while ((n = source.Read(chunk, 0, chunk.Length)) > 0)
+            {
+                if (buffer.Length + n > MaxFileBytes)
+                {
+                    throw new InvalidDataException("The image file is too large to open.");
+                }
+
+                buffer.Write(chunk, 0, n);
+            }
+
+            return buffer.ToArray();
+        }
+
+        // ------------------------------------------------------- internals
+
+        private sealed class Parsed
+        {
+            internal int Width;
+            internal int Height;
+            internal int ColorType;
+            internal byte[]? Palette;
+            internal byte[]? PaletteAlpha;
+            internal MemoryStream? Compressed;
+        }
+
+        /// <summary>
+        /// Walks the chunks, checking every length against the file and every
+        /// CRC. With headerOnly, stops at IHDR without enforcing the size
+        /// limits; otherwise enforces them as soon as IHDR is read.
+        /// </summary>
+        private static Parsed Parse(byte[] png, bool headerOnly)
+        {
+            if (png.Length > MaxFileBytes)
+            {
+                throw new InvalidDataException("The image file is too large to open.");
+            }
+
+            if (png.Length < 8 || !png.AsSpan(0, 8).SequenceEqual(Signature))
             {
                 throw new InvalidDataException("Not a PNG file.");
             }
 
-            int width = 0, height = 0, bitDepth = 0, colorType = 0;
-            byte[]? palette = null;
-            byte[]? paletteAlpha = null;
-            using MemoryStream compressed = new MemoryStream();
+            Parsed parsed = new Parsed();
+            MemoryStream compressed = new MemoryStream();
+            bool sawHeader = false;
             bool sawEnd = false;
             int offset = 8;
 
             while (!sawEnd)
             {
-                if (offset + 8 > pngBytes.Length)
+                // Every chunk is at least 12 bytes: length, type and CRC.
+                if (png.Length - offset < 12)
                 {
                     throw new InvalidDataException("Truncated PNG.");
                 }
 
-                int length = (int)BinaryPrimitives.ReadUInt32BigEndian(pngBytes.AsSpan(offset));
-                ReadOnlySpan<byte> type = pngBytes.AsSpan(offset + 4, 4);
+                uint declared = BinaryPrimitives.ReadUInt32BigEndian(png.AsSpan(offset));
 
-                if (length < 0 || offset + 12 + length > pngBytes.Length)
+                if (declared > (uint)(png.Length - offset - 12))
                 {
                     throw new InvalidDataException("Truncated PNG.");
                 }
 
-                ReadOnlySpan<byte> data = pngBytes.AsSpan(offset + 8, length);
+                int length = (int)declared;
+                ReadOnlySpan<byte> type = png.AsSpan(offset + 4, 4);
+                ReadOnlySpan<byte> data = png.AsSpan(offset + 8, length);
                 uint expectedCrc = BinaryPrimitives.ReadUInt32BigEndian(
-                    pngBytes.AsSpan(offset + 8 + length)
+                    png.AsSpan(offset + 8 + length)
                 );
 
-                if (Crc32(pngBytes.AsSpan(offset + 4, 4 + length)) != expectedCrc)
+                if (Crc32(png.AsSpan(offset + 4, 4 + length)) != expectedCrc)
                 {
                     throw new InvalidDataException("PNG chunk checksum mismatch.");
                 }
 
                 if (type.SequenceEqual("IHDR"u8))
                 {
-                    width = (int)BinaryPrimitives.ReadUInt32BigEndian(data);
-                    height = (int)BinaryPrimitives.ReadUInt32BigEndian(data.Slice(4));
-                    bitDepth = data[8];
-                    colorType = data[9];
+                    ReadHeader(data, parsed);
+                    sawHeader = true;
 
-                    if (width <= 0 || height <= 0)
+                    if (headerOnly)
                     {
-                        throw new InvalidDataException("Invalid PNG dimensions.");
+                        return parsed;
                     }
 
-                    if (data[12] != 0)
+                    if (!IsWithinLimits(parsed.Width, parsed.Height))
                     {
                         throw new InvalidDataException(
-                            "Interlaced PNGs are not supported — re-save the image "
-                                + "without interlacing."
+                            $"This image is {parsed.Width}×{parsed.Height}, larger than Decay "
+                                + $"can open ({MaxPixelCount / (1024 * 1024)} megapixels at most)."
                         );
-                    }
-
-                    if (bitDepth != 8)
-                    {
-                        throw new InvalidDataException(
-                            $"{bitDepth}-bit PNGs are not supported — re-save the "
-                                + "image as a standard 8-bit PNG."
-                        );
-                    }
-
-                    if (colorType is not (0 or 2 or 3 or 4 or 6))
-                    {
-                        throw new InvalidDataException("Unsupported PNG color type.");
                     }
                 }
                 else if (type.SequenceEqual("PLTE"u8))
                 {
-                    palette = data.ToArray();
+                    parsed.Palette = data.ToArray();
                 }
                 else if (type.SequenceEqual("tRNS"u8))
                 {
-                    paletteAlpha = data.ToArray();
+                    parsed.PaletteAlpha = data.ToArray();
                 }
                 else if (type.SequenceEqual("IDAT"u8))
                 {
@@ -162,53 +299,83 @@ namespace Decay.Core
                 offset += 12 + length;
             }
 
-            if (width == 0)
+            if (!sawHeader)
             {
                 throw new InvalidDataException("PNG has no header.");
             }
 
-            int channels = colorType switch
-            {
-                0 => 1, // gray
-                2 => 3, // rgb
-                3 => 1, // palette index
-                4 => 2, // gray + alpha
-                _ => 4, // rgba
-            };
+            parsed.Compressed = compressed;
 
-            byte[] raw = Inflate(compressed, (width * channels + 1) * height);
-
-            Unfilter(raw, width, height, channels);
-
-            return ToRgba(raw, width, height, colorType, channels, palette, paletteAlpha);
+            return parsed;
         }
 
-        public static PixelBuffer Decode(Stream source)
+        private static void ReadHeader(ReadOnlySpan<byte> data, Parsed parsed)
         {
-            if (source is null) throw new ArgumentNullException(nameof(source));
+            if (data.Length != 13)
+            {
+                throw new InvalidDataException("Invalid PNG header.");
+            }
 
-            using MemoryStream buffer = new MemoryStream();
+            uint width = BinaryPrimitives.ReadUInt32BigEndian(data);
+            uint height = BinaryPrimitives.ReadUInt32BigEndian(data.Slice(4));
+            int bitDepth = data[8];
+            int colorType = data[9];
 
-            source.CopyTo(buffer);
+            if (width == 0 || height == 0 || width > int.MaxValue || height > int.MaxValue)
+            {
+                throw new InvalidDataException("Invalid PNG dimensions.");
+            }
 
-            return Decode(buffer.ToArray());
+            if (data[10] != 0 || data[11] != 0)
+            {
+                throw new InvalidDataException("Unsupported PNG compression or filter method.");
+            }
+
+            if (data[12] != 0)
+            {
+                throw new InvalidDataException(
+                    "Interlaced PNGs are not supported — re-save the image "
+                        + "without interlacing."
+                );
+            }
+
+            if (bitDepth != 8)
+            {
+                throw new InvalidDataException(
+                    $"{bitDepth}-bit PNGs are not supported — re-save the "
+                        + "image as a standard 8-bit PNG."
+                );
+            }
+
+            if (colorType is not (0 or 2 or 3 or 4 or 6))
+            {
+                throw new InvalidDataException("Unsupported PNG color type.");
+            }
+
+            parsed.Width = (int)width;
+            parsed.Height = (int)height;
+            parsed.ColorType = colorType;
         }
-
-        // ------------------------------------------------------- internals
 
         private static byte[] Inflate(MemoryStream compressed, int expectedLength)
         {
             compressed.Position = 0;
 
-            byte[] raw = new byte[expectedLength];
+            // Grow the buffer only as data actually inflates, so a tiny file
+            // that merely claims a huge size can't force a huge allocation.
+            byte[] raw = new byte[Math.Min(expectedLength, 1 << 20)];
+            int read = 0;
 
             using ZLibStream inflate = new ZLibStream(compressed, CompressionMode.Decompress);
 
-            int read = 0;
-
             while (read < expectedLength)
             {
-                int n = inflate.Read(raw, read, expectedLength - read);
+                if (read == raw.Length)
+                {
+                    Array.Resize(ref raw, (int)Math.Min(expectedLength, (long)raw.Length * 2));
+                }
+
+                int n = inflate.Read(raw, read, raw.Length - read);
 
                 if (n == 0)
                 {

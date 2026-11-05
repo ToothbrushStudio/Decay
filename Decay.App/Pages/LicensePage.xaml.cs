@@ -1,3 +1,6 @@
+using Decay.Licensing;
+using Decay.Renderer;
+
 namespace Decay.App.Pages
 {
     public partial class LicensePage : ContentPage
@@ -30,11 +33,15 @@ namespace Decay.App.Pages
         {
             if (AppState.TryActivate(KeyEditor.Text ?? ""))
             {
+                DecayLicense license = AppState.License!;
+
                 KeyEditor.Text = "";
                 RefreshStatus();
                 await DisplayAlertAsync(
                     "Activated",
-                    $"Welcome to Decay Pro, {AppState.License!.Licensee}.",
+                    license.Tier == DecayTier.Pro
+                        ? $"Welcome to Decay Pro, {license.Licensee}."
+                        : $"License activated for {license.Licensee} ({license.Tier} tier).",
                     "OK"
                 );
             }

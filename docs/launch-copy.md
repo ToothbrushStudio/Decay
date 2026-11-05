@@ -44,8 +44,8 @@ below are for when mobile ships; reuse them for the itch listing meanwhile.*
 > — Every image you make will still open years from now: the format is
 >   frozen and versioned.
 >
-> **Decay Pro** unlocks all five carrier artworks, your own images as
-> carriers, the decay intensity dial, and watermark-free exports.
+> **Decay Pro** unlocks all five carrier artworks, Rot mode, your own
+> images as carriers, the decay intensity dial, and watermark-free exports.
 
 ## Store keywords
 
@@ -78,7 +78,7 @@ letters, aesthetic, vaporwave, datamosh, secure notes, art
 >
 > Design decisions I'm proud of:
 > - The image + passphrase is everything. No accounts, no servers. The
->   engine is ~54 KB with zero dependencies — it would fit on a floppy.
+>   engine is ~66 KB with zero dependencies — it would fit on a floppy.
 > - Decryption is free forever, for everyone. Messages can't be held hostage.
 > - It's fragile on purpose: screenshots and re-compression kill the message.
 >   You have to send the actual file, like handing someone a real letter.
@@ -99,10 +99,9 @@ letters, aesthetic, vaporwave, datamosh, secure notes, art
 
 ## Open launch items (not copy)
 
-- [ ] First device build of Decay.App (Windows for v1; other platforms later)
+- [x] First device build of Decay.App (Windows for v1; other platforms later)
 - [x] Run KeyGen; fill PublisherKey.cs; store private key offline
-- [ ] Choose a source license for the repo (or keep private) — engine-open
-      vs fully proprietary is a business call, not made in code
+- [x] Choose a source license for the repo: all rights reserved (`LICENSE`)
 - [ ] App Store export-compliance answers (see release.md)
 - [ ] Screenshots/screen-recordings of the reveal animation from a real
       device for the store listings (the un-rot is the whole pitch — video

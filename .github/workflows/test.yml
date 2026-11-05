@@ -1,0 +1,69 @@
+name: test
+
+# Tests only: nothing here signs, publishes or holds secrets
+# (docs/repo-security.md, step 8). Actions are pinned to commit SHAs.
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  engine:
+    name: Engine tests and license cross-checks (Linux)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Format, crypto and PNG codec (incl. the frozen-format golden vector)
+        run: dotnet test Decay.Core.Tests
+
+      - name: Render pipelines, presets, watermark and tiers (incl. the frozen-pipeline golden vectors)
+        run: dotnet test Decay.Renderer.Tests
+
+      - name: Offline license keys
+        run: dotnet test Decay.Licensing.Tests
+
+      - name: Console license validator matches the real one
+        run: dotnet run --project tools/Decay.Cli.Compat -- licensetest
+
+      - name: Console license lookup, save and clear
+        run: dotnet run --project tools/Decay.Cli.Compat -- storetest
+
+  console:
+    name: Console edition on .NET Framework 4.8 (Windows)
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Build decay.exe and the floppy files
+        run: dotnet build Decay.Cli -c Release -t:PackCli
+
+      - name: Self-test on the real .NET Framework (license checks included; no SKIP on Windows)
+        run: ./Decay.Cli/bin/cli/decay.exe selftest
+
+      - name: A letter made by decay.exe opens in the .NET 10 engine (piped UTF-8 passphrase)
+        run: |
+          [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+          'pässwörd ✓' | ./Decay.Cli/bin/cli/decay.exe encrypt --text 'héllo wörld 🦠' --out letter.png --size 256
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+          dotnet run --project tools/Decay.Cli.Compat -- check letter.png 'pässwörd ✓' 'héllo wörld 🦠'
+
+      - name: A Rot letter made by the .NET 10 engine opens in decay.exe
+        run: |
+          [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+          dotnet run --project tools/Decay.Cli.Compat -- make rot.png 'pw✓' 'rot message ü' rot
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+          $message = 'pw✓' | ./Decay.Cli/bin/cli/decay.exe decrypt rot.png --carrier-out carrier.png
+          if ($LASTEXITCODE -ne 0) { exit 1 }
+          if ($message -ne 'rot message ü') { Write-Error "decay.exe printed '$message'"; exit 1 }

@@ -8,11 +8,13 @@
 | `Decay.Renderer` | Decay pipeline v1, carrier presets, watermark, tier policy | In every app |
 | `Decay.Licensing` | Offline ECDSA license keys | In every app |
 | `Decay.App` | .NET MAUI app: Android, iOS, Mac Catalyst, Windows | The product |
+| `Decay.Cli` | Console edition, .NET Framework 4.8, floppy-sized ([cli-net48-plan.md](cli-net48-plan.md)) | Optional second download |
 | `tools/Decay.KeyGen` | Publisher-side key pair + license signing | Never ships |
+| `tools/Decay.Cli.Compat` | Cross-checks the console edition against the .NET 10 engine | Never ships |
 
 The engine (`Core` + `Renderer` + `Licensing`) has **zero external
 dependencies** — image I/O included — and its Release assemblies total
-**~54 KB**. The floppy budget lives.
+**~66 KB**. The floppy budget lives.
 
 ## Build & test
 
@@ -22,9 +24,11 @@ dotnet test Decay.Renderer.Tests
 dotnet test Decay.Licensing.Tests
 ```
 
-88 tests; the FrozenFormatTests golden vector is the format freeze gate —
-if it fails, the change breaks shipped images: revert the change, never
-"fix" the test.
+138 tests. The golden vectors are the freeze gate: `FrozenFormatTests`
+(payload format) and `FrozenPipelineTests` (Glitch and Rot art and reveal).
+If one fails, the change breaks shipped images: revert the change, never
+"fix" the test. CI runs all of this on every push, plus the console
+edition's self-test on Windows (`.github/workflows/test.yml`).
 
 The app needs the MAUI workload once per machine: `dotnet workload install maui`.
 
@@ -84,6 +88,14 @@ says so.
   fails with NU1102 (missing Mono runtime pack for win-x64). For an MSIX
   build, use `-p:WindowsPackageType=MSIX` in place of `None`. A packaged exe only runs once
   the MSIX is installed; launching the raw exe just spins and exits.
+- **Check the .NET runtime is bundled** before zipping: `publish` must contain
+  `coreclr.dll` and `hostfxr.dll`. `WindowsAppSDKSelfContained` bundles the
+  Windows App SDK, not necessarily .NET itself. If they're missing, buyers
+  need .NET 10 installed: add `<SelfContained>true</SelfContained>` and
+  `<RuntimeIdentifier>win-x64</RuntimeIdentifier>` to the Windows-only
+  `PropertyGroup` in `Decay.App.csproj` (not on the command line, for the
+  NU1102 reason above). Your dev machine has .NET, so only a clean VM proves
+  this.
 - **Android:** publish an `.aab` with your keystore
   (`-p:AndroidKeyStore=true` + signing properties).
 - **iOS / Mac Catalyst:** archive from a Mac with an Apple Developer
@@ -91,7 +103,9 @@ says so.
 - **Code signing (Windows, required for launch):** unsigned builds are
   blocked outright by Smart App Control on customers' machines (there is
   no per-app exception) and flagged by SmartScreen. Sign the shipped exe
-  or MSIX with an Authenticode certificate — Azure Trusted Signing is the
+  **and our own DLLs** (`Decay.App.dll`, `Decay.Core.dll`,
+  `Decay.Renderer.dll`, `Decay.Licensing.dll`; Smart App Control checks DLLs
+  too), or the MSIX, with an Authenticode certificate — Azure Trusted Signing is the
   cheap modern route — or distribute through the Microsoft Store, which
   signs for you. Local dev builds are unsigned by nature; dev machines
   run with Smart App Control off.

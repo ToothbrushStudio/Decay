@@ -13,7 +13,12 @@ namespace Decay.Core
         /// <summary>Maximum payload bytes the image can carry.</summary>
         internal static int Capacity(PixelBuffer image)
         {
-            return (int)Math.Min(int.MaxValue, (long)image.PixelCount * BitsPerPixel / 8);
+            return Capacity(image.PixelCount);
+        }
+
+        internal static int Capacity(long pixelCount)
+        {
+            return (int)Math.Min(int.MaxValue, pixelCount * BitsPerPixel / 8);
         }
 
         /// <summary>
