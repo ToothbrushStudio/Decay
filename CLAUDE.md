@@ -30,10 +30,20 @@ Builds `decay.exe` and copies the floppy files (about 400 KB) to
 sources in place for `net48`, so **keep .NET-Core-only APIs out of those two
 projects** (static `HashData`/`GetBytes`/`Pbkdf2`, `Math.Clamp`,
 `ThrowIfNull`, `Array.Fill`, `ulong.RotateLeft`, and so on); building
-`Decay.Cli` is the check. It is built and tested on Linux with Mono; it has
-not yet been run on Windows. On Windows, run `decay selftest` first and make
-sure nothing prints SKIP. Plan, results and what is unverified:
-`docs/cli-net48-plan.md`.
+`Decay.Cli` is the check. It is built and tested on Linux with Mono, and the
+CI workflow's Windows job runs `decay selftest` on .NET Framework 4.8 on
+every push. The self-test must end with "0 failed"; license checks can SKIP
+only under Mono (on Windows a missing ECDSA is a failure). Plan, results and
+what is unverified: `docs/cli-net48-plan.md`.
+
+## Frozen formats
+
+The payload format (`docs/payload-format-v1.md`) and both render pipelines,
+Glitch (`docs/render-pipeline-v1.md`) and Rot
+(`docs/render-pipeline-v2-rot.md`), are frozen. `FrozenFormatTests` and
+`FrozenPipelineTests` hold their golden vectors. If one fails, revert the
+change that broke it; never update an expected value. New behavior gets a
+new format version or pipeline id.
 
 Cross-checks against the net10 engine (`tools/Decay.Cli.Compat`):
 `licensetest`, `storetest`, `make`/`check`, and `vectors <file>` (regenerates

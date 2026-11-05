@@ -15,9 +15,11 @@ are in `docs/itch-release.md`, `docs/release.md` and `docs/repo-security.md`.
 
 ## 1. Merge the code changes
 
-- [ ] **Review and merge the branch into `main`.**
-  - On GitHub, open a pull request from `claude/cloud-drive-send-guide` into
-    `main`, read the changed files, and merge it.
+- [x] **Review and merge the send-guide branch into `main`** (PRs #11–#13).
+- [ ] **Review and merge the pre-launch fixes** from
+      `claude/sleepy-mccarthy-43i0mz`: crash and stale-result fixes, golden
+      vectors for the frozen pipelines, repo hygiene. Check that the `test`
+      workflow passes on the pull request.
   - Then on your build machine: `git checkout main && git pull`.
 
 ## 2. Build and test on Windows
@@ -26,8 +28,9 @@ are in `docs/itch-release.md`, `docs/release.md` and `docs/repo-security.md`.
   - In a terminal at the repo root:
     `dotnet test Decay.Core.Tests`, `dotnet test Decay.Renderer.Tests`,
     `dotnet test Decay.Licensing.Tests`.
-  - All must pass. If `FrozenFormatTests` fails, revert the change that broke
-    it. Don't edit the test.
+  - All must pass. If `FrozenFormatTests` or `FrozenPipelineTests` fails,
+    revert the change that broke it. Don't edit the test.
+  - CI runs these on every push; this step confirms them on your machine.
 - [ ] **Build the app and fix any errors.**
   - Run `dotnet workload install maui` once, then
     `dotnet build Decay.App -f net10.0-windows10.0.19041.0`.
@@ -44,6 +47,15 @@ are in `docs/itch-release.md`, `docs/release.md` and `docs/repo-security.md`.
     intensity dial, and no watermark.
   - Make a Rot image as Pro, then open it on a **Free** install (or after
     removing the license). It must decrypt. Decrypting is always free.
+  - Close and reopen the app: Pro must still be active.
+- [ ] **Check the window and the error paths.**
+  - The window opens fully on screen on a laptop at 125–150% scaling.
+  - Opening a JPEG, a damaged file, or a PNG with no message explains the
+    problem instead of crashing.
+  - Edit the message after encrypting: the Save and Share buttons disappear
+    until you encrypt again.
+  - Share the PNG from the Encrypt tab (unpackaged builds use the Windows
+    share sheet).
 - [ ] **Do a real send.**
   - Upload a Decay image to Google Drive, OneDrive or iCloud Drive, share the
     link, and download it on a second device (or have a friend do it) using the
@@ -60,9 +72,13 @@ are in `docs/itch-release.md`, `docs/release.md` and `docs/repo-security.md`.
   - The app is in the `publish` folder in the repo root (from `-o publish`).
     Zip that whole folder, not just the exe. It also holds the runtime files.
   - Run `Decay.App.exe` from that folder once to confirm it opens before signing.
-- [ ] **Sign the exe or MSIX** with your signing service, following its
-      instructions (for Azure Trusted Signing, use its signing tool or GitHub
-      action pointed at the published output).
+  - Check `publish` contains `coreclr.dll` and `hostfxr.dll` (the .NET
+    runtime). If not, see "Check the .NET runtime is bundled" in
+    `docs/release.md`.
+- [ ] **Sign the exe and our DLLs** (`Decay.App.dll`, `Decay.Core.dll`,
+      `Decay.Renderer.dll`, `Decay.Licensing.dll`) with your signing service,
+      following its instructions (for Azure Trusted Signing, use its signing
+      tool pointed at the published output). Smart App Control checks DLLs too.
 - [ ] **Test the signed build on a clean machine** (or a fresh Windows user/VM)
       with Smart App Control on. It should install and run without a block.
 - [ ] **Zip it and record the hash.**
@@ -115,14 +131,24 @@ are in `docs/itch-release.md`, `docs/release.md` and `docs/repo-security.md`.
 
 Follow `docs/repo-security.md`. The short version:
 
-- [ ] **Scan history for secrets** with `gitleaks detect --source . --log-opts="--all"`.
-- [ ] **Extend `.gitignore`** for `*.pfx`, `itch-keys.txt` and the like, and keep
-      the key pool and private key outside the repo folder.
-- [ ] **Choose a license** and add a `LICENSE` file.
-- [ ] **Add `SECURITY.md`** and turn on private vulnerability reporting.
+- [x] **Scan history for secrets** with `gitleaks detect --source . --log-opts="--all"`.
+      Clean on 2026-11-05; two reviewed false positives are in `.gitleaksignore`.
+      Run it again just before switching to public.
+- [x] **Extend `.gitignore`** for `*.p12`, `*.snk`, `*.key`, `*.env`,
+      `itch-keys.txt`, `*-keys.txt` and the publisher key (`*.pem`, `*.pfx`
+      were already there). Still keep the key pool and private key outside the
+      repo folder.
+- [x] **Choose a license** and add a `LICENSE` file: all rights reserved.
+- [x] **Add `SECURITY.md`.**
+- [ ] **Turn on private vulnerability reporting** (Settings → Code security).
 - [ ] **Protect `main`:** Settings → Rules → New branch ruleset. Require a pull
       request, one approval and code-owner review; block force pushes.
-- [ ] **Add `.github/CODEOWNERS`** with your GitHub handle.
+      Require the `test` workflow's two jobs to pass.
+- [x] **Add `.github/CODEOWNERS`** with your GitHub handle.
+- [x] **Add a CI workflow** (`.github/workflows/test.yml`, read-only, actions
+      pinned to commit SHAs).
+- [ ] **Require approval for fork pull request workflows** (Settings → Actions
+      → General).
 - [ ] **Turn on 2FA, secret scanning and push protection.**
 - [ ] **Switch the repo to public** (Settings → General → Danger Zone → Change
       visibility).
@@ -144,6 +170,20 @@ Follow `docs/repo-security.md`. The short version:
       number), upload it, and note the new range.
 - [ ] **Keep notes on support questions.** If people lose messages to typos or
       to chat apps, that shapes what v2 should do.
+
+## Console edition (only if `decay.exe` ships with 1.0)
+
+The changelog lists it for 1.0, but nothing above covers it. Either do these
+or move it to a later release.
+
+- [ ] **Confirm the Windows CI job passes**: `decay selftest` on the real .NET
+      Framework 4.8 (license checks included) and the piped UTF-8 round trips.
+- [ ] **Try it by hand on Windows**: the hidden passphrase prompt, and
+      non-ASCII output in `cmd.exe` and PowerShell.
+- [ ] **Sign `decay.exe`.**
+- [ ] **Zip `Decay.Cli/bin/cli`** as `Decay-1.0.0-console.zip`, record its
+      SHA-256, and push it to its own itch channel (for example
+      `toothbrushstudio/decay:windows-console`).
 
 ## Later, not for 1.0
 

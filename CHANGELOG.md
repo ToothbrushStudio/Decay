@@ -2,6 +2,20 @@
 
 ## 1.0.0.0 — launch (unreleased)
 
+- **Pre-launch fixes**: the app no longer crashes on a damaged, unusual or
+  huge image file, or when saving or sharing fails; each problem is
+  explained. Editing anything after encrypting drops the finished image, so
+  a letter that doesn't match the screen can't be saved. The Encrypt tab
+  asks for the passphrase twice. The reveal starts in about 1.5 s instead of
+  10 at 1024 px. The Decrypt tab says right away when an image holds no
+  message, and no longer calls Pro custom-size images "resized". The window
+  fits laptop screens, and the byte counter allows for the Free watermark.
+  Console edition: piped passphrases and messages are read as UTF-8 (non-ASCII
+  text used to be changed silently), damaged files get a clear error, and
+  the checks run before the passphrase prompt. No format or crypto changes:
+  golden vectors now pin the frozen Glitch and Rot pipelines, and the Rot
+  spec is complete.
+
 - **Console edition**: `decay.exe`, a command-line Decay for .NET Framework
   4.8 that runs on a stock Windows 10/11 machine with nothing installed and
   fits on a 1.44 MB floppy (about 400 KB). Encrypt and decrypt, Free and Pro

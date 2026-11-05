@@ -40,7 +40,7 @@ Background: docs/release.md (build, licensing, signing).
 ### 2. Build and sign the Windows release
 
 1. `dotnet test Decay.Core.Tests && dotnet test Decay.Renderer.Tests && dotnet test Decay.Licensing.Tests`
-   (FrozenFormatTests must pass).
+   (FrozenFormatTests and FrozenPipelineTests must pass).
 2. Confirm `ApplicationDisplayVersion` (`1.0.0`; Windows packages it as `1.0.0.0`) and
    `ApplicationVersion` in `Decay.App/Decay.App.csproj`.
 3. `dotnet publish Decay.App -f net10.0-windows10.0.19041.0 -c Release -p:WindowsPackageType=None -p:WindowsAppSDKSelfContained=true -o publish`
@@ -175,12 +175,12 @@ hash text, and the Pro button after deploy.
 - `Decay__KeyPageReady` stays off until the pool is imported, App Service
   secrets are set, and a real `IPuzzle` replaces `StubPuzzle`.
 - macOS/iOS/Android builds, App Store export compliance (release.md).
-- Choosing a source license for the repo.
+- ~~Choosing a source license for the repo.~~ Decided: all rights reserved (`LICENSE`).
 
 ## Launch checklist
 
 - [x] Keygen private key generated and backed up; public key in `PublisherKey.cs`
-- [ ] Tests pass (incl. FrozenFormatTests); version bumped
+- [ ] Tests pass (incl. the FrozenFormatTests and FrozenPipelineTests golden vectors); version bumped
 - [ ] Windows build signed, zipped, hash recorded
 - [ ] itch page created with copy, media, Pro description (incl. Rot)
 - [ ] Key pool generated and uploaded; test purchase unlocks Pro
