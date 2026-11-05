@@ -217,6 +217,37 @@ namespace Decay.Renderer.Tests
             Assert.Equal(308, markPixels);
         }
 
+        [Theory]
+        [InlineData(256, 256)]
+        [InlineData(512, 512)]
+        [InlineData(300, 170)]
+        public void MaxMessageBytes_Free_IsExactlyTheWatermarkBoundary(int width, int height)
+        {
+            int max = DecayProduct.MaxMessageBytes(DecayTier.Free, width, height);
+
+            // The longest allowed message encrypts; one byte more would run
+            // into the watermark's corner.
+            Assert.Equal(new string('x', max), DecayArtist.Decrypt(
+                EncryptFree(new string('x', max), width, height).FinalImage,
+                Passphrase
+            ).PlainText);
+            Assert.Throws<DecayCapacityException>(
+                () => EncryptFree(new string('x', max + 1), width, height)
+            );
+            Assert.True(max < DecayProduct.MaxMessageBytes(DecayTier.Pro, width, height));
+        }
+
+        [Fact]
+        public void MaxMessageBytes_Pro_IsTheWholeImage()
+        {
+            Assert.Equal(
+                DecayCipher.MaxPlainTextBytes(new PixelBuffer(384, 384)),
+                DecayProduct.MaxMessageBytes(DecayTier.Pro, 384, 384)
+            );
+            Assert.Equal(0, Watermark.SafePixelCount(24, 24));
+            Assert.Equal(0, DecayProduct.MaxMessageBytes(DecayTier.Free, 24, 24));
+        }
+
         private static EncryptedArt EncryptFree(string plainText, int width, int height)
         {
             return DecayProduct.EncryptWithPreset(

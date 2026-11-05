@@ -100,6 +100,26 @@ namespace Decay.Renderer
     /// </summary>
     public static class DecayProduct
     {
+        /// <summary>
+        /// The longest message, in UTF-8 bytes, that this tier can encrypt
+        /// into a width × height image. Free images hold a little less,
+        /// because the payload must stay clear of the watermark's corner.
+        /// </summary>
+        public static int MaxMessageBytes(DecayTier tier, int width, int height)
+        {
+            if (width < 1) throw new ArgumentOutOfRangeException(nameof(width));
+            if (height < 1) throw new ArgumentOutOfRangeException(nameof(height));
+
+            long pixels = (long)width * height;
+
+            if (TierPolicy.AppliesWatermark(tier))
+            {
+                pixels = Math.Min(pixels, Watermark.SafePixelCount(width, height));
+            }
+
+            return DecayCipher.MaxPlainTextBytesForPixels(pixels);
+        }
+
         /// <summary>Encrypts onto a procedurally generated preset carrier.</summary>
         public static EncryptedArt EncryptWithPreset(
             string plainText,

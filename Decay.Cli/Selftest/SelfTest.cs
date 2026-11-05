@@ -15,10 +15,14 @@ namespace Decay.Cli.Selftest
     /// </summary>
     internal static class SelfTest
     {
+        private static int _passes;
+        private static int _skips;
         private static int _failures;
 
         internal static int Run()
         {
+            _passes = 0;
+            _skips = 0;
             _failures = 0;
 
             Check("AES-GCM matches NIST test case 1 (empty)", () => Nist(
@@ -126,6 +130,10 @@ namespace Decay.Cli.Selftest
 
             Check("encrypt and decrypt a rot image", () => RoundTrip(DecayStyle.Rot));
 
+            Check("renders frozen Glitch art exactly like the .NET 10 engine", () => Pipeline(rot: false));
+
+            Check("renders frozen Rot art exactly like the .NET 10 engine", () => Pipeline(rot: true));
+
             Check("license: valid Pro key accepted", () =>
             {
                 ConsoleLicense? license = LicenseValidator.Validate(Vectors.LicenseGood, Vectors.LicensePublicKey);
@@ -164,12 +172,32 @@ namespace Decay.Cli.Selftest
                 LicenseValidator.Validate(Vectors.LicenseGood, PublisherKeyBase64) is null);
 
             Console.WriteLine();
-            Console.WriteLine(_failures == 0 ? "All self-tests passed." : $"{_failures} self-test(s) FAILED.");
+            Console.WriteLine($"{_passes} passed, {_skips} skipped, {_failures} failed.");
+
+            if (_failures > 0)
+            {
+                Console.WriteLine("Self-test FAILED.");
+            }
+            else if (_skips > 0)
+            {
+                Console.WriteLine(
+                    "No failures, but the license checks were skipped: this runtime has no ECDSA "
+                    + "(Mono). On Windows nothing is skipped."
+                );
+            }
+            else
+            {
+                Console.WriteLine("All self-tests passed.");
+            }
 
             return _failures == 0 ? Exit.Ok : Exit.Failed;
         }
 
         private static string PublisherKeyBase64 => Decay.App.PublisherKey.SubjectPublicKeyInfoBase64;
+
+        // Mono, used to test on Linux, has no ECDSA. .NET Framework on Windows
+        // always has it, so there a missing ECDSA is a failure, never a skip.
+        private static bool MaySkipLicenseChecks => Environment.OSVersion.Platform != PlatformID.Win32NT;
 
         private static void Check(string name, Func<bool> test)
         {
@@ -181,10 +209,11 @@ namespace Decay.Cli.Selftest
                 passed = test();
             }
             catch (Exception exception) when (
-                name.StartsWith("license", StringComparison.Ordinal)
+                MaySkipLicenseChecks
+                && name.StartsWith("license", StringComparison.Ordinal)
                 && (exception is NotImplementedException || exception is PlatformNotSupportedException))
             {
-                // Mono (used to test on Linux) has no ECDSA at all; real Windows does.
+                _skips++;
                 Console.WriteLine($"SKIP  {name} (ECDSA is not available on this platform)");
 
                 return;
@@ -195,12 +224,86 @@ namespace Decay.Cli.Selftest
                 detail = $" ({exception.GetType().Name}: {exception.Message})";
             }
 
-            if (!passed)
+            if (passed)
+            {
+                _passes++;
+            }
+            else
             {
                 _failures++;
             }
 
             Console.WriteLine($"{(passed ? "PASS" : "FAIL")}  {name}{detail}");
+        }
+
+        // Renders a frozen pipeline from a container sealed by the .NET 10
+        // engine and compares each stage with the hashes it recorded there:
+        // the carrier, the art, the decrypted message and the reveal.
+        private static bool Pipeline(bool rot)
+        {
+            string message = rot ? Vectors.RotPlainText : Vectors.GlitchPlainText;
+            string passphrase = rot ? Vectors.RotPassphrase : Vectors.GlitchPassphrase;
+            byte[] container = FromHex(rot ? Vectors.RotContainerHex : Vectors.GlitchContainerHex);
+            PixelBuffer carrier = rot
+                ? TestCarrier(Vectors.RotWidth, Vectors.RotHeight)
+                : TestCarrier(Vectors.GlitchWidth, Vectors.GlitchHeight);
+
+            if (Sha256Hex(carrier.Pixels) != (rot ? Vectors.RotCarrierSha256 : Vectors.GlitchCarrierSha256))
+            {
+                throw new InvalidOperationException("the test carrier differs from the one the vectors were made with");
+            }
+
+            PixelBuffer image = rot
+                ? RotDecay.FromContainer(container, message, passphrase)!.Apply(carrier)
+                : DecaySequence.FromContainer(container)!.RenderFinal(carrier);
+
+            if (Sha256Hex(image.Pixels) != (rot ? Vectors.RotArtSha256 : Vectors.GlitchArtSha256))
+            {
+                throw new InvalidOperationException("the rendered art differs");
+            }
+
+            DecayCipher.EmbedContainer(container, image);
+
+            DecryptedArt result = DecayArtist.Decrypt(image, passphrase);
+
+            if (result.PlainText != message)
+            {
+                throw new InvalidOperationException("the decrypted message differs");
+            }
+
+            PixelBuffer reveal = rot ? result.Rot!.Restore(image) : result.Sequence!.Unrot(image);
+
+            return Sha256Hex(reveal.Pixels) == (rot ? Vectors.RotRevealSha256 : Vectors.GlitchRevealSha256);
+        }
+
+        // The integer-only carrier of the frozen pipeline vectors
+        // (Decay.Renderer.Tests/FrozenPipelineTests.cs and tools/Decay.Cli.Compat).
+        private static PixelBuffer TestCarrier(int width, int height)
+        {
+            PixelBuffer image = new PixelBuffer(width, height);
+
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    int i = (y * width + x) * PixelBuffer.BytesPerPixel;
+
+                    image.Pixels[i] = (byte)(x * 255 / Math.Max(1, width - 1));
+                    image.Pixels[i + 1] = (byte)(y * 255 / Math.Max(1, height - 1));
+                    image.Pixels[i + 2] = (byte)((x * 7 + y * 13) ^ (x * y));
+                    image.Pixels[i + 3] = 255;
+                }
+            }
+
+            return image;
+        }
+
+        private static string Sha256Hex(byte[] data)
+        {
+            using (SHA256 sha = SHA256.Create())
+            {
+                return ToHex(sha.ComputeHash(data));
+            }
         }
 
         // Encrypts then decrypts, checking ciphertext, tag and plaintext against the vector.

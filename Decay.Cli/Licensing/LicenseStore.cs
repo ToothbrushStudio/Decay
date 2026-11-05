@@ -27,13 +27,22 @@ namespace Decay.Cli.Licensing
             internal DecayTier Tier => License?.Tier ?? DecayTier.Free;
         }
 
+        /// <summary>
+        /// For tests only: folders to use instead of the program's folder and
+        /// %APPDATA%\Decay, so a test run never touches a real license file.
+        /// (Setting the APPDATA variable does not redirect GetFolderPath on Windows.)
+        /// </summary>
+        internal static string? PortableFolderOverride { get; set; }
+
+        internal static string? UserFolderOverride { get; set; }
+
         internal static string PortablePath =>
-            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, FileName);
+            Path.Combine(PortableFolderOverride ?? AppDomain.CurrentDomain.BaseDirectory, FileName);
 
         internal static string UserPath =>
             Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                "Decay",
+                UserFolderOverride
+                    ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Decay"),
                 FileName
             );
 

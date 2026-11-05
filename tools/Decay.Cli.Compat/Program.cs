@@ -108,6 +108,80 @@ static string Hex(byte[] bytes) => Convert.ToHexString(bytes).ToLowerInvariant()
 
 static string Q(string s) => "\"" + s.Replace("\\", "\\\\").Replace("\"", "\\\"") + "\"";
 
+// A C# string literal that survives any file encoding: ASCII only, with escapes.
+static string Literal(string s)
+{
+    StringBuilder text = new StringBuilder("\"");
+
+    foreach (char c in s)
+    {
+        text.Append(c switch
+        {
+            '"' => "\\\"",
+            '\\' => "\\\\",
+            '\n' => "\\n",
+            '\r' => "\\r",
+            '\t' => "\\t",
+            _ when c < ' ' || c > '~' => $"\\u{(int)c:x4}",
+            _ => c.ToString(),
+        });
+    }
+
+    return text.Append('"').ToString();
+}
+
+// Integer-only test carrier; must match SelfTest.TestCarrier and FrozenPipelineTests.
+static PixelBuffer TestCarrier(int width, int height)
+{
+    PixelBuffer image = new PixelBuffer(width, height);
+
+    for (int y = 0; y < height; y++)
+    {
+        for (int x = 0; x < width; x++)
+        {
+            int i = (y * width + x) * PixelBuffer.BytesPerPixel;
+
+            image.Pixels[i] = (byte)(x * 255 / Math.Max(1, width - 1));
+            image.Pixels[i + 1] = (byte)(y * 255 / Math.Max(1, height - 1));
+            image.Pixels[i + 2] = (byte)((x * 7 + y * 13) ^ (x * y));
+            image.Pixels[i + 3] = 255;
+        }
+    }
+
+    return image;
+}
+
+static void PipelineVector(StringBuilder sb, string name, string containerHex, string message, string passphrase, int width, int height)
+{
+    byte[] container = Convert.FromHexString(containerHex);
+    PixelBuffer carrier = TestCarrier(width, height);
+    bool rot = DecayCipher.GetPipelineId(container) == RotDecay.PipelineId;
+    PixelBuffer image = rot
+        ? RotDecay.FromContainer(container, message, passphrase)!.Apply(carrier)
+        : DecaySequence.FromContainer(container)!.RenderFinal(carrier);
+    string art = Hex(SHA256.HashData(image.Pixels));
+
+    DecayCipher.EmbedContainer(container, image);
+
+    DecryptedArt result = DecayArtist.Decrypt(image, passphrase);
+
+    if (result.PlainText != message)
+    {
+        throw new InvalidOperationException($"{name}: the golden container did not decrypt.");
+    }
+
+    PixelBuffer reveal = rot ? result.Rot!.Restore(image) : result.Sequence!.Unrot(image);
+
+    sb.AppendLine($"        internal const string {name}ContainerHex = {Q(Hex(container))};");
+    sb.AppendLine($"        internal const string {name}PlainText = {Literal(message)};");
+    sb.AppendLine($"        internal const string {name}Passphrase = {Literal(passphrase)};");
+    sb.AppendLine($"        internal const int {name}Width = {width};");
+    sb.AppendLine($"        internal const int {name}Height = {height};");
+    sb.AppendLine($"        internal const string {name}CarrierSha256 = {Q(Hex(SHA256.HashData(carrier.Pixels)))};");
+    sb.AppendLine($"        internal const string {name}ArtSha256 = {Q(art)};");
+    sb.AppendLine($"        internal const string {name}RevealSha256 = {Q(Hex(SHA256.HashData(reveal.Pixels)))};");
+}
+
 static string Vectors()
 {
     StringBuilder sb = new StringBuilder();
@@ -127,7 +201,7 @@ static string Vectors()
 
     sb.AppendLine($"        internal const string ContainerHex = {Q(Hex(container))};");
     sb.AppendLine("        internal const string ContainerPassphrase = \"correct horse\";");
-    sb.AppendLine($"        internal const string ContainerPlainText = {Q(plain.Replace("\u2713", "\\u2713").Replace("\u00fc", "\\u00fc").Replace("\u00ef", "\\u00ef")).Replace("\\\\u", "\\u")};");
+    sb.AppendLine($"        internal const string ContainerPlainText = {Literal(plain)};");
 
     // AES-GCM known-answers from the real AesGcm, including awkward lengths.
     sb.AppendLine("        internal static readonly string[][] AesGcm =");
@@ -178,6 +252,28 @@ static string Vectors()
 
     sb.AppendLine($"        internal const string PngBase64 = {Q(Convert.ToBase64String(DecayPng.Encode(image)))};");
     sb.AppendLine($"        internal const string PngPixelsSha256 = {Q(Hex(SHA256.HashData(image.Pixels)))};");
+
+    // The frozen pipelines, rendered by this (.NET 10) engine from two of the
+    // golden containers in Decay.Renderer.Tests/FrozenPipelineTests.cs. The
+    // self-test renders them again on .NET Framework and compares.
+    PipelineVector(
+        sb,
+        "Glitch",
+        "444341590101140102030405060708090A0B0C0D0E0F10000003E865666768696A6B6C6D6E6F7000000019081734C156B8E22EE8E2540A0DDB0D302F922F0D7929AAD2BF468A457F6EEADA55D8DEC28410C916BF",
+        "The glitch is the letter.",
+        "frozen glitch",
+        72,
+        48
+    );
+    PipelineVector(
+        sb,
+        "Rot",
+        "444341590102640102030405060708090A0B0C0D0E0F10000003E865666768696A6B6C6D6E6F700000002100742D4FC2C9BDAFA5C6E4E08F63EDC3C7FB05AFC56F79FB7A3C6EA154F3E7132EF872367B67C652511995E2EED714DC4B",
+        "Meet me at 9pm!\n\tÉtude \U0001F9A0 ok\r~",
+        "frozen rot",
+        96,
+        64
+    );
 
     // License keys signed by a throwaway key pair; the validator takes the public key as a parameter.
     using ECDsa signer = ECDsa.Create(ECCurve.NamedCurves.nistP256);
@@ -334,9 +430,11 @@ static int StoreTest()
 {
     string temp = Path.Combine(Path.GetTempPath(), "decay-store-" + Guid.NewGuid().ToString("N"));
 
-    Directory.CreateDirectory(temp);
-    Environment.SetEnvironmentVariable("XDG_CONFIG_HOME", temp);
-    Environment.SetEnvironmentVariable("APPDATA", temp);
+    // Both key locations live in a throwaway folder, so this never touches a
+    // real license file (on Windows, setting APPDATA would not redirect them).
+    Directory.CreateDirectory(Path.Combine(temp, "portable"));
+    LicenseStore.PortableFolderOverride = Path.Combine(temp, "portable");
+    LicenseStore.UserFolderOverride = Path.Combine(temp, "user");
     Environment.SetEnvironmentVariable(LicenseStore.EnvironmentVariable, null);
 
     using ECDsa signer = ECDsa.Create(ECCurve.NamedCurves.nistP256);

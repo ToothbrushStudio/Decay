@@ -34,6 +34,7 @@ namespace Decay.Cli
             }
 
             LicenseStore.Result license = ResolveLicense(args);
+            DecayTier tier = license.Tier;
             DecayStyle style = ParseStyle(args.Get("style"));
             int strength = ParseInt(args.Get("strength"), "--strength", TierPolicy.LockedIntensity);
 
@@ -42,50 +43,57 @@ namespace Decay.Cli
                 throw new UsageException($"--strength must be {DecayStrength.Min}-{DecayStrength.Max}.");
             }
 
-            string passphrase = RequirePassphrase(args.Get("pass") ?? Passphrase.ReadNew());
-
-            Console.Error.WriteLine("Deriving key and rotting the carrier...");
-
-            EncryptedArt art;
+            // Settle everything that can fail before asking for the passphrase,
+            // so nobody types it twice only to be told the carrier is wrong.
             string? carrierPath = args.Get("carrier");
+            PixelBuffer? customCarrier = null;
+            CarrierPreset preset = CarrierPresets.Default;
+            int size = 0;
+            int seed = 0;
 
             if (carrierPath is not null)
             {
-                PixelBuffer carrier = DecayPng.Decode(File.ReadAllBytes(carrierPath));
-
-                art = DecayProduct.EncryptWithCustomCarrier(
-                    message,
-                    passphrase,
-                    license.Tier,
-                    carrier,
-                    strength,
-                    style: style
-                );
+                RequirePro(TierPolicy.AllowsCustomCarrier(tier), "Uploading your own carrier image");
+                customCarrier = ReadImage(carrierPath);
             }
             else
             {
-                CarrierPreset preset = ParsePreset(args.Get("preset"));
-                int size = ParseInt(args.Get("size"), "--size", 512);
+                preset = ParsePreset(args.Get("preset"));
+                RequirePro(TierPolicy.AllowsPreset(tier, preset), $"The \"{preset.Name}\" carrier");
+                size = ParseInt(args.Get("size"), "--size", 512);
 
                 if (Array.IndexOf(DecaySizes, size) < 0)
                 {
                     throw new UsageException("--size must be one of " + string.Join(", ", DecaySizes) + ".");
                 }
 
-                int seed = ParseInt(args.Get("seed"), "--seed", RandomSeed());
+                seed = ParseInt(args.Get("seed"), "--seed", RandomSeed());
+            }
 
-                art = DecayProduct.EncryptWithPreset(
-                    message,
-                    passphrase,
-                    license.Tier,
-                    preset,
-                    size,
-                    size,
-                    seed,
-                    strength,
-                    style: style
+            RequirePro(TierPolicy.AllowsStyle(tier, style), "Rot mode");
+            RequirePro(TierPolicy.AllowsIntensity(tier, strength), "Adjusting the decay intensity");
+
+            int width = customCarrier?.Width ?? size;
+            int height = customCarrier?.Height ?? size;
+            int needed = Encoding.UTF8.GetByteCount(message);
+            int room = DecayProduct.MaxMessageBytes(tier, width, height);
+
+            if (needed > room)
+            {
+                throw new DecayCapacityException(
+                    $"The message is {needed:N0} bytes, but a {width}x{height} "
+                        + (tier == DecayTier.Free ? "Free image" : "image")
+                        + $" holds at most {room:N0}."
                 );
             }
+
+            string passphrase = RequirePassphrase(args.Get("pass") ?? Passphrase.ReadNew());
+
+            Console.Error.WriteLine("Deriving key and rotting the carrier...");
+
+            EncryptedArt art = customCarrier is not null
+                ? DecayProduct.EncryptWithCustomCarrier(message, passphrase, tier, customCarrier, strength, style: style)
+                : DecayProduct.EncryptWithPreset(message, passphrase, tier, preset, size, size, seed, strength, style: style);
 
             File.WriteAllBytes(outPath, DecayPng.Encode(art.FinalImage));
 
@@ -94,7 +102,7 @@ namespace Decay.Cli
                 + "The image IS the message - send the file itself, never a screenshot."
             );
 
-            if (license.Tier == DecayTier.Free)
+            if (tier == DecayTier.Free)
             {
                 Console.Error.WriteLine("Free tier: the image carries a watermark.");
             }
@@ -111,14 +119,24 @@ namespace Decay.Cli
                 throw new UsageException("decrypt needs exactly one image file.");
             }
 
-            PixelBuffer received = DecayPng.Decode(File.ReadAllBytes(args.Positional[0]));
+            PixelBuffer received = ReadImage(args.Positional[0]);
 
-            if (Array.IndexOf(DecaySizes, received.Width) < 0 || received.Width != received.Height)
+            // The container header is public, so check there is a message
+            // before asking for the passphrase.
+            try
+            {
+                DecayCipher.ExtractContainer(received);
+            }
+            catch (DecayFormatException exception) when (
+                exception is not DecayVersionException
+                && (received.Width != received.Height || Array.IndexOf(DecaySizes, received.Width) < 0))
             {
                 Console.Error.WriteLine(
                     $"Note: this image is {received.Width}x{received.Height}, which isn't a size Decay makes, "
-                    + "so it has probably been resized or cropped. The message may be gone."
+                    + "so it has probably been resized or cropped along the way."
                 );
+
+                throw;
             }
 
             string passphrase = RequirePassphrase(args.Get("pass") ?? Passphrase.Read("Passphrase: "));
@@ -170,6 +188,23 @@ namespace Decay.Cli
 
         // ------------------------------------------------------- helpers
 
+        /// <summary>Reads and decodes a PNG without loading an oversized file into memory first.</summary>
+        private static PixelBuffer ReadImage(string path)
+        {
+            using (FileStream stream = File.OpenRead(path))
+            {
+                return DecayPng.Decode(stream);
+            }
+        }
+
+        private static void RequirePro(bool allowed, string feature)
+        {
+            if (!allowed)
+            {
+                throw new DecayTierException(feature);
+            }
+        }
+
         private static string RequirePassphrase(string passphrase)
         {
             if (passphrase.Length == 0)
@@ -211,7 +246,7 @@ namespace Decay.Cli
 
             if (file == "-")
             {
-                return Console.In.ReadToEnd();
+                return StandardInput.ReadToEnd();
             }
 
             return File.ReadAllText(file!, Encoding.UTF8);
@@ -277,6 +312,53 @@ namespace Decay.Cli
         }
     }
 
+    /// <summary>
+    /// Piped input — a message from "--in -", or a passphrase — read as
+    /// strict UTF-8 whatever the console's code page is (a byte-order mark is
+    /// honored). A passphrase must give the same bytes on every machine, or
+    /// it won't open images made elsewhere, so text that isn't valid UTF-8 is
+    /// refused instead of being silently changed.
+    /// </summary>
+    internal static class StandardInput
+    {
+        private const string NotUtf8 =
+            "Piped input must be UTF-8 text. Save the file as UTF-8, or run \"chcp 65001\" "
+            + "first in Command Prompt, or give the passphrase with --pass or at the prompt.";
+
+        private static TextReader? _reader;
+
+        private static TextReader Reader =>
+            _reader ??= new StreamReader(
+                Console.OpenStandardInput(),
+                new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true),
+                detectEncodingFromByteOrderMarks: true
+            );
+
+        internal static string ReadToEnd()
+        {
+            try
+            {
+                return Reader.ReadToEnd();
+            }
+            catch (DecoderFallbackException)
+            {
+                throw new UsageException(NotUtf8);
+            }
+        }
+
+        internal static string? ReadLine()
+        {
+            try
+            {
+                return Reader.ReadLine();
+            }
+            catch (DecoderFallbackException)
+            {
+                throw new UsageException(NotUtf8);
+            }
+        }
+    }
+
     /// <summary>Reads a passphrase without echoing it.</summary>
     internal static class Passphrase
     {
@@ -301,7 +383,7 @@ namespace Decay.Cli
         {
             if (Console.IsInputRedirected)
             {
-                return Console.In.ReadLine() ?? "";
+                return StandardInput.ReadLine() ?? "";
             }
 
             Console.Error.Write(prompt);
@@ -322,6 +404,12 @@ namespace Decay.Cli
                     if (typed.Length > 0)
                     {
                         typed.Length--;
+
+                        // Remove a whole emoji or other surrogate pair, not half of it.
+                        if (typed.Length > 0 && char.IsHighSurrogate(typed[typed.Length - 1]))
+                        {
+                            typed.Length--;
+                        }
                     }
                 }
                 else if (key.KeyChar != '\0')

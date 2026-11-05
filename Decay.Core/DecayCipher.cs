@@ -186,7 +186,18 @@ namespace Decay.Core
         {
             if (carrier is null) throw new ArgumentNullException(nameof(carrier));
 
-            return Math.Max(0, PixelCodec.Capacity(carrier) - PayloadContainer.MinContainerSize);
+            return MaxPlainTextBytesForPixels(carrier.PixelCount);
+        }
+
+        /// <summary>
+        /// The largest message, in UTF-8 bytes, whose container fits in the
+        /// first <paramref name="pixelCount"/> pixels of an image.
+        /// </summary>
+        public static int MaxPlainTextBytesForPixels(long pixelCount)
+        {
+            if (pixelCount < 0) throw new ArgumentOutOfRangeException(nameof(pixelCount));
+
+            return Math.Max(0, PixelCodec.Capacity(pixelCount) - PayloadContainer.MinContainerSize);
         }
     }
 }

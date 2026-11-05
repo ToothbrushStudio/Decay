@@ -15,8 +15,9 @@ send the PNG file itself. A screenshot, resize or re-compression destroys it.
   decay activate KEY  unlock Decay Pro with your license key (offline)
   decay license       show the license in use
 
-Copy the files to your hard drive to save your license key beside the
-program, or use "decay activate KEY" to save it in your user profile.
+"decay activate KEY" saves your license key in your user profile. To keep
+it beside the program instead, so it travels with these files, copy them to
+a writable drive and run "decay activate KEY --portable".
 Decrypting is always free. No accounts, no servers, nothing leaves your PC.
 
 Keep all the files in this folder together: decay.exe needs the DLLs next

@@ -123,6 +123,14 @@ namespace Decay.Cli
 
                 return Exit.Failed;
             }
+            catch (Exception exception)
+            {
+                // Anything unexpected still gets a message and an exit code,
+                // not a stack trace or a Windows crash dialog.
+                Console.Error.WriteLine($"decay: unexpected error ({exception.GetType().Name}): {exception.Message}");
+
+                return Exit.Failed;
+            }
         }
 
         private const string HelpText = @"DECAY " + Version + @" - encrypt your message into the rot (console edition)
@@ -153,6 +161,8 @@ decrypt options:
 common options:
   --pass <passphrase>  Prefer the hidden prompt: command lines are visible
   --license <key>      Use this license key for this run
+
+Piped input (--in - and a piped passphrase) must be UTF-8 text.
 
 The image IS the message. Send the PNG file itself: a screenshot, resize or
 re-compression destroys it. Decryption is free for everyone, always.
