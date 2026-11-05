@@ -9,7 +9,8 @@ namespace Decay.Renderer
     /// every character of the message stains the carrier with a spore of rot
     /// whose color — sickly green, through brown, to bruise purple — is set
     /// by the character's value. The image stays recognizable; it just looks
-    /// diseased. See docs/render-pipeline-v2-rot.md.
+    /// diseased. FROZEN as pipeline 2 — see docs/render-pipeline-v2-rot.md
+    /// and the golden vectors in Decay.Renderer.Tests/FrozenPipelineTests.cs.
     ///
     /// Each pixel is blended once toward a single stain color, so the
     /// receiver can invert it to within a couple of levels. The message

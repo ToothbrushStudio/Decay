@@ -1,10 +1,12 @@
 # Decay Render Pipeline — Version 1 (pipeline id `0x01`)
 
-*Status: frozen upon merge, like the payload format. The decoder regenerates
+*Status: **FROZEN** (v1.0), like the payload format. The decoder regenerates
 this pipeline's op sequence bit-for-bit to play the reverse ("un-rot")
 animation, so any behavioral change to this spec breaks the animation for
-every existing pipeline-1 image. Improvements ship as pipeline id 2+; images
-declaring an unknown pipeline id still decrypt, with no animation.*
+every existing pipeline-1 image. Improvements ship as a new pipeline id;
+images declaring an unknown pipeline id still decrypt, with no animation.
+The golden vectors in `Decay.Renderer.Tests/FrozenPipelineTests.cs` guard
+this spec.*
 
 ---
 
@@ -83,7 +85,17 @@ never touch alpha.
 ### NoiseXor noise field
 
 A sub-generator, xoshiro256\*\* seeded from `subSeed` via four rounds of
-**splitmix64**, is stepped once per pixel of the rect in row-major order.
+**splitmix64** (its four outputs are state[0..3] in order), is stepped once
+per pixel of the rect in row-major order. One splitmix64 round, in 64-bit
+unsigned arithmetic:
+
+```
+state = state + 0x9E3779B97F4A7C15
+z = state
+z = (z ^ (z >> 30)) * 0xBF58476D1CE4E5B9
+z = (z ^ (z >> 27)) * 0x94D049BB133111EB
+output z ^ (z >> 31)
+```
 Per pixel, with draw `r`:
 
 - gate byte `r & 0xFF`: the pixel is hit iff `gate < density`
@@ -111,5 +123,5 @@ the identity; the op pipeline provides the rot.
 | Pipeline id | Introduced | Status | Notes |
 |---|---|---|---|
 | 0 | v1.0 | Reserved | No pipeline; data-only image, no animation |
-| 1 | v1.0 (launch) | Current | This document |
-| 2 | post-launch | Experimental | Rot — color stains, [docs/render-pipeline-v2-rot.md](render-pipeline-v2-rot.md) |
+| 1 | v1.0 (launch) | Current, frozen | Glitch — this document |
+| 2 | v1.0 (launch) | Current, frozen | Rot — color stains, [docs/render-pipeline-v2-rot.md](render-pipeline-v2-rot.md) |
