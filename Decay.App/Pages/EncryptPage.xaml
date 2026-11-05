@@ -40,16 +40,25 @@
                    IsPassword="True"
                    TextChanged="OnPassphraseChanged" />
 
-            <Picker x:Name="StylePicker"
-                    Title="Decay style"
-                    SelectedIndexChanged="OnStyleChanged" />
+            <!-- Dropdown titles are separate labels, not the pickers' own Title:
+                 on Windows a Title is drawn inside the dropdown control, which
+                 makes it taller than the dropdown itself. -->
+            <VerticalStackLayout Spacing="8">
+                <Label Text="Decay style" />
+                <Picker x:Name="StylePicker"
+                        SelectedIndexChanged="OnStyleChanged" />
+            </VerticalStackLayout>
 
-            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+            <Grid ColumnDefinitions="*,*" RowDefinitions="Auto,Auto" ColumnSpacing="8" RowSpacing="8">
+                <Label Text="Carrier" />
                 <Picker x:Name="PresetPicker"
-                        Grid.Column="0"
-                        Title="Carrier"
+                        Grid.Row="1"
                         SelectedIndexChanged="OnPresetChanged" />
-                <Button Grid.Column="1"
+                <!-- No vertical padding, so the button never sets the row's height:
+                     it stretches to exactly the dropdown's height beside it. -->
+                <Button Grid.Row="1"
+                        Grid.Column="1"
+                        Padding="11,0"
                         Text="New carrier"
                         Clicked="OnNewCarrier" />
             </Grid>
@@ -67,9 +76,11 @@
                     Clicked="OnToggleAdvanced" />
 
             <VerticalStackLayout x:Name="AdvancedSection" Spacing="12" IsVisible="False">
-                <Picker x:Name="SizePicker"
-                        Title="Size"
-                        SelectedIndexChanged="OnSizeChanged" />
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Size" />
+                    <Picker x:Name="SizePicker"
+                            SelectedIndexChanged="OnSizeChanged" />
+                </VerticalStackLayout>
 
                 <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
                     <Label Grid.Column="0" Text="Intensity" VerticalOptions="Center" />
