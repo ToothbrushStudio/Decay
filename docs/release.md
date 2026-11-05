@@ -96,6 +96,13 @@ says so.
   `PropertyGroup` in `Decay.App.csproj` (not on the command line, for the
   NU1102 reason above). Your dev machine has .NET, so only a clean VM proves
   this.
+- **App icon:** MAUI never regenerates the Windows icon for a single-image
+  `MauiIcon` once `obj` holds one, so a changed `appicon.png` used to keep the
+  old icon in an existing `obj` folder. The `DecayRefreshAppIcon` target in
+  `Decay.App.csproj` hashes the icon and forces a fresh one when it changes;
+  the build prints "App icon changed: regenerating it." If Explorer still
+  shows an old icon on the exe after that, it is Windows' icon cache: run
+  `ie4uinit.exe -show`, or look at the window's taskbar icon instead.
 - **Android:** publish an `.aab` with your keystore
   (`-p:AndroidKeyStore=true` + signing properties).
 - **iOS / Mac Catalyst:** archive from a Mac with an Apple Developer
