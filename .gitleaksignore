@@ -1,0 +1,5 @@
+# Reviewed gitleaks findings that are not secrets (docs/repo-security.md).
+# Rot mask label from the frozen spec, a public constant
+484f18b8b34cf7babe99807dae612dc9112cd197:Decay.Renderer/RotDecay.cs:generic-api-key:25
+# Microsoft strong-name PublicKeyToken in the retired WinForms prototype (public)
+f15b98d86700aeaecab2cf694c172ffcc74e9f7d:Decay/Properties/Resources.resx:generic-api-key:120
