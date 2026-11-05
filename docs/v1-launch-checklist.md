@@ -68,13 +68,15 @@ are in `docs/itch-release.md`, `docs/release.md` and `docs/repo-security.md`.
       dashboard or email. Don't ship unsigned. Windows Smart App Control will
       block it for many users.
 - [ ] **Publish the release build.**
+  - Delete any old `publish` folder first (publish adds to it without
+    removing old files): `Remove-Item -Recurse -Force publish -ErrorAction SilentlyContinue`
   - `dotnet publish Decay.App -f net10.0-windows10.0.19041.0 -c Release -p:WindowsPackageType=None -p:WindowsAppSDKSelfContained=true -o publish`
   - The app is in the `publish` folder in the repo root (from `-o publish`).
-    Zip that whole folder, not just the exe. It also holds the runtime files.
-  - Run `Decay.App.exe` from that folder once to confirm it opens before signing.
+    Zip the contents of that folder, not just the exe. It also holds the runtime files.
   - Check `publish` contains `coreclr.dll` and `hostfxr.dll` (the .NET
-    runtime). If not, see "Check the .NET runtime is bundled" in
-    `docs/release.md`.
+    runtime): `Test-Path publish\coreclr.dll` must print `True`. If not, see
+    "Check the .NET runtime is bundled" in `docs/release.md`.
+  - Run `Decay.App.exe` from that folder once to confirm it opens before signing.
 - [ ] **Sign the exe and our DLLs** (`Decay.App.dll`, `Decay.Core.dll`,
       `Decay.Renderer.dll`, `Decay.Licensing.dll`) with your signing service,
       following its instructions (for Azure Trusted Signing, use its signing

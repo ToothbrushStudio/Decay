@@ -33,6 +33,12 @@
   <PropertyGroup Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">
     <WindowsPackageType>None</WindowsPackageType>
     <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <!-- Bundle the .NET runtime as well, so buyers don't need .NET installed
+         (WindowsAppSDKSelfContained only bundles the Windows App SDK). These
+         belong here, not on the command line: command-line properties also
+         reach the Android and iOS targets and break restore with NU1102. -->
+    <SelfContained>true</SelfContained>
+    <RuntimeIdentifier>win-x64</RuntimeIdentifier>
   </PropertyGroup>
 
   <ItemGroup>
