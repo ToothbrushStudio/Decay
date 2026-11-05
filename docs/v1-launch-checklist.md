@@ -176,10 +176,11 @@ Follow `docs/repo-security.md`. The short version:
 The changelog lists it for 1.0, but nothing above covers it. Either do these
 or move it to a later release.
 
-- [ ] **Confirm the Windows CI job passes**: `decay selftest` on the real .NET
-      Framework 4.8 (license checks included) and the piped UTF-8 round trips.
+- [x] **Confirm the Windows CI job passes**: `decay selftest` on the real .NET
+      Framework 4.8 (19 passed, license checks included) and the piped UTF-8
+      round trips. Keep it green.
 - [ ] **Try it by hand on Windows**: the hidden passphrase prompt, and
-      non-ASCII output in `cmd.exe` and PowerShell.
+      non-ASCII output in a `cmd.exe` and a PowerShell window.
 - [ ] **Sign `decay.exe`.**
 - [ ] **Zip `Decay.Cli/bin/cli`** as `Decay-1.0.0-console.zip`, record its
       SHA-256, and push it to its own itch channel (for example

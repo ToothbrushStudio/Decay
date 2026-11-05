@@ -1,11 +1,11 @@
 # Floppy edition: a .NET Framework 4.8 console mirror
 
 Status: **built and merged** (Phases 1-5). It compiles and passes its
-self-test and cross-edition checks under Mono on Linux. The CI workflow's
-Windows job runs `decay selftest` on the real .NET Framework 4.8 on every
-push; it has **not yet been tried by hand on Windows**. See "Results" and
-"Not verified" below. The sections after those are the original plan, kept
-for the reasoning.
+self-test and cross-edition checks under Mono on Linux, and on the real
+.NET Framework 4.8 in the CI workflow's Windows job, which runs on every
+push (first run 2026-11-05: 19 passed, 0 skipped, 0 failed). It has **not
+yet been tried by hand on Windows**. See "Results" and "Not verified" below.
+The sections after those are the original plan, kept for the reasoning.
 
 ## Results
 
@@ -63,16 +63,20 @@ bytes**. The disk has room for roughly 1 MB more. (Measured 2026-11-05.)
 | `tools/Decay.Cli.Compat licensetest`: console `LicenseValidator` vs the real `LicenseKey.Validate` | 2,349 comparisons (49 accepted by both, 2,300 rejected by both), 0 differences |
 | `tools/Decay.Cli.Compat storetest`: license lookup order, save, clear | 9 of 9 pass |
 
-**Not verified (needs a real Windows machine):**
+**Verification on Windows (CI, GitHub `windows-latest`, .NET Framework 4.8):**
 
-- **Running on .NET Framework 4.8 itself.** Mono is a stand-in, not the real CLR.
-- **License verification on net48.** Mono 6.8 has no working ECDSA, so
-  `decay selftest` prints SKIP for the five license checks there. The
-  validator's logic is tested on .NET 10; `ECDsa.Create(ECParameters)` and
-  `VerifyData` on .NET Framework 4.8 are exercised by the CI's Windows job,
-  where a missing ECDSA is a FAIL rather than a SKIP.
-- **PBKDF2 speed at 600,000 iterations** on .NET Framework. Under Mono it takes about 2 s for a full encrypt.
-- Console behaviors: hidden passphrase prompt, UTF-8 output in `cmd.exe`.
+| Check | Result |
+|---|---|
+| `decay selftest`, with license checks (`ECDsa.Create(ECParameters)` and `VerifyData` on .NET Framework; a missing ECDSA would be a FAIL there, not a SKIP) | 19 pass, 0 skip, 0 fail |
+| `decay.exe encrypt` with a passphrase piped from PowerShell 7 -> net10 engine decrypts | match |
+| net10 Rot image -> `decay.exe decrypt` with a piped passphrase, output captured as UTF-8 | match; carrier restored |
+| A full Free-tier encrypt at 600,000 PBKDF2 iterations (256 px), including startup | about 2.2 s |
+
+**Not verified (needs a person at a Windows machine):**
+
+- Console behaviors: the hidden passphrase prompt, and non-ASCII output
+  shown in a `cmd.exe` or PowerShell window (redirected output is written as
+  UTF-8, and the console's code page is restored on exit).
 - Running from an actual floppy or floppy image.
 
 **PNG size:** `encrypt --size` accepts the app's sizes (256, 384, 512, 768,
