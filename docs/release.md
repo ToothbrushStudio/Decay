@@ -82,20 +82,21 @@ says so.
 ## Packaging notes
 
 - **Windows:** `dotnet publish Decay.App -f net10.0-windows10.0.19041.0 -c Release -p:WindowsPackageType=None -p:WindowsAppSDKSelfContained=true -o publish`
-  (unpackaged and self-contained; zip the contents of the `publish` folder).
+  (unpackaged and self-contained; delete any old `publish` folder first, then
+  zip the contents of the new one).
   Verified working. Do NOT add `-r win-x64` or `-p:SelfContained=true`: global
   properties apply to the Android/iOS/Mac Catalyst targets too and restore
   fails with NU1102 (missing Mono runtime pack for win-x64). For an MSIX
   build, use `-p:WindowsPackageType=MSIX` in place of `None`. A packaged exe only runs once
   the MSIX is installed; launching the raw exe just spins and exits.
 - **Check the .NET runtime is bundled** before zipping: `publish` must contain
-  `coreclr.dll` and `hostfxr.dll`. `WindowsAppSDKSelfContained` bundles the
-  Windows App SDK, not necessarily .NET itself. If they're missing, buyers
-  need .NET 10 installed: add `<SelfContained>true</SelfContained>` and
-  `<RuntimeIdentifier>win-x64</RuntimeIdentifier>` to the Windows-only
-  `PropertyGroup` in `Decay.App.csproj` (not on the command line, for the
-  NU1102 reason above). Your dev machine has .NET, so only a clean VM proves
-  this.
+  `coreclr.dll` and `hostfxr.dll`. `WindowsAppSDKSelfContained` bundles only
+  the Windows App SDK; the .NET runtime comes from `<SelfContained>true</SelfContained>`
+  and `<RuntimeIdentifier>win-x64</RuntimeIdentifier>` in the Windows-only
+  `PropertyGroup` of `Decay.App.csproj` (in the project file, not on the
+  command line, for the NU1102 reason above). A publish before those were
+  added had neither file, so it needed .NET installed. Your dev machine has
+  .NET, so only a clean VM proves this.
 - **App icon:** MAUI never regenerates the Windows icon for a single-image
   `MauiIcon` once `obj` holds one, so a changed `appicon.png` used to keep the
   old icon in an existing `obj` folder. The `DecayRefreshAppIcon` target in
