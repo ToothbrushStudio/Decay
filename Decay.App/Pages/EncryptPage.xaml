@@ -44,9 +44,15 @@
                     Title="Decay style"
                     SelectedIndexChanged="OnStyleChanged" />
 
-            <Picker x:Name="PresetPicker"
-                    Title="Carrier"
-                    SelectedIndexChanged="OnPresetChanged" />
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                <Picker x:Name="PresetPicker"
+                        Grid.Column="0"
+                        Title="Carrier"
+                        SelectedIndexChanged="OnPresetChanged" />
+                <Button Grid.Column="1"
+                        Text="New carrier"
+                        Clicked="OnNewCarrier" />
+            </Grid>
 
             <Button x:Name="ChooseImageButton"
                     Text="Choose image… (PNG)"
@@ -87,10 +93,7 @@
                 </HorizontalStackLayout>
             </VerticalStackLayout>
 
-            <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
-                <Button Grid.Column="0" Text="New carrier" Clicked="OnNewCarrier" />
-                <Button x:Name="EncryptButton" Grid.Column="1" Text="Encrypt" Clicked="OnEncrypt" />
-            </Grid>
+            <Button x:Name="EncryptButton" Text="Encrypt" Clicked="OnEncrypt" />
 
             <Border BackgroundColor="{StaticResource Panel}"
                     StrokeThickness="1"
