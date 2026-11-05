@@ -50,4 +50,31 @@
     <ProjectReference Include="..\Decay.Licensing\Decay.Licensing.csproj" />
   </ItemGroup>
 
+  <!-- MAUI never regenerates the Windows app icon when it is a single image (no
+       ForegroundFile): its up-to-date check reads an empty source name, so an existing
+       obj\...\resizetizer\r\appicon.ico always counts as current and a new icon image
+       never reaches the exe. Keep a hash of the icon and delete the generated icon files
+       when it changes, so MAUI makes them again. -->
+  <Target Name="DecayRefreshAppIcon"
+          BeforeTargets="ResizetizeImages"
+          Condition="'$(_ResizetizerIsWindowsAppSdk)' == 'True' And '$(_MauiIntermediateImages)' != '' And '@(MauiIcon)' != ''">
+    <GetFileHash Files="@(MauiIcon)">
+      <Output TaskParameter="Items" ItemName="_DecayAppIconWithHash" />
+    </GetFileHash>
+    <PropertyGroup>
+      <_DecayAppIconStamp>$(IntermediateOutputPath)decay-appicon.hash</_DecayAppIconStamp>
+      <_DecayAppIconKey>@(_DecayAppIconWithHash->'%(Identity)|%(FileHash)|%(Color)|%(ForegroundFile)')</_DecayAppIconKey>
+      <_DecayPreviousAppIconKey Condition="Exists('$(_DecayAppIconStamp)')">$([System.IO.File]::ReadAllText('$(_DecayAppIconStamp)').Trim())</_DecayPreviousAppIconKey>
+    </PropertyGroup>
+    <ItemGroup Condition="'$(_DecayAppIconKey)' != '$(_DecayPreviousAppIconKey)'">
+      <_DecayStaleAppIcon Include="$(_MauiIntermediateImages)%(MauiIcon.Filename).ico;$(_MauiIntermediateImages)%(MauiIcon.Filename)*.png" />
+    </ItemGroup>
+    <Message Importance="high" Text="App icon changed: regenerating it." Condition="'@(_DecayStaleAppIcon)' != ''" />
+    <Delete Files="@(_DecayStaleAppIcon)" />
+    <WriteLinesToFile File="$(_DecayAppIconStamp)" Lines="$(_DecayAppIconKey)" Overwrite="true" WriteOnlyWhenDifferent="true" />
+    <ItemGroup>
+      <FileWrites Include="$(_DecayAppIconStamp)" />
+    </ItemGroup>
+  </Target>
+
 </Project>
