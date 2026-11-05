@@ -40,7 +40,25 @@ if (args.Length >= 3 && args[0] == "batch")
         return 1;
     }
 
-    int start = args.Length >= 4 && int.TryParse(args[3], out int s) ? s : 1;
+    // A mistyped start number must not silently restart at #00001 and
+    // reissue numbers that were already sold.
+    int start = 1;
+
+    if (args.Length >= 4 && (!int.TryParse(args[3], out start) || start < 1))
+    {
+        Console.Error.WriteLine(
+            $"startNumber must be a whole number of 1 or more (one past the last key issued), not \"{args[3]}\"."
+        );
+
+        return 1;
+    }
+
+    if ((long)start + count - 1 > int.MaxValue)
+    {
+        Console.Error.WriteLine("startNumber + count is too large.");
+
+        return 1;
+    }
 
     using ECDsa batchKey = ECDsa.Create();
 
