@@ -51,7 +51,8 @@ dotnet build Decay.App -f net10.0-android
      500 anonymous keys ("Decay Pro #00001"…), one per line. Upload
      keys.txt as the license-key/serial pool on the payment platform
      (Gumroad, Lemon Squeezy, itch.io, Paddle all support this); each
-     sale is handed the next key automatically. Track the last batch's
+     sale is handed the next key automatically. On itch.io these are
+     external keys on a Paid project (itch-release.md, step 5). Track the last batch's
      end number and pass it as the start of the next
      (`dotnet run batch <pem> 500 501`).
    - **Manual, personalized:**

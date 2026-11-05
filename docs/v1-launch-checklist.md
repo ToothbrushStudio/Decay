@@ -16,7 +16,7 @@ are in `docs/itch-release.md`, `docs/release.md` and `docs/repo-security.md`.
 ## 1. Merge the code changes
 
 - [x] **Review and merge the send-guide branch into `main`** (PRs #11–#13).
-- [ ] **Review and merge the pre-launch fixes** from
+- [x] **Review and merge the pre-launch fixes** from
       `claude/sleepy-mccarthy-43i0mz`: crash and stale-result fixes, golden
       vectors for the frozen pipelines, repo hygiene. Check that the `test`
       workflow passes on the pull request.
@@ -24,31 +24,31 @@ are in `docs/itch-release.md`, `docs/release.md` and `docs/repo-security.md`.
 
 ## 2. Build and test on Windows
 
-- [ ] **Run the automated tests.**
+- [x] **Run the automated tests.**
   - In a terminal at the repo root:
     `dotnet test Decay.Core.Tests`, `dotnet test Decay.Renderer.Tests`,
     `dotnet test Decay.Licensing.Tests`.
   - All must pass. If `FrozenFormatTests` or `FrozenPipelineTests` fails,
     revert the change that broke it. Don't edit the test.
   - CI runs these on every push; this step confirms them on your machine.
-- [ ] **Build the app and fix any errors.**
+- [x] **Build the app and fix any errors.**
   - Run `dotnet workload install maui` once, then
     `dotnet build Decay.App -f net10.0-windows10.0.19041.0`.
-- [ ] **Try the app by hand as a Free user.**
+- [x] **Try the app by hand as a Free user.**
   - Encrypt a message with TV Static and save it.
   - Open the saved file on the **Decrypt** tab with the same passphrase and
     watch the un-rot reveal.
   - Try a wrong passphrase on the Decrypt tab. It should explain the failure.
   - Check that the watermark appears on Free exports and Pro features are
     locked.
-- [ ] **Try it as a Pro user.**
+- [x] **Try it as a Pro user.**
   - Open the **License** tab and paste one of your 500 keys.
   - Confirm: all five carriers, Rot mode, your own image as a carrier, the
     intensity dial, and no watermark.
   - Make a Rot image as Pro, then open it on a **Free** install (or after
     removing the license). It must decrypt. Decrypting is always free.
   - Close and reopen the app: Pro must still be active.
-- [ ] **Check the window and the error paths.**
+- [x] **Check the window and the error paths.**
   - The window opens fully on screen on a laptop at 125–150% scaling.
   - Opening a JPEG, a damaged file, or a PNG with no message explains the
     problem instead of crashing.
@@ -56,7 +56,7 @@ are in `docs/itch-release.md`, `docs/release.md` and `docs/repo-security.md`.
     until you encrypt again.
   - Share the PNG from the Encrypt tab (unpackaged builds use the Windows
     share sheet).
-- [ ] **Do a real send.**
+- [x] **Do a real send.**
   - Upload a Decay image to Google Drive, OneDrive or iCloud Drive, share the
     link, and download it on a second device (or have a friend do it) using the
     **Download** button. Open it in Decay.
@@ -67,7 +67,7 @@ are in `docs/itch-release.md`, `docs/release.md` and `docs/repo-security.md`.
 - [ ] **Wait for code-signing approval.** Check your signing service's
       dashboard or email. Don't ship unsigned. Windows Smart App Control will
       block it for many users.
-- [ ] **Publish the release build.**
+- [x] **Publish the release build.**
   - Delete any old `publish` folder first (publish adds to it without
     removing old files): `Remove-Item -Recurse -Force publish -ErrorAction SilentlyContinue`
   - `dotnet publish Decay.App -f net10.0-windows10.0.19041.0 -c Release -p:WindowsPackageType=None -p:WindowsAppSDKSelfContained=true -o publish`
@@ -81,8 +81,11 @@ are in `docs/itch-release.md`, `docs/release.md` and `docs/repo-security.md`.
       `Decay.Renderer.dll`, `Decay.Licensing.dll`) with your signing service,
       following its instructions (for Azure Trusted Signing, use its signing
       tool pointed at the published output). Smart App Control checks DLLs too.
-- [ ] **Test the signed build on a clean machine** (or a fresh Windows user/VM)
-      with Smart App Control on. It should install and run without a block.
+- **Clean-machine test:** the unsigned build already ran in Windows Sandbox
+  with no .NET installed. Test the signed build in step 4, with a real
+  download from the Restricted itch page. A file copied into a VM has no
+  "downloaded from the internet" mark, so SmartScreen never checks it
+  (that's why Sandbox showed no "unknown publisher" warning).
 - [ ] **Zip it and record the hash.**
   - Name it exactly `Decay-1.0.0.0-win-x64.zip`.
   - In a terminal: `certutil -hashfile Decay-1.0.0.0-win-x64.zip SHA256`
@@ -90,29 +93,59 @@ are in `docs/itch-release.md`, `docs/release.md` and `docs/repo-security.md`.
 
 ## 4. Publish on itch.io
 
-- [ ] **Upload the key pool.**
-  - In the itch dashboard, open the project and use the option to upload or
-    generate keys, then upload your list of 500 keys. Don't commit that file to
-    git and keep a copy outside the repo.
-  - Note the last key number so the next batch can continue from it.
-- [ ] **Upload the build with butler.**
-  - Install butler and run `butler login`.
-  - `butler push Decay-1.0.0.0-win-x64.zip toothbrushstudio/decay:windows --userversion 1.0.0.0`
-  - In the dashboard, mark the upload as **Windows**.
-- [ ] **Check the page copy.**
-  - Free/Pro split must say Rot mode is Pro.
-  - Pro = all five carriers, Rot, your own images, the intensity dial, no
-    watermark.
-  - Add your **contact email** in the description or support section, plus a
-    short line on refunds and support.
-- [ ] **Add media.** Hero, reveal and presets images are in `docs/media`. Record
-      a screen capture of the un-rot reveal (Windows Game Bar: `Win` + `Alt` +
-      `R`, or OBS) and upload it. It's the strongest selling point.
+One page sells Pro. The project is **Paid** at the Pro price, and the Windows
+zip is a free download (itch's "demo" option), so anyone can get the Free app
+and each buyer gets a Pro key. Don't use "$0 or donate": itch gives a key to
+anyone who pays any amount. Details: `docs/itch-release.md`, step 5.
+
+- [ ] **Set up payments** (account settings, once): **Collected by itch.io,
+      paid later**, a PayPal or Payoneer account for payouts, and the tax
+      interview for the LLC. Payouts wait on the tax interview.
+- [ ] **Fill in the page** (Dashboard → Decay → Edit).
+  - Kind **Downloadable**, classification **Tools**, release status
+    **Released**, pricing **Paid** with the Pro price as the minimum.
+  - Short description, tags and description: "itch.io page" in
+    `docs/launch-copy.md`. It covers the Free/Pro split (Rot is Pro), the
+    support email and refunds.
+  - Leave visibility on **Draft**.
+- [ ] **Add media.**
+  - Cover image: `docs/media/hero.png` (itch crops it to 630×500).
+  - Screenshots: hero, reveal and presets from `docs/media`, plus the Encrypt
+    and Decrypt tabs.
+  - Record the un-rot reveal (Windows Game Bar: `Win` + `Alt` + `R`, or OBS),
+    put it on YouTube (unlisted works) and paste the link into **Gameplay
+    video or trailer**. It's the strongest selling point.
+- [ ] **Add the key pool.**
+  - Work on a copy of the key file kept outside the repo. Never commit it.
+  - Remove the key you tested Pro with and keep it as your own. The License
+    tab shows its number (for example #00001). In a batch that started at 1,
+    key #N is line N of the file.
+  - Edit page → **Distribute** → **External keys**: add the keys with type
+    **Other**, one per line. If itch won't take keys before the project has a
+    file, do this right after the upload below.
+  - Check the count (499), then **View all** and compare one key with the
+    file. Keys are about 160 characters, so make sure none were cut short.
+  - Record what's on itch (#00001–#00500 minus the test key). The next batch
+    starts at 501.
+- [ ] **Upload the signed zip with the web uploader** (Edit page → **Upload
+      files**), not butler. butler unpacks a zip and itch then serves a zip it
+      makes itself, so the SHA-256 on the website wouldn't match the download.
+  - Keep the name `Decay-1.0.0.0-win-x64.zip`.
+  - Tick **Windows** and **This file is a demo and can be downloaded for
+    free**. The demo box appears once the project has a price.
 - [ ] **Test the buying flow while the page is Restricted.**
-  - Set visibility to **Restricted** and buy it with a test account or a 100%
-    coupon.
-  - Download, paste the key you're handed into the License tab, and confirm Pro
-    unlocks.
+  - Set visibility to **Restricted** and also allow a password to view the
+    page.
+  - On a clean Windows 11 VM with Smart App Control on, open the page from a
+    second itch account and buy it (you pay yourself, less fees). A browser
+    download carries the "from the internet" mark, so this is what a buyer
+    sees.
+  - Run `certutil -hashfile` on the downloaded zip: it must match the hash
+    from step 3.
+  - Extract it, run it, paste the key from the download page into the
+    License tab, and confirm Pro unlocks.
+  - In a private window, signed out, download the free file and confirm it
+    runs as Free.
 - [ ] **Set the page to Public.**
 
 ## 5. Update the website
@@ -169,7 +202,8 @@ Follow `docs/repo-security.md`. The short version:
       resilient mode (v2). Free downloads don't count.
 - [ ] **Top up the key pool** before it runs out. Generate the next batch
       with `dotnet run batch <pem> 500 501` (start at one more than your last
-      number), upload it, and note the new range.
+      number), add it on itch under **Distribute** → **External keys** (type
+      **Other**), and note the new range.
 - [ ] **Keep notes on support questions.** If people lose messages to typos or
       to chat apps, that shapes what v2 should do.
 
@@ -183,10 +217,12 @@ or move it to a later release.
       round trips. Keep it green.
 - [ ] **Try it by hand on Windows**: the hidden passphrase prompt, and
       non-ASCII output in a `cmd.exe` and a PowerShell window.
-- [ ] **Sign `decay.exe`.**
-- [ ] **Zip `Decay.Cli/bin/cli`** as `Decay-1.0.0-console.zip`, record its
-      SHA-256, and push it to its own itch channel (for example
-      `toothbrushstudio/decay:windows-console`).
+- [ ] **Sign `decay.exe`** in the same signing run as the app. The four
+      `System.*.dll` files beside it are already signed by Microsoft.
+- [ ] **Zip `Decay.Cli/bin/cli`** as `Decay-1.0.0-console.zip` and add it to
+      the same itch page with the web uploader. Tick **Windows**. Leave the
+      demo box unticked to make it a Pro extra (only buyers can download it),
+      or tick it to make it free.
 
 ## Later, not for 1.0
 
