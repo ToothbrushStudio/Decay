@@ -36,7 +36,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <MauiIcon Include="Resources\AppIcon\appicon_fg.png" Color="#0A0A0A" />
+    <MauiIcon Include="Resources\AppIcon\appicon.png" Color="#0A0A0A" />
     <MauiSplashScreen Include="Resources\Splash\splash.png" Color="#0A0A0A" BaseSize="128,128" />
   </ItemGroup>
 
