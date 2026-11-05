@@ -45,7 +45,7 @@
                     Stroke="{StaticResource InkDim}"
                     Padding="12">
                 <Label x:Name="MessageLabel"
-                       FontFamily="Courier"
+                       FontFamily="{StaticResource MonoFont}"
                        Text="" />
             </Border>
 

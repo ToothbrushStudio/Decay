@@ -16,7 +16,7 @@
             <Editor x:Name="KeyEditor"
                     Placeholder="Paste your license key…"
                     HeightRequest="120"
-                    FontFamily="Courier"
+                    FontFamily="{StaticResource MonoFont}"
                     FontSize="12" />
 
             <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
@@ -28,7 +28,7 @@
                         Clicked="OnDeactivate" />
             </Grid>
 
-            <Label Text="Pro unlocks every carrier preset, custom carrier images, the intensity dial, and watermark-free exports."
+            <Label Text="Pro unlocks all five carrier presets, Rot mode, your own images as carriers, the intensity dial, and watermark-free exports."
                    FontSize="12"
                    TextColor="{StaticResource InkDim}" />
 

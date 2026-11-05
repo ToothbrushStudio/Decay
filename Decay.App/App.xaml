@@ -13,6 +13,13 @@
             <Color x:Key="Accent">#6CFF5C</Color>
             <Color x:Key="Warn">#FF3D6E</Color>
 
+            <!-- A monospaced font that exists on each platform. -->
+            <OnPlatform x:Key="MonoFont" x:TypeArguments="x:String">
+                <On Platform="WinUI" Value="Consolas" />
+                <On Platform="iOS, MacCatalyst" Value="Menlo" />
+                <On Platform="Android" Value="monospace" />
+            </OnPlatform>
+
             <Style TargetType="ContentPage" ApplyToDerivedTypes="True">
                 <Setter Property="BackgroundColor" Value="{StaticResource Ground}" />
             </Style>

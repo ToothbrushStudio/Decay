@@ -23,7 +23,8 @@
                 <Entry x:Name="PassphraseEntry"
                        Grid.Column="0"
                        Placeholder="Passphrase"
-                       IsPassword="True" />
+                       IsPassword="True"
+                       TextChanged="OnPassphraseChanged" />
                 <Button x:Name="PassphraseToggle"
                         Grid.Column="1"
                         Text="Show"
@@ -32,6 +33,12 @@
                         TextColor="{StaticResource Accent}"
                         Clicked="OnTogglePassphrase" />
             </Grid>
+
+            <!-- A typo in the passphrase locks the message away for good, so it's typed twice. -->
+            <Entry x:Name="RepeatPassphraseEntry"
+                   Placeholder="Repeat passphrase"
+                   IsPassword="True"
+                   TextChanged="OnPassphraseChanged" />
 
             <Picker x:Name="StylePicker"
                     Title="Decay style"

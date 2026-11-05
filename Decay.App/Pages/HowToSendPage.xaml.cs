@@ -17,7 +17,14 @@ namespace Decay.App.Pages
 
         private async void OnWebsite(object? sender, EventArgs e)
         {
-            await Launcher.Default.OpenAsync(SendGuide.WebsiteUrl);
+            try
+            {
+                await Launcher.Default.OpenAsync(SendGuide.WebsiteUrl);
+            }
+            catch (Exception exception)
+            {
+                await DisplayAlertAsync("Couldn't open the browser", exception.Message, "OK");
+            }
         }
     }
 }
