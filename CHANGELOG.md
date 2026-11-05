@@ -8,16 +8,16 @@
   tiers with offline license keys, and a `selftest` command. It reads and
   writes the same images as the app. No format or crypto changes.
 
-- **Test before you send**: an optional "Test open" row on the Encrypt tab.
-  Re-enter the passphrase (masked), pick the saved file, and Decay decrypts
-  it from disk and checks that the message matches. It catches passphrase
-  typos and bad exports; it can't predict what a chat app or site does to the
-  file later. No format or crypto changes.
+- **Slimmer Encrypt tab**: Size, Intensity and the debug Pro override moved
+  into a collapsed "Advanced" section; Carrier now has its own row; Play,
+  Save and Share appear only after you encrypt; the send warning and the
+  Help link are one button. The Help tab gained a "Test it before you send"
+  section: decrypt your own saved image to confirm the passphrase and file
+  work.
 
 - **Help tab**: the send guide is now a tab after License (no back button to
   hunt for), with the app version and a website link. The Encrypt tab's
-  button and the error dialogs jump to it. "Test open" stays under the Save
-  and Share buttons on Encrypt.
+  button and the error dialogs jump to it.
 
 - **Cloud-drive-first send guide**: the How to send page and error messages
   now lead with Google Drive / OneDrive / iCloud Drive links.

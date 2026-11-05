@@ -10,8 +10,8 @@ are in `docs/itch-release.md`, `docs/release.md` and `docs/repo-security.md`.
 - [x] 500 Pro keys generated for itch
 - [x] itch.io pages created
 - [x] Code signing documents submitted
-- [x] Version set to `1.0.0.0`, send guide and launch copy updated, "Test open"
-      check added (on branch `claude/cloud-drive-send-guide`)
+- [x] Version set to `1.0.0.0`, send guide and launch copy updated
+      (on branch `claude/cloud-drive-send-guide`)
 
 ## 1. Merge the code changes
 
@@ -31,13 +31,11 @@ are in `docs/itch-release.md`, `docs/release.md` and `docs/repo-security.md`.
 - [ ] **Build the app and fix any errors.**
   - Run `dotnet workload install maui` once, then
     `dotnet build Decay.App -f net10.0-windows10.0.19041.0`.
-  - The newest code (the "Test open" button) was written without being
-    compiled, so expect to fix a typo or two here.
 - [ ] **Try the app by hand as a Free user.**
-  - Encrypt a message with TV Static, save it, then use **Test open…** with the
-    same passphrase and pick the saved file. It should say the test passed.
-  - Try a wrong passphrase in Test open. It should explain the failure.
-  - Open the saved file on the **Decrypt** tab and watch the un-rot reveal.
+  - Encrypt a message with TV Static and save it.
+  - Open the saved file on the **Decrypt** tab with the same passphrase and
+    watch the un-rot reveal.
+  - Try a wrong passphrase on the Decrypt tab. It should explain the failure.
   - Check that the watermark appears on Free exports and Pro features are
     locked.
 - [ ] **Try it as a Pro user.**
