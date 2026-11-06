@@ -1,0 +1,13 @@
+Thank you for buying Decay Pro.
+
+Your activation key is on the itch.io download page for Decay: open the project from your itch library and look under "External keys". Copy the whole key, starting with DECAY1.
+
+GUI: open Decay.App.exe, go to the License tab, paste the key, and click Activate.
+
+CLI: run  decay activate YOUR-KEY
+
+You only need to activate once. The key works offline, with no account.
+
+Decrypting never needs a key, and Decay images made with Pro open in the free version.
+
+Help or refunds: support@toothbrush.studio
