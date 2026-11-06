@@ -6,12 +6,10 @@ Background: docs/release.md (build, licensing, signing).
 
 ## Before you start: known gaps
 
-- **`--campaign` flag does not exist in KeyGen.** The website's
-  `docs/decay-keys.md` tells you to run
-  `dotnet run batch <pem> <count> --campaign web-puzzle` (and `--campaign itch`),
-  but `tools/Decay.KeyGen/Program.cs` only takes `batch <pem> <count> [startNumber]`.
-  Either add the flag, or keep the pools separate by number range (see step 3).
-  Whichever you pick, fix the website doc so it matches.
+- **No `--campaign` flag, and none is needed.** KeyGen only takes
+  `batch <pem> <count> [startNumber]`, and the website's `docs/decay-keys.md`
+  already uses that form. Keep the itch pool and the website puzzle pool
+  apart by number range (step 3).
 - **Windows is the only target for launch.** The site's download block and
   release JSON are Windows-only; mobile/macOS stay "coming soon".
 - **Code signing is required** (Smart App Control blocks unsigned exes). See
@@ -153,71 +151,36 @@ offline. That is the cost of having no activation server.
 Page: `Pages/Products/Decay.cshtml` (+ `Decay.cshtml.cs`). Follow the repo's
 CLAUDE.md: no new projects, no styling hacks in site.css.
 
-### Config only, no code or redeploy
+**Already on the live page:** the Rot row in the Free/Pro table, the Rot
+paragraph, the Glitch and Rot videos, the app screenshots in the gallery.
 
-Set these App Service settings (see the repo's `docs/decay-keys.md`, section 6):
+**Prepared, not merged** (two branches in the website repo; merging to `main`
+deploys the site):
 
-```bash
-az webapp config appsettings set --resource-group <rg> --name <app-name> \
-  --settings Decay__ItchUrl=https://toothbrushstudio.itch.io/decay
-```
+- `claude/decay-page-alignment` (website PR #57): the video section headings
+  line up with the other headings, and the Download button is hidden (an
+  empty `windows.url` in `decay-release.json` shows "The Windows build is on
+  its way", replacing a live link to `/decay-free`, a page we don't use).
+  Safe to merge any time.
+- `claude/decay-page-launch` (website PR #58, built on the alignment branch):
+  the Download section (GUI and CLI downloads, install steps, a SHA-256 line
+  per zip), Get Pro (where the key appears, how to activate in the app and the
+  CLI), a link to the public GitHub repo, the current send guide, and
+  `wwwroot/data/decay-release.json` pointing at
+  `https://toothbrushstudio.itch.io/decay`. The itch URL is now the default in
+  `appsettings.json`; the App Service setting `Decay__ItchUrl` still overrides
+  it. **Merging this PR is the website launch**: it shows the Download button,
+  the Get Pro button and the GitHub link.
 
-This turns "Pro is coming to itch.io." into the "Get Decay Pro on itch.io"
-button. Leave `Decay__KeyPageReady` unset/false until the real puzzle exists
-(see "Not part of this release").
+**Launch day:**
 
-### Data file: `wwwroot/data/decay-release.json`
-
-Currently all empty, so the page shows "The Windows build is on its way."
-Fill it in for the release:
-
-```json
-{
-  "version": "1.0.0.0",
-  "windows": {
-    "url": "https://toothbrushstudio.itch.io/decay",
-    "sha256": "<hash from step 2.6>"
-  },
-  "notes": "First release."
-}
-```
-
-- `url` can be the itch page or a direct download; the button reads "Download
-  for Windows".
-- If the zip is hosted on itch only, the SHA-256 line is still valid as long
-  as the zip name matches `Decay-<version>-win-x64.zip`.
-
-### Copy changes in `Decay.cshtml`
-
-1. **Free/Pro table:** add a row after "Decrypt anything":
-   `<tr><td>Rot mode (encrypt)</td><td>&mdash;</td><td>&#10003;</td></tr>`
-   Matches the README table in the Decay repo (Rot is Pro-only as of PR #3).
-2. **Description text:** the page only describes the glitch style. Add a short
-   paragraph introducing Rot ("Rot keeps the image recognizable and stains it
-   instead; Pro"), taken from README.md lines 38-42 of the Decay repo. Mention
-   that decoding either style is free.
-3. **Gallery:** add a Rot example image (`/images/decay/rot.png`, new asset)
-   with alt text and caption; the current three images only show Glitch.
-4. **"Get Pro" section:** the itch page is both the free download and the
-   Pro purchase (step 5), so the download link and the Pro button both go to
-   `toothbrushstudio.itch.io/decay`. List what Pro includes (five carriers,
-   Rot, custom images, intensity dial, no watermark).
-5. **Download section:** after `decay-release.json` is filled it renders
-   automatically. Keep "macOS, iOS, and Android: coming soon."
-6. **Meta description:** optionally mention Rot.
-7. Remove the stale `TODO(user)` comment in the "Get Pro" `else` branch once
-   `Decay__ItchUrl` is live.
-
-### Docs
-
-- Fix `docs/decay-keys.md` to match KeyGen (`--campaign` flag) or ship the flag.
-- Privacy page already mentions itch.io; no change needed.
-
-### Deploy
-
-Merge to the branch the `main_toothbrushstudio.yml` workflow deploys from;
-settings changes need no redeploy. Verify the page, the download link, the
-hash text, and the Pro button after deploy.
+1. Put the two SHA-256 hashes in `wwwroot/data/decay-release.json` (the
+   `windows.sha256` for `Decay-1.0.0.0-win-x64.zip` and the `console.sha256`
+   for `Decay-1.0.0-console.zip`). Until then the page shows the download
+   button without a hash.
+2. Merge the launch branch (after the itch page is Public and the signed zips
+   are uploaded), then check the page, both downloads, the hash text and the
+   Pro button after the deploy.
 
 ## Not part of this release
 
@@ -234,5 +197,5 @@ hash text, and the Pro button after deploy.
 - [ ] itch page created with copy, media, Pro description (incl. Rot)
 - [ ] Key pool generated and added as external keys; test purchase unlocks Pro
 - [ ] Signed zip uploaded (web uploader, Windows and demo ticked); restricted test passed; page set public
-- [ ] Website: `Decay__ItchUrl` set, `decay-release.json` filled, copy updated, deployed
+- [ ] Website: hashes in `decay-release.json`, launch branch merged and deployed, page checked
 - [ ] Launch posts from docs/launch-copy.md

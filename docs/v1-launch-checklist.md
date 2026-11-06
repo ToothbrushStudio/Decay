@@ -155,17 +155,22 @@ anyone who pays any amount. Details: `docs/itch-release.md`, step 5.
 
 ## 5. Update the website
 
-- [ ] **Fill in `wwwroot/data/decay-release.json`** in the website repo
-      (`ToothbrushStudio/ToothbrushStudioWebsite`) with the version
-      (`1.0.0.0`), the itch URL, and the SHA-256 hash from step 3.
-- [ ] **Set the itch link.** In Azure App Service settings, add
-      `Decay__ItchUrl=https://toothbrushstudio.itch.io/decay`. No redeploy is
-      needed.
-- [ ] **Update the page copy** (`Pages/Products/Decay.cshtml`): add the Rot row
-      to the Free/Pro table, a short Rot paragraph, a Rot example image, and
-      the "Get Pro" list. Remove the stale `TODO(user)` comment.
-- [ ] **Add the how-to-send text** from `docs/website-how-to-send.md`.
-- [ ] **Deploy and check** the page, download link, hash text and Pro button.
+The page work is prepared in two branches of `ToothbrushStudio/ToothbrushStudioWebsite`
+(details: `docs/itch-release.md`, Part 2). Merging to `main` deploys, so merge
+the launch branch only when the itch page is Public.
+
+- [ ] **Merge `claude/decay-page-alignment`** (PR #57). Heading alignment, and
+      the Download button is hidden until launch. Safe any time.
+- [ ] **Fill in the hashes** in `wwwroot/data/decay-release.json`
+      (`windows.sha256` and `console.sha256`) from step 3, on the launch
+      branch.
+- [ ] **Merge `claude/decay-page-launch`** (PR #58) once the signed zips are on
+      itch and the page is Public. Merging it is the website launch: the
+      Download button, Get Pro text and button, GitHub link, current send guide
+      and itch URL (default in `appsettings.json`; `Decay__ItchUrl` overrides
+      it) all go live together.
+- [ ] **Deploy and check** the page, both downloads, the hash text and the Pro
+      button.
 
 ## 6. Open the repo (when you're ready)
 
@@ -181,16 +186,19 @@ Follow `docs/repo-security.md`. The short version:
 - [x] **Choose a license** and add a `LICENSE` file: all rights reserved.
 - [x] **Add `SECURITY.md`.**
 - [ ] **Turn on private vulnerability reporting** (Settings → Code security).
-- [ ] **Protect `main`:** Settings → Rules → New branch ruleset. Require a pull
-      request, one approval and code-owner review; block force pushes.
-      Require the `test` workflow's two jobs to pass.
+- [x] **Protect `main`:** Settings → Rules → New branch ruleset. Require a pull
+      request and the `test` workflow's two jobs; block force pushes and
+      deletions. Approvals are 0 because GitHub won't let a solo maintainer
+      approve their own pull request. Rulesets are only enforced on public
+      repos on the free plan; tested after going public: a direct push to
+      `main` is refused and a pull request waits for the checks.
 - [x] **Add `.github/CODEOWNERS`** with your GitHub handle.
 - [x] **Add a CI workflow** (`.github/workflows/test.yml`, read-only, actions
       pinned to commit SHAs).
 - [ ] **Require approval for fork pull request workflows** (Settings → Actions
       → General).
 - [ ] **Turn on 2FA, secret scanning and push protection.**
-- [ ] **Switch the repo to public** (Settings → General → Danger Zone → Change
+- [x] **Switch the repo to public** (Settings → General → Danger Zone → Change
       visibility).
 
 ## 7. Launch
