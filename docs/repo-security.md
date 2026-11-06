@@ -103,11 +103,18 @@ In **Settings → Rules → Rulesets → New branch ruleset** (or **Settings →
 Branches → Add branch protection rule**), target `main` and enable:
 
 - **Require a pull request before merging.** No direct pushes to `main`.
-- **Require approvals: 1**, and **Require review from Code Owners**.
-- **Dismiss stale approvals when new commits are pushed.**
+- **Require approvals:** 0 while you are the only maintainer. GitHub doesn't
+  let you approve your own pull request, so requiring 1 approval (or code
+  owner review) would block every merge. With a second maintainer, raise it
+  to 1 and tick **Require review from Code Owners**; `CODEOWNERS` is ready.
+- **Dismiss stale approvals when new commits are pushed** (matters once
+  approvals are required).
 - **Block force pushes** and **restrict deletions.**
 - **Require status checks to pass** once you have a CI workflow (step 8), and
   select the test job.
+- On the free plan, rulesets and the status-check list only work on a
+  **public** repo. A private repo shows "Your rulesets won't be enforced" and
+  stays open to direct pushes until it is public or on a paid plan.
 - **Do not allow bypass**, or limit bypass to yourself. If you are the only
   maintainer and want to be able to merge your own PRs, you can allow your own
   account to bypass. That's a trade-off between convenience and safety; solo
@@ -201,13 +208,13 @@ Under **Settings → Code security** (free on public repos):
 - [x] License chosen and `LICENSE` added
 - [x] `SECURITY.md` added
 - [ ] Private vulnerability reporting on
-- [ ] Ruleset on `main`: PR required, 1 approval, code owner review, no force
-      pushes, `test` workflow required
+- [x] Ruleset on `main`: PR required, both `test` jobs required, no force
+      pushes or deletions (0 approvals while solo)
 - [x] `.github/CODEOWNERS` added with your handle
 - [ ] 2FA on for your account (and the org, if any)
 - [x] CI workflow added with read-only permissions
 - [ ] Fork-PR workflow approval required
 - [ ] No signing keys or certificates in repo secrets
 - [ ] Secret scanning, push protection and Dependabot on
-- [ ] Then switch the repo to **public** (**Settings → General → Danger Zone →
+- [x] Then switch the repo to **public** (**Settings → General → Danger Zone →
       Change visibility**)
