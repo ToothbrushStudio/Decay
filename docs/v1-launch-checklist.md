@@ -159,15 +159,16 @@ The page work is prepared in two branches of `ToothbrushStudio/ToothbrushStudioW
 (details: `docs/itch-release.md`, Part 2). Merging to `main` deploys, so merge
 the launch branch only when the itch page is Public.
 
-- [ ] **Merge `claude/decay-page-alignment`.** Heading alignment only, safe any
-      time.
+- [ ] **Merge `claude/decay-page-alignment`** (PR #57). Heading alignment, and
+      the Download button is hidden until launch. Safe any time.
 - [ ] **Fill in the hashes** in `wwwroot/data/decay-release.json`
       (`windows.sha256` and `console.sha256`) from step 3, on the launch
       branch.
-- [ ] **Merge `claude/decay-page-launch`** once the signed zips are on itch and
-      the page is Public. It carries the Download and Get Pro text, the GitHub
-      link, the current send guide and the itch URL (default in
-      `appsettings.json`; `Decay__ItchUrl` overrides it).
+- [ ] **Merge `claude/decay-page-launch`** (PR #58) once the signed zips are on
+      itch and the page is Public. Merging it is the website launch: the
+      Download button, Get Pro text and button, GitHub link, current send guide
+      and itch URL (default in `appsettings.json`; `Decay__ItchUrl` overrides
+      it) all go live together.
 - [ ] **Deploy and check** the page, both downloads, the hash text and the Pro
       button.
 

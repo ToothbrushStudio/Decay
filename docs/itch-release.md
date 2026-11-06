@@ -157,16 +157,20 @@ paragraph, the Glitch and Rot videos, the app screenshots in the gallery.
 **Prepared, not merged** (two branches in the website repo; merging to `main`
 deploys the site):
 
-- `claude/decay-page-alignment`: the video section headings line up with the
-  other headings. Safe to merge any time.
-- `claude/decay-page-launch` (built on the alignment branch): the Download
-  section (GUI and CLI downloads, install steps, a SHA-256 line per zip), Get
-  Pro (where the key appears, how to activate in the app and the CLI), a link
-  to the public GitHub repo, the current send guide, and
+- `claude/decay-page-alignment` (website PR #57): the video section headings
+  line up with the other headings, and the Download button is hidden (an
+  empty `windows.url` in `decay-release.json` shows "The Windows build is on
+  its way", replacing a live link to `/decay-free`, a page we don't use).
+  Safe to merge any time.
+- `claude/decay-page-launch` (website PR #58, built on the alignment branch):
+  the Download section (GUI and CLI downloads, install steps, a SHA-256 line
+  per zip), Get Pro (where the key appears, how to activate in the app and the
+  CLI), a link to the public GitHub repo, the current send guide, and
   `wwwroot/data/decay-release.json` pointing at
   `https://toothbrushstudio.itch.io/decay`. The itch URL is now the default in
   `appsettings.json`; the App Service setting `Decay__ItchUrl` still overrides
-  it.
+  it. **Merging this PR is the website launch**: it shows the Download button,
+  the Get Pro button and the GitHub link.
 
 **Launch day:**
 
@@ -177,9 +181,6 @@ deploys the site):
 2. Merge the launch branch (after the itch page is Public and the signed zips
    are uploaded), then check the page, both downloads, the hash text and the
    Pro button after the deploy.
-
-The live page's release JSON currently links to `/decay-free`, an itch page
-that isn't the one we're using. Merging the launch branch fixes it.
 
 ## Not part of this release
 
