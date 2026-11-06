@@ -103,7 +103,7 @@ secret-message, datamosh, vaporwave, aesthetic, art
 encryption, glitch art, secret message, private, steganography, cipher,
 letters, aesthetic, vaporwave, datamosh, secure notes, art
 
-## Launch post (X / Bluesky / Mastodon, with hero + reveal images)
+## Launch post (Mastodon, 453 characters, with hero + reveal images)
 
 > This image is an encrypted letter.
 >
@@ -115,7 +115,14 @@ letters, aesthetic, vaporwave, datamosh, secure notes, art
 > (The image in this post is a preview — posting re-compresses it. The real
 > file travels by cloud-drive link, email, or AirDrop.)
 >
-> Decay — encrypt your message into the rot. [link]
+> Decay — encrypt your message into the rot. https://toothbrushstudio.itch.io/decay
+
+### Short version (X and Bluesky, 269 characters, with hero + reveal images)
+
+> This image is an encrypted letter. The glitch IS the message: enter the
+> passphrase and the rot runs backwards until the words surface. Send the file,
+> never a screenshot. (This picture is only a preview.) Free download for
+> Windows: https://toothbrushstudio.itch.io/decay
 
 ## Launch post (longer, for Reddit r/SideProject etc.)
 
@@ -136,9 +143,19 @@ letters, aesthetic, vaporwave, datamosh, secure notes, art
 > - The format is frozen and versioned — anything encrypted today opens in
 >   any future version.
 >
-> Windows first (itch.io); built on .NET MAUI and C#, so other platforms are
-> possible later. To send one, upload the file to Google Drive, OneDrive, or
-> iCloud Drive and share the link. The image posted here is only a preview.
+> Windows first; built on .NET MAUI and C#, so other platforms are possible
+> later. It's a free download on itch.io with an optional Pro unlock (Pro adds
+> Rot mode, all five carrier artworks, your own images and no watermark;
+> opening images is always free): https://toothbrushstudio.itch.io/decay
+>
+> There's also a command-line edition. The whole thing is about 400 KB, so it
+> really does fit on a floppy.
+>
+> The source is public to read, all rights reserved:
+> https://github.com/ToothbrushStudio/Decay
+>
+> To send one, upload the file to Google Drive, OneDrive, or iCloud Drive and
+> share the link. The image posted here is only a preview.
 
 ## Press boilerplate
 
