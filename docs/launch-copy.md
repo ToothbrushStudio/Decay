@@ -11,8 +11,59 @@ something delicate — before it is a cipher.
 - Ruined on purpose. Readable by one person.
 - Send something delicate.
 
-*Note: v1 ships on Windows through itch.io. The App Store / Play sections
-below are for when mobile ships; reuse them for the itch listing meanwhile.*
+*Note: v1 ships on Windows through itch.io, with the page copy below. The
+App Store / Play sections after it are for when mobile ships.*
+
+## itch.io page
+
+One page, **Paid** at the Pro price, with the Windows zip as the free "demo"
+file (docs/itch-release.md, step 5). The copy has to say that the free
+download is the full Free app, since itch labels it a demo.
+
+**Short description:** Encrypt messages into glitch art. Only the passphrase
+un-rots them.
+
+**Tags:** encryption, glitch-art, steganography, privacy, cipher,
+secret-message, datamosh, vaporwave, aesthetic, art
+
+**Description** (make the one-line headings bold in itch's editor):
+
+> Decay turns private messages into glitch art.
+>
+> Write a letter, choose a passphrase, and watch the image rot: every tear,
+> block-swap and burst of static is generated from the encrypted message
+> itself. The corruption isn't decoration. It is your words, sealed with
+> AES-256.
+>
+> Send the image to one person. When they enter the passphrase, the decay
+> runs backwards: the rot drains away, the original artwork resurfaces, and
+> your message appears. Anyone else just sees a beautiful ruin.
+>
+> **Free download**
+> The free download (listed as the demo) opens every Decay image, Glitch or
+> Rot, and makes Glitch images on the TV Static carrier, with a watermark.
+> Decrypting is free, forever, for everyone.
+>
+> **Decay Pro**
+> Your Pro key appears on the download page after you buy. Paste it into the
+> License tab to unlock all five carrier artworks, Rot mode (keeps the image
+> recognizable and stains it instead), your own images as carriers, the
+> intensity dial, and watermark-free exports. The key works offline, with no
+> account or activation.
+>
+> **Send the file, never a screenshot**
+> A Decay image only survives as the original PNG. Screenshots, reposts and
+> chat-app compression destroy the message. Share it through Google Drive,
+> OneDrive, iCloud Drive or as an email attachment. The send guide in the app
+> shows how.
+>
+> No accounts. No servers. Nothing leaves your device. The format is frozen
+> and versioned, so every image you make will still open years from now.
+>
+> Windows 10 or 11, 64-bit. Extract the zip first (right-click, Extract All),
+> then run Decay.App.exe. Nothing to install.
+>
+> Questions, problems or refunds: support@toothbrush.studio
 
 ## App Store / Play — short description (≤80 chars)
 
