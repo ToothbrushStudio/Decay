@@ -204,7 +204,7 @@ Under **Settings → Code security** (free on public repos):
 
 - [x] History scanned with a real tool, no secrets found (re-run before going public)
 - [x] `.gitignore` extended
-- [ ] Key pool and private key stored outside the repo folder
+- [x] Key pool and private key stored outside the repo folder
 - [x] License chosen and `LICENSE` added
 - [x] `SECURITY.md` added
 - [x] Private vulnerability reporting on
@@ -214,7 +214,7 @@ Under **Settings → Code security** (free on public repos):
 - [x] 2FA on for your account
 - [x] CI workflow added with read-only permissions
 - [x] Fork-PR workflow approval required
-- [ ] No signing keys or certificates in repo secrets
+- [x] No signing keys or certificates in repo secrets
 - [x] Secret scanning, push protection and Dependabot on
 - [x] Then switch the repo to **public** (**Settings → General → Danger Zone →
       Change visibility**)
