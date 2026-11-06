@@ -185,7 +185,7 @@ Follow `docs/repo-security.md`. The short version:
       repo folder.
 - [x] **Choose a license** and add a `LICENSE` file: all rights reserved.
 - [x] **Add `SECURITY.md`.**
-- [ ] **Turn on private vulnerability reporting** (Settings → Code security).
+- [x] **Turn on private vulnerability reporting** (Settings → Code security).
 - [x] **Protect `main`:** Settings → Rules → New branch ruleset. Require a pull
       request and the `test` workflow's two jobs; block force pushes and
       deletions. Approvals are 0 because GitHub won't let a solo maintainer
@@ -195,9 +195,9 @@ Follow `docs/repo-security.md`. The short version:
 - [x] **Add `.github/CODEOWNERS`** with your GitHub handle.
 - [x] **Add a CI workflow** (`.github/workflows/test.yml`, read-only, actions
       pinned to commit SHAs).
-- [ ] **Require approval for fork pull request workflows** (Settings → Actions
+- [x] **Require approval for fork pull request workflows** (Settings → Actions
       → General).
-- [ ] **Turn on 2FA, secret scanning and push protection.**
+- [x] **Turn on 2FA, secret scanning and push protection.**
 - [x] **Switch the repo to public** (Settings → General → Danger Zone → Change
       visibility).
 
