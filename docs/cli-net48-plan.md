@@ -3,8 +3,8 @@
 Status: **built and merged** (Phases 1-5). It compiles and passes its
 self-test and cross-edition checks under Mono on Linux, and on the real
 .NET Framework 4.8 in the CI workflow's Windows job, which runs on every
-push (first run 2026-11-05: 19 passed, 0 skipped, 0 failed). It has **not
-yet been tried by hand on Windows**. See "Results" and "Not verified" below.
+push (first run 2026-11-05: 19 passed, 0 skipped, 0 failed). The publisher
+has also tried it by hand on Windows. See "Results" and "Not verified" below.
 The sections after those are the original plan, kept for the reasoning.
 
 ## Results
@@ -72,11 +72,12 @@ bytes**. The disk has room for roughly 1 MB more. (Measured 2026-11-05.)
 | net10 Rot image -> `decay.exe decrypt` with a piped passphrase, output captured as UTF-8 | match; carrier restored |
 | A full Free-tier encrypt at 600,000 PBKDF2 iterations (256 px), including startup | about 2.2 s |
 
-**Not verified (needs a person at a Windows machine):**
+**Tried by hand on Windows (publisher, 2026-11-05):** the hidden passphrase
+prompt, and non-ASCII output in `cmd.exe` and PowerShell (redirected output
+is written as UTF-8, and the console's code page is restored on exit).
 
-- Console behaviors: the hidden passphrase prompt, and non-ASCII output
-  shown in a `cmd.exe` or PowerShell window (redirected output is written as
-  UTF-8, and the console's code page is restored on exit).
+**Not verified:**
+
 - Running from an actual floppy or floppy image.
 
 **PNG size:** `encrypt --size` accepts the app's sizes (256, 384, 512, 768,
