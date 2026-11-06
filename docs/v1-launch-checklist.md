@@ -155,17 +155,21 @@ anyone who pays any amount. Details: `docs/itch-release.md`, step 5.
 
 ## 5. Update the website
 
-- [ ] **Fill in `wwwroot/data/decay-release.json`** in the website repo
-      (`ToothbrushStudio/ToothbrushStudioWebsite`) with the version
-      (`1.0.0.0`), the itch URL, and the SHA-256 hash from step 3.
-- [ ] **Set the itch link.** In Azure App Service settings, add
-      `Decay__ItchUrl=https://toothbrushstudio.itch.io/decay`. No redeploy is
-      needed.
-- [ ] **Update the page copy** (`Pages/Products/Decay.cshtml`): add the Rot row
-      to the Free/Pro table, a short Rot paragraph, a Rot example image, and
-      the "Get Pro" list. Remove the stale `TODO(user)` comment.
-- [ ] **Add the how-to-send text** from `docs/website-how-to-send.md`.
-- [ ] **Deploy and check** the page, download link, hash text and Pro button.
+The page work is prepared in two branches of `ToothbrushStudio/ToothbrushStudioWebsite`
+(details: `docs/itch-release.md`, Part 2). Merging to `main` deploys, so merge
+the launch branch only when the itch page is Public.
+
+- [ ] **Merge `claude/decay-page-alignment`.** Heading alignment only, safe any
+      time.
+- [ ] **Fill in the hashes** in `wwwroot/data/decay-release.json`
+      (`windows.sha256` and `console.sha256`) from step 3, on the launch
+      branch.
+- [ ] **Merge `claude/decay-page-launch`** once the signed zips are on itch and
+      the page is Public. It carries the Download and Get Pro text, the GitHub
+      link, the current send guide and the itch URL (default in
+      `appsettings.json`; `Decay__ItchUrl` overrides it).
+- [ ] **Deploy and check** the page, both downloads, the hash text and the Pro
+      button.
 
 ## 6. Open the repo (when you're ready)
 
