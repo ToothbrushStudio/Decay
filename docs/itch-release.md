@@ -81,7 +81,12 @@ dotnet run batch decay-publisher-private.pem 500 > itch-keys.txt
    instructions use it.
 3. Tick **Windows** and **This file is a demo and can be downloaded for
    free**. The demo box only appears once the project has a price.
-4. **Rot mode is Pro-only**, so the Free/Pro split on the listing must say
+4. **Add one paid file.** itch treats every file marked "demo" as free, so a
+   page whose files are all demos shows no Buy button. Upload a small
+   non-demo file (`Decay Pro - activation guide.txt`: where the key appears
+   on the download page, how to activate in the GUI and CLI, support email)
+   and leave "demo" unticked. Buyers get that file plus their key.
+5. **Rot mode is Pro-only**, so the Free/Pro split on the listing must say
    so. List Pro as: all five carriers, Rot mode, your own images as
    carriers, intensity dial, watermark-free exports.
 

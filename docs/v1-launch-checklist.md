@@ -127,6 +127,11 @@ anyone who pays any amount. Details: `docs/itch-release.md`, step 5.
     file. Keys are about 160 characters, so make sure none were cut short.
   - Record what's on itch (#00001–#00500 minus the test key). The next batch
     starts at 501.
+- [x] **Add a paid file so the Buy button shows.** itch treats every file
+      marked "demo" as free, so with only demo files the page has nothing to
+      sell. Upload a small non-demo file, `Decay Pro - activation guide.txt`
+      (how to find and enter the key, support email), and leave "demo"
+      unticked. Done: the Buy and purchase buttons now appear.
 - [ ] **Upload the signed zip with the web uploader** (Edit page → **Upload
       files**), not butler. butler unpacks a zip and itch then serves a zip it
       makes itself, so the SHA-256 on the website wouldn't match the download.
