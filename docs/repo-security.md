@@ -207,14 +207,14 @@ Under **Settings → Code security** (free on public repos):
 - [ ] Key pool and private key stored outside the repo folder
 - [x] License chosen and `LICENSE` added
 - [x] `SECURITY.md` added
-- [ ] Private vulnerability reporting on
+- [x] Private vulnerability reporting on
 - [x] Ruleset on `main`: PR required, both `test` jobs required, no force
       pushes or deletions (0 approvals while solo)
 - [x] `.github/CODEOWNERS` added with your handle
-- [ ] 2FA on for your account (and the org, if any)
+- [x] 2FA on for your account
 - [x] CI workflow added with read-only permissions
-- [ ] Fork-PR workflow approval required
+- [x] Fork-PR workflow approval required
 - [ ] No signing keys or certificates in repo secrets
-- [ ] Secret scanning, push protection and Dependabot on
+- [x] Secret scanning, push protection and Dependabot on
 - [x] Then switch the repo to **public** (**Settings → General → Danger Zone →
       Change visibility**)
