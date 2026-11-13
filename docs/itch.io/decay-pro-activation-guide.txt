@@ -2,6 +2,8 @@ Thank you for buying Decay Pro.
 
 Your activation key is on the itch.io download page for Decay: open the project from your itch library and look under "External keys". Copy the whole key, starting with DECAY1.
 
+First run: extract the zip (right-click, Extract All). Windows may say "Windows protected your PC" because Decay is a new app. Click More info, check the publisher is Toothbrush Studio, LLC, then click Run anyway.
+
 GUI: open Decay.App.exe, go to the License tab, paste the key, and click Activate.
 
 CLI: run  decay activate YOUR-KEY
