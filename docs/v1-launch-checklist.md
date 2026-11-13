@@ -101,7 +101,7 @@ anyone who pays any amount. Details: `docs/itch-release.md`, step 5.
 - [ ] **Set up payments** (account settings, once): **Collected by itch.io,
       paid later**, a PayPal or Payoneer account for payouts, and the tax
       interview for the LLC. Payouts wait on the tax interview.
-- [ ] **Fill in the page** (Dashboard → Decay → Edit).
+- [x] **Fill in the page** (Dashboard → Decay → Edit).
   - Kind **Downloadable**, classification **Tools**, release status
     **Released**, pricing **Paid** with the Pro price as the minimum.
   - Short description, tags and description: "itch.io page" in
@@ -115,7 +115,7 @@ anyone who pays any amount. Details: `docs/itch-release.md`, step 5.
   - Record the un-rot reveal (Windows Game Bar: `Win` + `Alt` + `R`, or OBS),
     put it on YouTube (unlisted works) and paste the link into **Gameplay
     video or trailer**. It's the strongest selling point.
-- [ ] **Add the key pool.**
+- [x] **Add the key pool.**
   - Work on a copy of the key file kept outside the repo. Never commit it.
   - Remove the key you tested Pro with and keep it as your own. The License
     tab shows its number (for example #00001). In a batch that started at 1,
@@ -132,13 +132,13 @@ anyone who pays any amount. Details: `docs/itch-release.md`, step 5.
       sell. Upload a small non-demo file, `Decay Pro - activation guide.txt`
       (how to find and enter the key, support email), and leave "demo"
       unticked. Done: the Buy and purchase buttons now appear.
-- [ ] **Upload the signed zip with the web uploader** (Edit page → **Upload
+- [x] **Upload the signed zip with the web uploader** (Edit page → **Upload
       files**), not butler. butler unpacks a zip and itch then serves a zip it
       makes itself, so the SHA-256 on the website wouldn't match the download.
   - Keep the name `Decay-1.0.0.0-win-x64.zip`.
   - Tick **Windows** and **This file is a demo and can be downloaded for
     free**. The demo box appears once the project has a price.
-- [ ] **Test the buying flow while the page is Restricted.**
+- [x] **Test the buying flow while the page is Restricted.**
   - Set visibility to **Restricted** and also allow a password to view the
     page.
   - On a clean Windows 11 VM with Smart App Control on, open the page from a
@@ -159,9 +159,9 @@ The page work is prepared in two branches of `ToothbrushStudio/ToothbrushStudioW
 (details: `docs/itch-release.md`, Part 2). Merging to `main` deploys, so merge
 the launch branch only when the itch page is Public.
 
-- [ ] **Merge `claude/decay-page-alignment`** (PR #57). Heading alignment, and
+- [x] **Merge `claude/decay-page-alignment`** (PR #57). Heading alignment, and
       the Download button is hidden until launch. Safe any time.
-- [ ] **Fill in the hashes** in `wwwroot/data/decay-release.json`
+- [x] **Fill in the hashes** in `wwwroot/data/decay-release.json`
       (`windows.sha256` and `console.sha256`) from step 3, on the launch
       branch.
 - [ ] **Merge `claude/decay-page-launch`** (PR #58) once the signed zips are on

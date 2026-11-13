@@ -195,7 +195,7 @@ deploys the site):
 - [x] Tests pass (incl. the FrozenFormatTests and FrozenPipelineTests golden vectors); version bumped
 - [x] Windows build signed, zipped, hash recorded
 - [ ] itch page created with copy, media, Pro description (incl. Rot)
-- [ ] Key pool generated and added as external keys; test purchase unlocks Pro
+- [x] Key pool generated and added as external keys; test purchase unlocks Pro
 - [ ] Signed zip uploaded (web uploader, Windows and demo ticked); restricted test passed; page set public
 - [ ] Website: hashes in `decay-release.json`, launch branch merged and deployed, page checked
 - [ ] Launch posts from docs/launch-copy.md
