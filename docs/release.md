@@ -114,13 +114,97 @@ says so.
   no per-app exception) and flagged by SmartScreen. Sign the shipped exe
   **and our own DLLs** (`Decay.App.dll`, `Decay.Core.dll`,
   `Decay.Renderer.dll`, `Decay.Licensing.dll`; Smart App Control checks DLLs
-  too), or the MSIX, with an Authenticode certificate — Azure Trusted Signing is the
-  cheap modern route — or distribute through the Microsoft Store, which
-  signs for you. Local dev builds are unsigned by nature; dev machines
-  run with Smart App Control off.
+  too) with Azure Artifact Signing: see "Code signing (Windows)" below. Local
+  dev builds are unsigned by nature; dev machines run with Smart App Control
+  off.
 - PNG is the only export format everywhere. That is a product decision
   (lossless is survival), not a technical limitation — see
   docs/payload-format-v1.md.
+
+## Code signing (Windows)
+
+Signed with **Azure Artifact Signing** (formerly Trusted Signing). First
+used for 1.0.0.0 on 2026-11-13.
+
+### Azure setup (done)
+
+- Signing account `ToothbrushStudioArtifact`, region East US
+  (`https://eus.codesigning.azure.net/`).
+- Certificate profile `toothbrushstudio-public`: Public Trust, linked to the
+  company's identity validation, program type None, street address and
+  postal code left out of the certificate. It is company-wide: sign every
+  Toothbrush Studio product with it, so SmartScreen reputation builds in one
+  place.
+- The signing user has the **Artifact Signing Certificate Profile Signer**
+  role on the account (Access control (IAM)). Owner alone cannot sign.
+
+### Signing machine setup (done once per machine)
+
+- `signtool` 10.0.22621 or newer (older ones lack `/dlib`). The Windows SDK
+  copy is `C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64`; add
+  that folder to the user PATH. Not the ClickOnce copy, which is too old.
+- Signing plugin: `winget install -e --id Microsoft.Azure.ArtifactSigningClientTools`,
+  installed at `%LOCALAPPDATA%\Microsoft\MicrosoftArtifactSigningClientTools\Azure.CodeSigning.Dlib.dll`.
+  It needs the .NET 8 x64 runtime.
+- Azure CLI (`winget install -e --id Microsoft.AzureCLI`), then `az login`
+  as the signing user.
+- Metadata file at `C:\ToothbrushStudio\Signing\signing-metadata.json`,
+  outside the repo. It holds no secret:
+
+  ```json
+  {
+    "Endpoint": "https://eus.codesigning.azure.net/",
+    "CodeSigningAccountName": "ToothbrushStudioArtifact",
+    "CertificateProfileName": "toothbrushstudio-public",
+    "ExcludeCredentials": [
+      "EnvironmentCredential",
+      "WorkloadIdentityCredential",
+      "ManagedIdentityCredential",
+      "SharedTokenCacheCredential",
+      "VisualStudioCredential",
+      "VisualStudioCodeCredential",
+      "AzurePowerShellCredential",
+      "AzureDeveloperCliCredential",
+      "InteractiveBrowserCredential"
+    ]
+  }
+  ```
+
+  `ExcludeCredentials` leaves only the `az login` credential. Without it the
+  plugin tries a managed identity first, and on a machine with the Azure Arc
+  agent that fails with "Access to the path
+  'C:\ProgramData\AzureConnectedMachineAgent\Tokens\...key' is denied"
+  instead of falling through to `az login`.
+
+### Sign a release
+
+From the repo root, after a fresh publish (and `PackCli` if the console
+edition ships). Sign last: publishing again overwrites the signed files.
+
+```powershell
+az account show   # if this fails: az login
+signtool sign /v /fd SHA256 /tr http://timestamp.acs.microsoft.com /td SHA256 `
+  /dlib "$env:LOCALAPPDATA\Microsoft\MicrosoftArtifactSigningClientTools\Azure.CodeSigning.Dlib.dll" `
+  /dmdf "C:\ToothbrushStudio\Signing\signing-metadata.json" `
+  publish\Decay.App.exe publish\Decay.App.dll publish\Decay.Core.dll `
+  publish\Decay.Renderer.dll publish\Decay.Licensing.dll `
+  Decay.Cli\bin\cli\decay.exe
+Get-AuthenticodeSignature publish\Decay.App.exe, publish\Decay.*.dll, Decay.Cli\bin\cli\decay.exe |
+  Format-Table Status, Path
+```
+
+Every file must show `Valid`. Keep the `/tr` timestamp: the certificates
+live about three days, and an untimestamped signature dies with them. The
+`System.*.dll` files beside `decay.exe` are already signed by Microsoft.
+
+### Errors seen
+
+| Error | Cause |
+|---|---|
+| `signtool` not recognized | Not on PATH; see machine setup. |
+| `SignerSign() failed` (0x80070003), or `File not found: ...Decay.App.exe` although the exe exists | The `/dmdf` path is wrong. Notepad had saved the file as `signing-metadata.json.txt`; turn on file name extensions in Explorer. signtool blames the file being signed for any missing file. |
+| `ManagedIdentityCredential authentication failed ... AzureConnectedMachineAgent ... denied` | `ExcludeCredentials` missing from the metadata file. |
+| 403 Forbidden | The Certificate Profile Signer role is missing or not active yet (wait a few minutes, `az login` again). |
 
 ## The promises that outrank everything in this file
 

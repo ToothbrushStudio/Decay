@@ -64,7 +64,7 @@ are in `docs/itch-release.md`, `docs/release.md` and `docs/repo-security.md`.
 
 ## 3. Sign and package
 
-- [ ] **Wait for code-signing approval.** Check your signing service's
+- [x] **Wait for code-signing approval.** Check your signing service's
       dashboard or email. Don't ship unsigned. Windows Smart App Control will
       block it for many users.
 - [x] **Publish the release build.**
@@ -77,10 +77,10 @@ are in `docs/itch-release.md`, `docs/release.md` and `docs/repo-security.md`.
     runtime): `Test-Path publish\coreclr.dll` must print `True`. If not, see
     "Check the .NET runtime is bundled" in `docs/release.md`.
   - Run `Decay.App.exe` from that folder once to confirm it opens before signing.
-- [ ] **Sign the exe and our DLLs** (`Decay.App.dll`, `Decay.Core.dll`,
-      `Decay.Renderer.dll`, `Decay.Licensing.dll`) with your signing service,
-      following its instructions (for Azure Trusted Signing, use its signing
-      tool pointed at the published output). Smart App Control checks DLLs too.
+- [x] **Sign the exe and our DLLs** (`Decay.App.dll`, `Decay.Core.dll`,
+      `Decay.Renderer.dll`, `Decay.Licensing.dll`) with Azure Artifact
+      Signing. Smart App Control checks DLLs too. Setup, the command and the
+      errors we hit: "Code signing (Windows)" in `docs/release.md`.
 - **Clean-machine test:** the unsigned build already ran in Windows Sandbox
   with no .NET installed. Test the signed build in step 4, with a real
   download from the Restricted itch page. A file copied into a VM has no

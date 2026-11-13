@@ -49,7 +49,7 @@ Background: docs/release.md (build, licensing, signing).
    Output: the `publish` folder in the repo root (from `-o publish`).
    (unpackaged and self-contained; zip the folder's contents). Run the exe there once
    to confirm it opens before signing.
-4. Authenticode-sign the exe and our four DLLs (release.md, "Code signing").
+4. Authenticode-sign the exe and our four DLLs (release.md, "Code signing (Windows)").
 5. Zip as `Decay-<version>-win-x64.zip`. This exact name is what the website's
    verify instructions assume.
 6. Compute the hash and keep it for the website:
