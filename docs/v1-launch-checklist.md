@@ -230,7 +230,7 @@ or move it to a later release.
       round trips. Keep it green.
 - [x] **Try it by hand on Windows**: the hidden passphrase prompt, and
       non-ASCII output in a `cmd.exe` and a PowerShell window.
-- [ ] **Sign `decay.exe`** in the same signing run as the app. The four
+- [x] **Sign `decay.exe`** in the same signing run as the app. The four
       `System.*.dll` files beside it are already signed by Microsoft.
 - [ ] **Zip `Decay.Cli/bin/cli`** as `Decay-1.0.0-console.zip` and add it to
       the same itch page with the web uploader. Tick **Windows** and the **demo**
