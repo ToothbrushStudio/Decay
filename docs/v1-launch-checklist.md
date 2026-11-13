@@ -64,7 +64,7 @@ are in `docs/itch-release.md`, `docs/release.md` and `docs/repo-security.md`.
 
 ## 3. Sign and package
 
-- [ ] **Wait for code-signing approval.** Check your signing service's
+- [x] **Wait for code-signing approval.** Check your signing service's
       dashboard or email. Don't ship unsigned. Windows Smart App Control will
       block it for many users.
 - [x] **Publish the release build.**
@@ -77,16 +77,16 @@ are in `docs/itch-release.md`, `docs/release.md` and `docs/repo-security.md`.
     runtime): `Test-Path publish\coreclr.dll` must print `True`. If not, see
     "Check the .NET runtime is bundled" in `docs/release.md`.
   - Run `Decay.App.exe` from that folder once to confirm it opens before signing.
-- [ ] **Sign the exe and our DLLs** (`Decay.App.dll`, `Decay.Core.dll`,
-      `Decay.Renderer.dll`, `Decay.Licensing.dll`) with your signing service,
-      following its instructions (for Azure Trusted Signing, use its signing
-      tool pointed at the published output). Smart App Control checks DLLs too.
+- [x] **Sign the exe and our DLLs** (`Decay.App.dll`, `Decay.Core.dll`,
+      `Decay.Renderer.dll`, `Decay.Licensing.dll`) with Azure Artifact
+      Signing. Smart App Control checks DLLs too. Setup, the command and the
+      errors we hit: "Code signing (Windows)" in `docs/release.md`.
 - **Clean-machine test:** the unsigned build already ran in Windows Sandbox
   with no .NET installed. Test the signed build in step 4, with a real
   download from the Restricted itch page. A file copied into a VM has no
   "downloaded from the internet" mark, so SmartScreen never checks it
   (that's why Sandbox showed no "unknown publisher" warning).
-- [ ] **Zip it and record the hash.**
+- [x] **Zip it and record the hash.**
   - Name it exactly `Decay-1.0.0.0-win-x64.zip`.
   - In a terminal: `certutil -hashfile Decay-1.0.0.0-win-x64.zip SHA256`
   - Copy the hash somewhere safe. The website needs it.
@@ -101,7 +101,7 @@ anyone who pays any amount. Details: `docs/itch-release.md`, step 5.
 - [ ] **Set up payments** (account settings, once): **Collected by itch.io,
       paid later**, a PayPal or Payoneer account for payouts, and the tax
       interview for the LLC. Payouts wait on the tax interview.
-- [ ] **Fill in the page** (Dashboard → Decay → Edit).
+- [x] **Fill in the page** (Dashboard → Decay → Edit).
   - Kind **Downloadable**, classification **Tools**, release status
     **Released**, pricing **Paid** with the Pro price as the minimum.
   - Short description, tags and description: "itch.io page" in
@@ -115,7 +115,7 @@ anyone who pays any amount. Details: `docs/itch-release.md`, step 5.
   - Record the un-rot reveal (Windows Game Bar: `Win` + `Alt` + `R`, or OBS),
     put it on YouTube (unlisted works) and paste the link into **Gameplay
     video or trailer**. It's the strongest selling point.
-- [ ] **Add the key pool.**
+- [x] **Add the key pool.**
   - Work on a copy of the key file kept outside the repo. Never commit it.
   - Remove the key you tested Pro with and keep it as your own. The License
     tab shows its number (for example #00001). In a batch that started at 1,
@@ -132,13 +132,13 @@ anyone who pays any amount. Details: `docs/itch-release.md`, step 5.
       sell. Upload a small non-demo file, `Decay Pro - activation guide.txt`
       (how to find and enter the key, support email), and leave "demo"
       unticked. Done: the Buy and purchase buttons now appear.
-- [ ] **Upload the signed zip with the web uploader** (Edit page → **Upload
+- [x] **Upload the signed zip with the web uploader** (Edit page → **Upload
       files**), not butler. butler unpacks a zip and itch then serves a zip it
       makes itself, so the SHA-256 on the website wouldn't match the download.
   - Keep the name `Decay-1.0.0.0-win-x64.zip`.
   - Tick **Windows** and **This file is a demo and can be downloaded for
     free**. The demo box appears once the project has a price.
-- [ ] **Test the buying flow while the page is Restricted.**
+- [x] **Test the buying flow while the page is Restricted.**
   - Set visibility to **Restricted** and also allow a password to view the
     page.
   - On a clean Windows 11 VM with Smart App Control on, open the page from a
@@ -159,9 +159,9 @@ The page work is prepared in two branches of `ToothbrushStudio/ToothbrushStudioW
 (details: `docs/itch-release.md`, Part 2). Merging to `main` deploys, so merge
 the launch branch only when the itch page is Public.
 
-- [ ] **Merge `claude/decay-page-alignment`** (PR #57). Heading alignment, and
+- [x] **Merge `claude/decay-page-alignment`** (PR #57). Heading alignment, and
       the Download button is hidden until launch. Safe any time.
-- [ ] **Fill in the hashes** in `wwwroot/data/decay-release.json`
+- [x] **Fill in the hashes** in `wwwroot/data/decay-release.json`
       (`windows.sha256` and `console.sha256`) from step 3, on the launch
       branch.
 - [ ] **Merge `claude/decay-page-launch`** (PR #58) once the signed zips are on
@@ -230,7 +230,7 @@ or move it to a later release.
       round trips. Keep it green.
 - [x] **Try it by hand on Windows**: the hidden passphrase prompt, and
       non-ASCII output in a `cmd.exe` and a PowerShell window.
-- [ ] **Sign `decay.exe`** in the same signing run as the app. The four
+- [x] **Sign `decay.exe`** in the same signing run as the app. The four
       `System.*.dll` files beside it are already signed by Microsoft.
 - [ ] **Zip `Decay.Cli/bin/cli`** as `Decay-1.0.0-console.zip` and add it to
       the same itch page with the web uploader. Tick **Windows** and the **demo**

@@ -49,7 +49,7 @@ Background: docs/release.md (build, licensing, signing).
    Output: the `publish` folder in the repo root (from `-o publish`).
    (unpackaged and self-contained; zip the folder's contents). Run the exe there once
    to confirm it opens before signing.
-4. Authenticode-sign the exe and our four DLLs (release.md, "Code signing").
+4. Authenticode-sign the exe and our four DLLs (release.md, "Code signing (Windows)").
 5. Zip as `Decay-<version>-win-x64.zip`. This exact name is what the website's
    verify instructions assume.
 6. Compute the hash and keep it for the website:
@@ -193,9 +193,9 @@ deploys the site):
 
 - [x] Keygen private key generated and backed up; public key in `PublisherKey.cs`
 - [x] Tests pass (incl. the FrozenFormatTests and FrozenPipelineTests golden vectors); version bumped
-- [ ] Windows build signed, zipped, hash recorded
+- [x] Windows build signed, zipped, hash recorded
 - [ ] itch page created with copy, media, Pro description (incl. Rot)
-- [ ] Key pool generated and added as external keys; test purchase unlocks Pro
+- [x] Key pool generated and added as external keys; test purchase unlocks Pro
 - [ ] Signed zip uploaded (web uploader, Windows and demo ticked); restricted test passed; page set public
 - [ ] Website: hashes in `decay-release.json`, launch branch merged and deployed, page checked
 - [ ] Launch posts from docs/launch-copy.md

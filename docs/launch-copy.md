@@ -63,6 +63,10 @@ secret-message, datamosh, vaporwave, aesthetic, art
 > Windows 10 or 11, 64-bit. Extract the zip first (right-click, Extract All),
 > then run Decay.App.exe. Nothing to install.
 >
+> Windows may say "Windows protected your PC" because Decay is a new app.
+> Click More info, check the publisher is Toothbrush Studio, LLC, then click
+> Run anyway.
+>
 > Questions, problems or refunds: support@toothbrush.studio
 
 ## App Store / Play — short description (≤80 chars)
