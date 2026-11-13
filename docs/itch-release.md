@@ -193,7 +193,7 @@ deploys the site):
 
 - [x] Keygen private key generated and backed up; public key in `PublisherKey.cs`
 - [x] Tests pass (incl. the FrozenFormatTests and FrozenPipelineTests golden vectors); version bumped
-- [ ] Windows build signed, zipped, hash recorded
+- [x] Windows build signed, zipped, hash recorded
 - [ ] itch page created with copy, media, Pro description (incl. Rot)
 - [ ] Key pool generated and added as external keys; test purchase unlocks Pro
 - [ ] Signed zip uploaded (web uploader, Windows and demo ticked); restricted test passed; page set public

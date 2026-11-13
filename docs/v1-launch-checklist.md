@@ -86,7 +86,7 @@ are in `docs/itch-release.md`, `docs/release.md` and `docs/repo-security.md`.
   download from the Restricted itch page. A file copied into a VM has no
   "downloaded from the internet" mark, so SmartScreen never checks it
   (that's why Sandbox showed no "unknown publisher" warning).
-- [ ] **Zip it and record the hash.**
+- [x] **Zip it and record the hash.**
   - Name it exactly `Decay-1.0.0.0-win-x64.zip`.
   - In a terminal: `certutil -hashfile Decay-1.0.0.0-win-x64.zip SHA256`
   - Copy the hash somewhere safe. The website needs it.
